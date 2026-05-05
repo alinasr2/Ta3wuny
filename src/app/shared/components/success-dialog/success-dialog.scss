@@ -1,0 +1,108 @@
+    .success-dialog {
+      padding: 2rem;
+      text-align: center;
+      max-width: 450px;
+      background: white;
+      border-radius: 16px;
+    }
+
+    .success-dialog__icon {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .success-dialog__checkmark {
+      width: 80px;
+      height: 80px;
+    }
+
+    .success-dialog__circle {
+      stroke: #4caf50;
+      stroke-width: 4;
+      stroke-dasharray: 166;
+      stroke-dashoffset: 166;
+      animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+
+    .success-dialog__check {
+      stroke: #4caf50;
+      stroke-width: 5;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+      animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+
+    @keyframes stroke {
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    .success-dialog__title {
+      font-size: 1.75rem;
+      font-weight: bold;
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+
+    .success-dialog__message {
+      color: #4a5568;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .success-dialog__detail-item {
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .success-dialog__detail-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .success-dialog__detail-label {
+      font-weight: 600;
+      color: #2d3748;
+      margin-right: 0.5rem;
+    }
+
+    .success-dialog__detail-value {
+      color: #4a5568;
+    }
+
+    .success-dialog__instruction {
+      background: #ebf8ff;
+      color: #2c5282;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      border-left: 3px solid #3182ce;
+    }
+
+    .success-dialog__actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .success-dialog__cancel-btn {
+      color: #718096 !important;
+      font-weight: 500 !important;
+      padding: 0.5rem 1.5rem !important;
+    }
+
+    .success-dialog__cancel-btn:hover {
+      background: #f7fafc !important;
+    }
+
+    .success-dialog__login-btn {
+      background: #2e7d32 !important;
+      color: white !important;
+      padding: 0.5rem 1.5rem !important;
+      font-weight: 500 !important;
+    }
+
+    .success-dialog__login-btn:hover {
+      background: #1b5e20 !important;
+    }

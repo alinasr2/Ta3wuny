@@ -1,0 +1,24 @@
+<div class="success-dialog">
+      <div class="success-dialog__icon">
+        <svg class="success-dialog__checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="success-dialog__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="success-dialog__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      
+      <h2 class="success-dialog__title">Registration Successful!</h2>
+      
+      <p class="success-dialog__message">{{ data.message }}</p>
+      <p class="success-dialog__instruction">
+        Please check your email inbox and click the verification link to activate your account.
+      </p>
+      
+      <div class="success-dialog__actions">
+        <button mat-button class="success-dialog__cancel-btn" (click)="onCancel()">
+          Cancel
+        </button>
+        <button mat-raised-button class="success-dialog__login-btn" (click)="onGoToLogin()">
+          Go to Login
+        </button>
+      </div>
+    </div>

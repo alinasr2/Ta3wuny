@@ -1,0 +1,208 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$magenta-palette,
+        tertiary: mat.$violet-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
+@tailwind base;
+// @tailwind components;
+@tailwind utilities;
+@import 'primeicons/primeicons.css';
+
+// Global font
+* {
+  font-family: 'Cairo', sans-serif;
+}
+
+.container {
+  width: 95%;
+  margin: 0 auto;
+}
+
+// Auth wrapper
+.auth {
+  @apply relative min-h-screen flex items-center justify-center p-10;
+
+  &__bg {
+    @apply absolute inset-0 z-0;
+
+    img {
+      @apply w-full h-full object-cover blur-sm;
+    }
+
+    &-overlay {
+      @apply absolute inset-0 bg-black/20;
+    }
+  }
+
+  &__card {
+    @apply relative z-10 max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row;
+  }
+
+  &__panel {
+    @apply md:w-2/5 bg-primary p-10 text-white flex flex-col justify-center;
+
+    &-title {
+      @apply text-3xl font-bold mb-4;
+    }
+
+    &-desc {
+      @apply text-green-50/90 mb-8 leading-relaxed;
+    }
+  }
+
+  &__features {
+    @apply space-y-5;
+
+    &-item {
+      @apply flex items-center gap-3;
+
+      &-icon {
+        @apply bg-white/20 p-1 rounded-full text-xs;
+      }
+
+      &-text {
+        @apply text-sm font-medium;
+      }
+    }
+  }
+
+  &__form {
+    @apply bg-white;
+
+    &-header {
+      @apply mb-10;
+
+      h1 {
+        @apply text-2xl font-bold text-text-primary;
+      }
+
+      p {
+        @apply text-text-secondary mt-2 text-sm;
+
+        a {
+          @apply text-primary font-bold hover:underline;
+        }
+      }
+    }
+  }
+
+  &__form-group {
+    @apply mb-6;
+
+    .auth__form-label {
+      @apply block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2;
+    }
+
+    .auth__form-input {
+      @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-300 bg-gray-50/50;
+    }
+
+    .flex {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth__form-forgot {
+      @apply text-xs text-primary hover:underline font-bold;
+    }
+  }
+
+  &__form-button {
+    @apply w-full bg-primary hover:bg-primary-dark text-text-on-primary font-bold py-4 rounded-xl shadow-lg transition-all transform active:scale-95 mt-4;
+  }
+  // داخل .auth { ... }
+
+  &__user-types {
+    .auth__user-type-card {
+      @apply flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl transition-all text-text-secondary;
+
+      span {
+        @apply text-xs font-bold;
+      }
+
+      i {
+        @apply text-gray-400;
+      }
+
+      &.active {
+        @apply border-primary bg-green-50/50 text-primary ring-1 ring-primary;
+        i {
+          @apply text-primary;
+        }
+      }
+
+      &:hover:not(.active) {
+        @apply bg-gray-50 border-gray-300;
+      }
+    }
+  }
+
+  &__form-label {
+    @apply block text-sm font-medium text-text-secondary mb-1.5; // تعديل ليتناسب مع الصورة
+  }
+
+  // تأكد من أن الـ input له خلفية بيضاء وحواف ناعمة
+  .auth__form-input {
+    @apply w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-300 bg-white;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .auth {
+    @apply p-6;
+
+    &__card {
+      @apply max-w-full flex-col;
+    }
+
+    &__panel {
+      @apply p-6 text-center;
+
+      &-title {
+        @apply text-xl;
+      }
+    }
+
+    &__form {
+      @apply p-6;
+    }
+  }
+  .auth__panel {
+    display: none;
+  }
+}

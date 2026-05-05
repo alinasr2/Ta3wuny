@@ -1,0 +1,145 @@
+<div class="bg-background text-text-primary">
+  
+  <section class="relative h-64 bg-cover bg-center flex items-center justify-center text-white" 
+           style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&q=80&w=1470');">
+    <div class="container">
+      <h1 class="text-5xl font-bold mb-2">السوق</h1>
+      <p class="text-xl mb-6 text-accent">اكتشف المنتجات العضوية الطازجة ومنتجات المزارع عالية الجودة</p>
+      
+      <div class="relative max-w-2xl bg-surface rounded-full shadow-lg overflow-hidden flex items-center px-4 py-1">
+        <i class="pi pi-search text-text-secondary me-2"></i>
+        <input type="text" placeholder="ابحث عن المنتجات الطازجة، الألبان، الحبوب، والمزيد..." 
+               class="w-full py-3 outline-none text-text-primary placeholder:text-text-secondary/50">
+      </div>
+    </div>
+  </section>
+
+  <div class="container py-12 flex flex-col lg:flex-row gap-8">
+    
+    <aside class="w-full lg:w-1/4 bg-surface p-6 rounded-2xl shadow-sm h-fit">
+      <div class="space-y-6">
+        <div>
+          <label class="block font-bold mb-2">النوع</label>
+          <select class="w-full border border-accent p-2 rounded-lg bg-white outline-none focus:border-primary">
+            <option>جميع المنتجات</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-3">التصنيفات</label>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">خضروات</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">فواكه</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">حبوب</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">عضوي</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-2">نطاق السعر (جنيه مصري)</label>
+          <input type="range" class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer">
+          <div class="flex justify-between text-sm text-text-secondary mt-2">
+            <span>5 جنيه</span>
+            <span>100 جنيه</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-2">الموقع</label>
+          <select class="w-full border border-accent p-2 rounded-lg bg-white outline-none">
+            <option>جميع أنحاء مصر</option>
+          </select>
+        </div>
+
+        <button class="w-full bg-accent text-primary-dark font-semibold py-2 rounded-lg hover:bg-primary-light/20 transition-colors">
+          إعادة تعيين الفلاتر
+        </button>
+      </div>
+    </aside>
+
+    <main class="w-full lg:w-3/4">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-xl font-bold">المحاصيل المتاحة <span class="text-text-secondary font-normal text-sm ms-2">(عدد العناصر)</span></h2>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-text-secondary">ترتيب حسب:</span>
+          <select class="bg-transparent font-bold outline-none">
+            <option>الأحدث أولاً</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-surface rounded-2xl overflow-hidden shadow-sm border border-transparent hover:border-primary/20 transition-all">
+          <div class="relative h-48">
+            <img src="https://www.mahaseel.net/_next/image?url=https%3A%2F%2Fmarketplace-api.mahaseel.net%2Fapi%2Ffile%2F6f071ab6-f8f3-4181-a612-0abb49206f63.webp&w=640&q=75" class="w-full h-full object-cover">
+            <span class="absolute top-3 start-3 bg-accent text-primary-dark text-xs font-bold px-3 py-1 rounded-full border border-primary/20">حصاد طازج</span>
+          </div>
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-lg">طماطم حمراء عضوية</h3>
+              <div class="text-end">
+                <span class="text-primary font-bold">12 جنيه</span>
+                <p class="text-xs text-text-secondary">/كجم</p>
+              </div>
+            </div>
+            <div class="flex items-center text-sm text-text-secondary mb-4">
+              <i class="pi pi-map-marker me-1 text-error"></i> الموقع
+            </div>
+            <div class="flex justify-between items-center mb-6 text-sm">
+              <span class="text-text-secondary">اسم المزارع (مزارع)</span>
+              <span class="flex items-center"><i class="pi pi-star-fill text-warning me-1 text-xs"></i> 4.8</span>
+            </div>
+            <button class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl flex items-center justify-center gap-2 transition-colors">
+              <i class="pi pi-shopping-cart"></i> عرض التفاصيل
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-2xl overflow-hidden shadow-sm border border-transparent hover:border-primary/20 transition-all">
+          <div class="relative h-48">
+            <img src="https://www.mahaseel.net/_next/image?url=https%3A%2F%2Fmarketplace-api.mahaseel.net%2Fapi%2Ffile%2F0341954d-b8ba-4392-9768-4ca6898eb47e.webp&w=640&q=75" class="w-full h-full object-cover">
+            <span class="absolute top-3 start-3 bg-secondary text-text-on-secondary text-xs font-bold px-3 py-1 rounded-full">في مزاد</span>
+          </div>
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-lg">حبوب قمح ممتازة</h3>
+              <div class="text-end">
+                <span class="text-primary font-bold">8,500 جنيه</span>
+                <p class="text-xs text-text-secondary">/طن</p>
+              </div>
+            </div>
+            <div class="flex items-center text-sm text-text-secondary mb-3">
+              <i class="pi pi-map-marker me-1 text-error"></i> الموقع
+            </div>
+            
+            <div class="bg-secondary-light/30 border border-secondary/20 p-2 rounded-lg flex items-center gap-2 text-secondary-dark text-sm font-bold mb-4">
+              <i class="pi pi-clock"></i> ينتهي المزاد خلال: 05س 22د
+            </div>
+
+            <button class="w-full border-2 border-primary text-primary hover:bg-primary/5 py-3 rounded-xl font-bold transition-colors">
+              تقديم عرض
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end mt-12 gap-2">
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary"><i class="pi pi-angle-left"></i></button>
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-md shadow-primary/20">1</button>
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent">2</button>
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent">3</button>
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary"><i class="pi pi-angle-right"></i></button>
+      </div>
+    </main>
+  </div>
+</div>

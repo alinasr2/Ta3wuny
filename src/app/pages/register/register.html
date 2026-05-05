@@ -1,0 +1,275 @@
+<div class="auth">
+  <div class="auth__bg absolute inset-0 z-0">
+    <img
+      src="/images/auth-bg.jpg"
+      alt="خلفية حقل زراعي"
+      class="w-full h-full object-cover blur-sm"
+    />
+    <div class="auth__bg-overlay absolute inset-0 bg-black/20"></div>
+  </div>
+
+  <div
+    class="auth__card relative z-10 max-w-5xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+  >
+    <div class="auth__panel md:w-2/5 bg-primary p-8 text-white flex flex-col justify-center">
+      <h2 class="auth__panel-title text-2xl font-bold mb-3">مرحبًا بك في تعاونى!</h2>
+      <p class="auth__panel-desc text-green-50/90 mb-6 leading-relaxed text-sm">
+        انضم إلى آلاف المزارعين والتجار في مجتمع زراعي أكثر ذكاءً.
+      </p>
+
+      <ul class="auth__features space-y-3">
+        <li class="auth__features-item flex items-center gap-2">
+          <div class="auth__features-item-icon bg-white/20 p-1 rounded-full text-xs w-5 h-5 flex items-center justify-center">✓</div>
+          <span class="auth__features-item-text text-sm font-medium">الوصول المباشر للسوق</span>
+        </li>
+        <li class="auth__features-item flex items-center gap-2">
+          <div class="auth__features-item-icon bg-white/20 p-1 rounded-full text-xs w-5 h-5 flex items-center justify-center">✓</div>
+          <span class="auth__features-item-text text-sm font-medium">تشخيص المحاصيل بالذكاء الاصطناعي</span>
+        </li>
+        <li class="auth__features-item flex items-center gap-2">
+          <div class="auth__features-item-icon bg-white/20 p-1 rounded-full text-xs w-5 h-5 flex items-center justify-center">✓</div>
+          <span class="auth__features-item-text text-sm font-medium">تتبع الأسعار بشكل فوري</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="auth__form md:w-3/5 p-8 bg-white overflow-y-auto">
+      <div class="auth__form-header mb-6">
+        <h1 class="text-xl font-bold text-text-primary">إنشاء حساب جديد</h1>
+        <p class="text-text-secondary mt-1 text-sm">
+          لديك حساب بالفعل؟
+          <a routerLink="/login" class="text-primary font-bold hover:underline">تسجيل الدخول</a>
+        </p>
+      </div>
+
+      <div class="auth__user-types grid grid-cols-2 gap-3 mb-6">
+        <button
+          type="button"
+          class="auth__user-type-card"
+          [class.active]="selectedRole === 'Farmer'"
+          (click)="setRole('Farmer')"
+          [disabled]="isSubmitting"
+        >
+          <i class="pi pi-truck text-lg mb-1"></i>
+          <span class="text-xs">مزارع</span>
+        </button>
+
+        <button
+          type="button"
+          class="auth__user-type-card"
+          [class.active]="selectedRole === 'Trader'"
+          (click)="setRole('Trader')"
+          [disabled]="isSubmitting"
+        >
+          <i class="pi pi-shop text-lg mb-1"></i>
+          <span class="text-xs">تاجر</span>
+        </button>
+      </div>
+
+      <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)" class="space-y-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="auth__form-group">
+            <label class="auth__form-label text-xs">الاسم الكامل <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              name="FullName"
+              ngModel
+              required
+              [pattern]="fullNamePattern"
+              placeholder="محمد أحمد"
+              class="auth__form-input text-gray-800 bg-white placeholder-gray-400 text-sm py-2 px-3"
+              #fullName="ngModel"
+              [disabled]="isSubmitting"
+            />
+            @if (fullName.invalid && fullName.touched && !isSubmitting) {
+              @if (fullName.errors?.['required']) {
+                <p class="text-red-500 text-xs mt-1">الاسم الكامل مطلوب</p>
+              }
+              @if (fullName.errors?.['pattern']) {
+                <p class="text-red-500 text-xs mt-1">
+                  الاسم يجب أن يحتوي على حروف فقط مع السماح بالمسافات والرموز البسيطة
+                </p>
+              }
+            }
+          </div>
+
+          <div class="auth__form-group">
+            <label class="auth__form-label text-xs">اسم المستخدم <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              name="UserName"
+              ngModel
+              required
+              [pattern]="userNamePattern"
+              placeholder="mohamed_ahmed"
+              class="auth__form-input text-gray-800 bg-white placeholder-gray-400 text-sm py-2 px-3"
+              #userName="ngModel"
+              [disabled]="isSubmitting"
+            />
+            @if (userName.invalid && userName.touched && !isSubmitting) {
+              @if (userName.errors?.['required']) {
+                <p class="text-red-500 text-xs mt-1">اسم المستخدم مطلوب</p>
+              }
+              @if (userName.errors?.['pattern']) {
+                <p class="text-red-500 text-xs mt-1">
+                  اسم المستخدم يجب أن يحتوي على حروف وأرقام وشرطة سفلية (3-20 حرف)
+                </p>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="auth__form-group">
+          <label class="auth__form-label text-xs">البريد الإلكتروني <span class="text-red-500">*</span></label>
+          <input
+            type="email"
+            name="Email"
+            ngModel
+            required
+            email
+            [pattern]="emailPattern"
+            placeholder="name@example.com"
+            class="auth__form-input text-gray-800 bg-white placeholder-gray-400 text-sm py-2 px-3"
+            #email="ngModel"
+            [disabled]="isSubmitting"
+          />
+          @if (email.invalid && email.touched && !isSubmitting) {
+            @if (email.errors?.['required']) {
+              <p class="text-red-500 text-xs mt-1">البريد الإلكتروني مطلوب</p>
+            }
+            @if (email.errors?.['pattern']) {
+              <p class="text-red-500 text-xs mt-1">البريد الإلكتروني غير صالح</p>
+            }
+          }
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="auth__form-group">
+            <label class="auth__form-label text-xs">كلمة المرور <span class="text-red-500">*</span></label>
+            <input
+              type="password"
+              name="Password"
+              ngModel
+              required
+              minlength="8"
+              [pattern]="passwordPattern"
+              placeholder="••••••••"
+              class="auth__form-input text-gray-800 bg-white placeholder-gray-400 text-sm py-2 px-3"
+              #password="ngModel"
+              [disabled]="isSubmitting"
+            />
+            @if (password.invalid && password.touched && !isSubmitting) {
+              @if (password.errors?.['required']) {
+                <p class="text-red-500 text-xs mt-1">كلمة المرور مطلوبة</p>
+              }
+              @if (password.errors?.['minlength']) {
+                <p class="text-red-500 text-xs mt-1">كلمة المرور يجب أن تكون 8 أحرف على الأقل</p>
+              }
+              @if (password.errors?.['pattern']) {
+                <p class="text-red-500 text-xs mt-1">
+                  يجب أن تحتوي كلمة المرور على: حرف كبير، حرف صغير، رقم، ورمز خاص (@$!%*?&)
+                </p>
+              }
+            }
+          </div>
+
+          <div class="auth__form-group">
+            <label class="auth__form-label text-xs">تأكيد كلمة المرور <span class="text-red-500">*</span></label>
+            <input
+              type="password"
+              name="ConfirmedPassword"
+              ngModel
+              required
+              placeholder="••••••••"
+              class="auth__form-input text-gray-800 bg-white placeholder-gray-400 text-sm py-2 px-3"
+              #confirmedPassword="ngModel"
+              [disabled]="isSubmitting"
+            />
+            @if (
+              confirmedPassword.touched && !isSubmitting &&
+              registerForm.value.Password !== registerForm.value.ConfirmedPassword
+            ) {
+              <p class="text-red-500 text-xs mt-1">كلمات المرور غير متطابقة</p>
+            }
+          </div>
+        </div>
+
+        <div class="auth__form-group">
+          <label class="auth__form-label text-xs">صورة الملف الشخصي</label>
+
+          <input
+            #imageInput
+            type="file"
+            name="ImageFile"
+            accept="image/*"
+            (change)="onFileChange($event)"
+            class="hidden"
+            [disabled]="isSubmitting"
+          />
+
+          @if (imagePreviewUrl) {
+            <div class="auth__image-preview mt-2">
+              <img
+                [src]="imagePreviewUrl"
+                alt="معاينة الصورة"
+                class="auth__image-preview-img w-16 h-16 rounded-lg object-cover"
+              />
+              <button
+                type="button"
+                class="auth__image-remove"
+                (click)="removeSelectedImage(imageInput)"
+                [disabled]="isSubmitting"
+                aria-label="حذف الصورة"
+              >
+                ×
+              </button>
+            </div>
+          } @else {
+            <button 
+              type="button" 
+              class="auth__image-picker w-full py-2 px-3 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-primary transition-colors mt-1"
+              (click)="imageInput.click()"
+              [disabled]="isSubmitting"
+            >
+              <i class="pi pi-image text-lg text-primary"></i>
+              <span class="font-semibold text-text-primary text-sm">اختر صورة</span>
+              <span class="text-xs text-text-secondary">
+                اختر صورة للملف الشخصي وقم بمعاينتها قبل الإرسال
+              </span>
+            </button>
+          }
+        </div>
+
+        @if (locationError) {
+          <div class="p-2.5 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-600 text-sm">{{ locationError }}</p>
+          </div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isSubmitting"
+          class="auth__form-button disabled:opacity-50 disabled:cursor-not-allowed w-full py-2.5 px-4 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors text-sm mt-2"
+        >
+          @if (isSubmitting) {
+            <span class="flex items-center justify-center gap-2">
+              <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              جاري إنشاء الحساب...
+            </span>
+          } @else {
+            إنشاء الحساب
+          }
+        </button>
+
+        @if (errorMessage) {
+          <div class="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-600 text-sm">{{ errorMessage }}</p>
+          </div>
+        }
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,110 @@
+<div class="auth">
+  <!-- الخلفية -->
+  <div class="auth__bg absolute inset-0 z-0">
+    <img
+      src="/images/auth-bg.jpg"
+      alt="خلفية حقل زراعي"
+      class="w-full h-full object-cover blur-sm"
+    />
+    <div class="auth__bg-overlay absolute inset-0 bg-black/20"></div>
+  </div>
+
+  <!-- البطاقة -->
+  <div
+    class="auth__card relative z-10 max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+  >
+    <!-- اللوحة اليسرى -->
+    <div class="auth__panel md:w-2/5 bg-primary p-10 text-white flex flex-col justify-center">
+      <h2 class="auth__panel-title text-3xl font-bold mb-4">مرحبًا بعودتك إلى تعاوني!</h2>
+      <p class="auth__panel-desc text-green-50/90 mb-8 leading-relaxed">
+        انضم إلى آلاف المزارعين والتجار في مجتمع زراعي أكثر ذكاءً.
+      </p>
+
+      <ul class="auth__features space-y-5">
+        <li class="auth__features-item flex items-center gap-3">
+          <div class="auth__features-item-icon bg-white/20 p-1 rounded-full text-xs">✓</div>
+          <span class="auth__features-item-text text-sm font-medium">الوصول المباشر للسوق</span>
+        </li>
+        <li class="auth__features-item flex items-center gap-3">
+          <div class="auth__features-item-icon bg-white/20 p-1 rounded-full text-xs">✓</div>
+          <span class="auth__features-item-text text-sm font-medium">تشخيص المحاصيل بالذكاء الاصطناعي</span>
+        </li>
+        <li class="auth__features-item flex items-center gap-3">
+          <div class="auth__features-item-icon bg-white/20 p-1 rounded-full text-xs">✓</div>
+          <span class="auth__features-item-text text-sm font-medium">تتبع الأسعار في الوقت الحقيقي</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- اللوحة اليمنى / النموذج -->
+    <div class="auth__form md:w-3/5 p-8 md:p-14 bg-white">
+      <div class="auth__form-header mb-10">
+        <h1 class="text-2xl font-bold text-text-primary">تسجيل الدخول إلى حسابك</h1>
+        <p class="text-text-secondary mt-2 text-sm">
+          ليس لديك حساب؟
+          <a routerLink="/register" class="text-primary font-bold hover:underline">إنشاء حساب</a>
+        </p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="Login()" class="space-y-6">
+        <!-- البريد الإلكتروني -->
+        <div class="auth__form-group">
+          <label
+            class="auth__form-label block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2"
+          >
+            البريد الإلكتروني
+          </label>
+          <input
+            formControlName="email"
+            type="email"
+            name="email"
+            placeholder="name@example.com"
+            class="auth__form-input w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-300 bg-gray-50/50"
+          />
+        </div>
+
+        <!-- كلمة المرور -->
+        <div class="auth__form-group">
+          <div class="flex justify-between mb-2">
+            <label
+              class="auth__form-label block text-xs font-bold text-text-secondary uppercase tracking-wider"
+            >
+              كلمة المرور
+            </label>
+            <a href="#" class="auth__form-forgot text-xs text-primary hover:underline font-bold">
+              نسيت كلمة المرور؟
+            </a>
+          </div>
+
+          <input
+            formControlName="password"
+            type="password"
+            name="password"
+            placeholder="*******"
+            class="auth__form-input w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-300 bg-gray-50/50"
+          />
+        </div>
+
+        <!-- زر الدخول -->
+        <button
+          (click)="Login()"
+          [disabled]="form.invalid || loading"
+          type="submit"
+          class="auth__form-button disabled:opacity-50 disabled:cursor-not-allowed w-full bg-primary hover:bg-primary-dark text-text-on-primary font-bold py-4 rounded-xl shadow-lg transition-all transform active:scale-95 mt-4"
+        >
+          @if (loading) {
+            جاري  تسجيل الدخول...
+          } @else {
+            تسجيل الدخول
+          }
+        </button>
+
+        @if (errorMsg) {
+          <div class="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-600 text-sm">{{ errorMsg }}</p>
+          </div>
+        }
+      </form>
+    </div>
+  </div>
+</div>

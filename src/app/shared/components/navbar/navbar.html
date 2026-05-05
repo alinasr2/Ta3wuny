@@ -1,0 +1,174 @@
+<section>
+  <nav class="bg-primary py-3 flex items-center fixed top-0 inset-x-0 z-50 transition-all duration-300 shadow-lg"
+    [class.-translate-y-full]="!isVisible">
+    <div class="container">
+      <div class="flex items-center justify-between">
+
+        <a [routerLink]="'/'" class="flex items-center space-x-2 rtl:space-x-reverse cursor-pointer group">
+          <div class="bg-white/10 p-1.5 rounded-xl transition-transform group-hover:scale-110">
+            <img src="https://cdn-icons-png.flaticon.com/512/188/188333.png" class="h-9 w-9 brightness-0 invert" alt="Logo" />
+          </div>
+          <span class="text-2xl font-bold tracking-tight text-white">تعاوني</span>
+        </a>
+
+        <div class="hidden md:block">
+          <ul class="flex items-center space-x-1 rtl:space-x-reverse">
+            <li>
+              <a [routerLink]="'/'" [routerLinkActiveOptions]="{ exact: true }" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                الرئيسية
+              </a>
+            </li>
+            <li>
+              <a [routerLink]="'/marketplace'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                المتجر
+              </a>
+            </li>
+            <li>
+              <a [routerLink]="'/farmers'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                المزارعون
+              </a>
+            </li>
+            <li>
+              <a [routerLink]="'/community'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                المجتمع
+              </a>
+            </li>
+            <li>
+              <a [routerLink]="'/contact'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                اتصل بنا
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="hidden md:flex items-center space-x-4 rtl:space-x-reverse">
+          @if (isLoggedIn()) {
+            <div class="flex items-center bg-white/10 rounded-full py-1 px-2 border border-white/5">
+              <a [routerLink]="'/profile'" routerLinkActive="text-secondary" title="الملف الشخصي" class="text-white w-8 h-8 rounded-full flex justify-center items-center hover:bg-white/20 transition-all">
+                <i class="pi pi-user text-lg"></i>
+              </a>
+              <a [routerLink]="'/chat'" routerLinkActive="text-secondary" title="الدردشة" class="text-white w-8 h-8 rounded-full flex justify-center items-center hover:bg-white/20 transition-all">
+                <i class="pi pi-comments text-lg"></i>
+              </a>
+              <a [routerLink]="'/cart'" routerLinkActive="text-secondary" title="السلة" class="text-white w-8 h-8 rounded-full flex justify-center items-center hover:bg-white/20 transition-all">
+                <i class="pi pi-shopping-cart text-lg"></i>
+              </a>
+            </div>
+            <button (click)="logOut()" class="text-white bg-error/90 hover:bg-error px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 shadow-sm">
+              <i class="pi pi-sign-out text-xs"></i> <span>تسجيل الخروج</span>
+            </button>
+          } @else {
+            <a [routerLink]="'/login'" class="text-white font-medium hover:text-secondary px-4 transition-all">تسجيل الدخول</a>
+            <a [routerLink]="'/register'" class="bg-secondary text-text-on-secondary px-6 py-2 rounded-full font-bold shadow-md hover:brightness-110 transition-all">
+              إنشاء حساب
+            </a>
+          }
+        </div>
+
+        <button (click)="toggleSidebar()" type="button" class="inline-flex items-center p-2 text-white rounded-lg md:hidden hover:bg-white/10">
+          <i [class]="isSidebarOpen ? 'pi pi-times text-2xl' : 'pi pi-bars text-2xl'"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  @if (isSidebarOpen && isMobileScreen) {
+    <div (click)="closeSidebar()" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity"></div>
+  }
+
+  <aside class="fixed top-0 inset-y-0 z-[70] w-72 h-screen transition-transform duration-300 shadow-2xl bg-surface"
+    [class.end-0]="isSidebarOpen" 
+    [class.-end-full]="!isSidebarOpen">
+    
+    <div class="p-6 flex flex-col h-full">
+      <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+        <span class="text-xl font-bold text-primary">القائمة</span>
+        <button (click)="closeSidebar()" class="text-text-secondary hover:text-error transition-colors">
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <ul class="space-y-2 font-medium flex-1">
+        <li>
+          <a [routerLink]="'/'" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()" 
+             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
+             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
+            <i class="pi pi-home me-3 text-lg"></i> <span>الرئيسية</span>
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="'/marketplace'" (click)="closeSidebar()" 
+             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
+             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
+            <i class="pi pi-shopping-bag me-3 text-lg"></i> <span>المتجر</span>
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="'/farmers'" (click)="closeSidebar()" 
+             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
+             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
+            <i class="pi pi-shopping-bag me-3 text-lg"></i> <span>المزارعون</span>
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="'/community'" (click)="closeSidebar()" 
+             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
+             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
+            <i class="pi pi-users me-3 text-lg"></i> <span>المجتمع</span>
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="'/contact'" (click)="closeSidebar()" 
+             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
+             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
+            <i class="pi pi-phone me-3 text-lg"></i> <span>اتصل بنا</span>
+          </a>
+        </li>
+
+        @if (isLoggedIn()) {
+          <div class="pt-4 mt-4 border-t border-gray-100">
+            <li>
+              <a [routerLink]="'/profile'" (click)="closeSidebar()" routerLinkActive="text-primary font-bold" class="flex items-center p-3 rounded-xl text-text-primary hover:bg-primary/5">
+                <i class="pi pi-user me-3"></i> الملف الشخصي
+              </a>
+            </li>
+            <li>
+              <a [routerLink]="'/chat'" (click)="closeSidebar()" routerLinkActive="text-primary font-bold" class="flex items-center p-3 rounded-xl text-text-primary hover:bg-primary/5">
+                <i class="pi pi-comments me-3"></i> الدردشة
+              </a>
+            </li>
+            <li>
+              <a [routerLink]="'/cart'" (click)="closeSidebar()" routerLinkActive="text-primary font-bold" class="flex items-center p-3 rounded-xl justify-between text-text-primary hover:bg-primary/5">
+                <span class="flex items-center"><i class="pi pi-shopping-cart me-3"></i> السلة</span>
+                <span class="bg-secondary text-text-on-secondary text-xs font-bold px-2 py-1 rounded-full shadow-sm">3</span>
+              </a>
+            </li>
+          </div>
+        }
+      </ul>
+
+      <div class="pt-6 border-t border-gray-100">
+        @if (isLoggedIn()) {
+          <button (click)="logOut()" class="w-full flex items-center p-4 text-error bg-error/10 hover:bg-error/20 rounded-2xl font-bold transition-all">
+            <i class="pi pi-sign-out me-3"></i> تسجيل الخروج
+          </button>
+        } @else {
+          <div class="flex flex-col gap-3">
+            <a [routerLink]="'/login'" (click)="closeSidebar()" class="w-full text-center p-3 border border-primary/20 rounded-xl font-medium text-text-primary hover:bg-primary/5">تسجيل الدخول</a>
+            <a [routerLink]="'/register'" (click)="closeSidebar()" class="w-full text-center p-3 bg-primary text-white rounded-xl font-bold hover:brightness-110 transition-all shadow-md">سجل الآن</a>
+          </div>
+        }
+      </div>
+    </div>
+  </aside>
+</section>
