@@ -1,0 +1,115 @@
+<div
+  class="bg-surface rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 p-5"
+>
+  <!-- Header -->
+  <div class="flex items-start gap-4">
+    <!-- Avatar -->
+    <div class="relative shrink-0">
+      <img
+        [src]="farmer.profileImageUrl || 'https://placehold.co/200'"
+        [alt]="farmer.name"
+        class="w-20 h-20 rounded-2xl object-cover border border-gray-200 shadow-sm"
+      />
+
+      @if (farmer.isVerified) {
+      <div
+        class="absolute -top-1 -end-1 bg-primary text-white rounded-full p-1"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-3 h-3"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="3"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      }
+    </div>
+
+    <!-- Info -->
+    <div class="flex-1">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-text-primary">
+          {{ farmer.name || "مزارع غير معروف" }}
+        </h3>
+
+        @if (farmer.isVerified) {
+        <span
+          class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium"
+        >
+          موثق
+        </span>
+        }
+      </div>
+
+      <p class="text-sm text-primary font-medium mt-1">
+        {{ farmer.farmName || "مزرعة غير محددة" }}
+      </p>
+
+      <p class="text-xs text-text-secondary mt-2 line-clamp-2">
+        {{ farmer.description || "لا يوجد وصف متاح" }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Location -->
+  <div
+    class="flex items-center gap-2 text-sm text-text-secondary mt-4"
+  >
+    <svg
+      class="w-4 h-4 text-primary"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+      />
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+
+    <span>
+      {{ farmer.address?.city }}, {{ farmer.address?.governorate }}
+    </span>
+  </div>
+
+  <!-- Tags -->
+  <div class="flex flex-wrap gap-2 mt-4">
+    <span
+      class="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary"
+    >
+      {{ farmer.farmName }}
+    </span>
+
+    <span
+      class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700"
+    >
+      {{ farmer.userName }}
+    </span>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-3 mt-5">
+    <button
+      [routerLink]="['/farmer', farmer.farmerId]"
+      class="flex-1 bg-primary hover:bg-primary-dark text-white py-2.5 rounded-xl font-medium transition"
+    >
+      عرض الملف
+    </button>
+  </div>
+</div>

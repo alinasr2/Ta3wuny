@@ -8,8 +8,17 @@
       
       <div class="relative max-w-2xl bg-surface rounded-full shadow-lg overflow-hidden flex items-center px-4 py-1">
         <i class="pi pi-search text-text-secondary me-2"></i>
-        <input type="text" placeholder="ابحث عن المنتجات الطازجة، الألبان، الحبوب، والمزيد..." 
-               class="w-full py-3 outline-none text-text-primary placeholder:text-text-secondary/50">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          placeholder="ابحث عن المنتجات الطازجة، الألبان، الحبوب، والمزيد..." 
+          class="w-full py-3 outline-none text-text-primary placeholder:text-text-secondary/50">
+        <button 
+          (click)="onSearch()"
+          class="bg-primary text-white px-6 py-2 rounded-full me-1 hover:bg-primary-dark transition-colors">
+          بحث
+        </button>
       </div>
     </div>
   </section>
@@ -18,48 +27,71 @@
     
     <aside class="w-full lg:w-1/4 bg-surface p-6 rounded-2xl shadow-sm h-fit">
       <div class="space-y-6">
-        <div>
-          <label class="block font-bold mb-2">النوع</label>
-          <select class="w-full border border-accent p-2 rounded-lg bg-white outline-none focus:border-primary">
-            <option>جميع المنتجات</option>
-          </select>
-        </div>
-
+        
         <div>
           <label class="block font-bold mb-3">التصنيفات</label>
           <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">خضروات</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">فواكه</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">حبوب</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" class="accent-primary"> <span class="text-text-secondary">عضوي</span>
-            </label>
+            @for (category of categories(); track category.id) {
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedCategories().includes(category.id)"
+                  (change)="toggleCategory(category.id, $event)"
+                  class="accent-primary">
+                <span class="text-text-secondary">{{ getCategoryName(category) }}</span>
+              </label>
+            }
+            @if (categories().length === 0) {
+              <p class="text-text-secondary text-sm">لا توجد تصنيفات</p>
+            }
           </div>
         </div>
 
-        <div>
-          <label class="block font-bold mb-2">نطاق السعر (جنيه مصري)</label>
-          <input type="range" class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer">
-          <div class="flex justify-between text-sm text-text-secondary mt-2">
-            <span>5 جنيه</span>
-            <span>100 جنيه</span>
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-bold mb-2">الموقع</label>
-          <select class="w-full border border-accent p-2 rounded-lg bg-white outline-none">
-            <option>جميع أنحاء مصر</option>
-          </select>
-        </div>
-
-        <button class="w-full bg-accent text-primary-dark font-semibold py-2 rounded-lg hover:bg-primary-light/20 transition-colors">
+       <!-- استبدال جزء range السعر بهذا -->
+<div>
+  <label class="block font-bold mb-2">نطاق السعر (جنيه مصري)</label>
+  
+  <!-- الحد الأدنى -->
+  <div class="mb-3">
+    <div class="flex justify-between text-sm text-text-secondary mb-1">
+      <span>الحد الأدنى</span>
+      <span>{{ tempPriceRange().min }} جنيه</span>
+    </div>
+    <input 
+      type="range" 
+      [value]="tempPriceRange().min"
+      (input)="tempPriceRange.update(r => ({ ...r, min: +($event.target as HTMLInputElement).value }))"
+      (change)="onPriceRangeChange()"
+      [min]="0" 
+      [max]="tempPriceRange().max" 
+      class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer">
+  </div>
+  
+  <!-- الحد الأقصى -->
+  <div>
+    <div class="flex justify-between text-sm text-text-secondary mb-1">
+      <span>الحد الأقصى</span>
+      <span>{{ tempPriceRange().max }} جنيه</span>
+    </div>
+    <input 
+      type="range" 
+      [value]="tempPriceRange().max"
+      (input)="tempPriceRange.update(r => ({ ...r, max: +($event.target as HTMLInputElement).value }))"
+      (change)="onPriceRangeChange()"
+      [min]="tempPriceRange().min" 
+      [max]="1000" 
+      class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer">
+  </div>
+  
+  <div class="flex justify-between text-sm text-text-secondary mt-3">
+    <span>0 جنيه</span>
+    <span>500 جنيه</span>
+    <span>1000+ جنيه</span>
+  </div>
+</div>
+        <button 
+          (click)="resetAllFilters()"
+          class="w-full bg-accent text-primary-dark font-semibold py-2 rounded-lg hover:bg-primary-light/20 transition-colors">
           إعادة تعيين الفلاتر
         </button>
       </div>
@@ -67,79 +99,87 @@
 
     <main class="w-full lg:w-3/4">
       <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-bold">المحاصيل المتاحة <span class="text-text-secondary font-normal text-sm ms-2">(عدد العناصر)</span></h2>
+        <h2 class="text-xl font-bold">
+          المحاصيل المتاحة 
+          <span class="text-text-secondary font-normal text-sm ms-2">({{ totalItems() }} عنصر)</span>
+        </h2>
         <div class="flex items-center gap-2 text-sm">
           <span class="text-text-secondary">ترتيب حسب:</span>
-          <select class="bg-transparent font-bold outline-none">
-            <option>الأحدث أولاً</option>
+          <select 
+            [ngModel]="filters().sort === 'newest' ? 'newest' : 
+                       filters().sort === 'unitPrice' && !filters().sortDescending ? 'price_asc' :
+                       filters().sort === 'unitPrice' && filters().sortDescending ? 'price_desc' :
+                       filters().sort === 'name' && !filters().sortDescending ? 'name_asc' : 'newest'"
+            (ngModelChange)="onSortChange($event)"
+            class="bg-transparent font-bold outline-none">
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
           </select>
         </div>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <div class="bg-surface rounded-2xl overflow-hidden shadow-sm border border-transparent hover:border-primary/20 transition-all">
-          <div class="relative h-48">
-            <img src="https://www.mahaseel.net/_next/image?url=https%3A%2F%2Fmarketplace-api.mahaseel.net%2Fapi%2Ffile%2F6f071ab6-f8f3-4181-a612-0abb49206f63.webp&w=640&q=75" class="w-full h-full object-cover">
-            <span class="absolute top-3 start-3 bg-accent text-primary-dark text-xs font-bold px-3 py-1 rounded-full border border-primary/20">حصاد طازج</span>
-          </div>
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="font-bold text-lg">طماطم حمراء عضوية</h3>
-              <div class="text-end">
-                <span class="text-primary font-bold">12 جنيه</span>
-                <p class="text-xs text-text-secondary">/كجم</p>
-              </div>
-            </div>
-            <div class="flex items-center text-sm text-text-secondary mb-4">
-              <i class="pi pi-map-marker me-1 text-error"></i> الموقع
-            </div>
-            <div class="flex justify-between items-center mb-6 text-sm">
-              <span class="text-text-secondary">اسم المزارع (مزارع)</span>
-              <span class="flex items-center"><i class="pi pi-star-fill text-warning me-1 text-xs"></i> 4.8</span>
-            </div>
-            <button class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl flex items-center justify-center gap-2 transition-colors">
-              <i class="pi pi-shopping-cart"></i> عرض التفاصيل
-            </button>
-          </div>
+      <!-- حالة التحميل -->
+      @if (isLoading()) {
+        <div class="flex justify-center items-center py-20">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
+      } 
 
-        <div class="bg-surface rounded-2xl overflow-hidden shadow-sm border border-transparent hover:border-primary/20 transition-all">
-          <div class="relative h-48">
-            <img src="https://www.mahaseel.net/_next/image?url=https%3A%2F%2Fmarketplace-api.mahaseel.net%2Fapi%2Ffile%2F0341954d-b8ba-4392-9768-4ca6898eb47e.webp&w=640&q=75" class="w-full h-full object-cover">
-            <span class="absolute top-3 start-3 bg-secondary text-text-on-secondary text-xs font-bold px-3 py-1 rounded-full">في مزاد</span>
-          </div>
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="font-bold text-lg">حبوب قمح ممتازة</h3>
-              <div class="text-end">
-                <span class="text-primary font-bold">8,500 جنيه</span>
-                <p class="text-xs text-text-secondary">/طن</p>
-              </div>
-            </div>
-            <div class="flex items-center text-sm text-text-secondary mb-3">
-              <i class="pi pi-map-marker me-1 text-error"></i> الموقع
-            </div>
-            
-            <div class="bg-secondary-light/30 border border-secondary/20 p-2 rounded-lg flex items-center gap-2 text-secondary-dark text-sm font-bold mb-4">
-              <i class="pi pi-clock"></i> ينتهي المزاد خلال: 05س 22د
-            </div>
-
-            <button class="w-full border-2 border-primary text-primary hover:bg-primary/5 py-3 rounded-xl font-bold transition-colors">
-              تقديم عرض
-            </button>
-          </div>
+      <!-- عرض المنتجات -->
+      @else if (products().length > 0) {
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (product of products(); track product.id) {
+            <app-product-card-component [product]="product"></app-product-card-component>
+          }
         </div>
+      } 
 
-      </div>
+      <!-- لا توجد نتائج -->
+      @else {
+        <div class="text-center py-20 bg-surface rounded-2xl">
+          <i class="pi pi-search text-6xl text-text-secondary/50 mb-4"></i>
+          <p class="text-text-secondary">لا توجد منتجات تطابق معايير البحث</p>
+          <button 
+            (click)="resetAllFilters()"
+            class="mt-4 text-primary hover:underline">
+            إعادة تعيين الفلاتر
+          </button>
+        </div>
+      }
 
-      <div class="flex justify-end mt-12 gap-2">
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary"><i class="pi pi-angle-left"></i></button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-md shadow-primary/20">1</button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent">2</button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent">3</button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary"><i class="pi pi-angle-right"></i></button>
-      </div>
+      <!-- الباجينيشين -->
+      @if (totalPages() > 1) {
+        <div class="flex justify-end mt-12 gap-2">
+          <button 
+            (click)="previousPage()"
+            [disabled]="!hasPreviousPage()"
+            [class.opacity-50]="!hasPreviousPage()"
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary">
+            <i class="pi pi-angle-right"></i>
+          </button>
+          
+          @for (page of pageNumbers(); track page) {
+            <button 
+              (click)="goToPage(page)"
+              [class.bg-primary]="currentPage() === page"
+              [class.text-white]="currentPage() === page"
+              [class.shadow-md]="currentPage() === page"
+              [class.shadow-primary/20]="currentPage() === page"
+              class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent">
+              {{ page }}
+            </button>
+          }
+          
+          <button 
+            (click)="nextPage()"
+            [disabled]="!hasNextPage()"
+            [class.opacity-50]="!hasNextPage()"
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary">
+            <i class="pi pi-angle-left"></i>
+          </button>
+        </div>
+      }
     </main>
   </div>
 </div>

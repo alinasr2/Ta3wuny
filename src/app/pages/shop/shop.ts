@@ -1,9 +1,261 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ProductCardComponent } from "../../shared/components/product-card-component/product-card-component";
+import { ProductsService } from '../../core/services/products/products-service';
 
 @Component({
   selector: 'app-shop',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ProductCardComponent],
   templateUrl: './shop.html',
   styleUrl: './shop.scss',
 })
-export class Shop {}
+export class Shop implements OnInit {
+  private productsService = inject(ProductsService);
+  
+  // حالة التحميل
+  isLoading = signal(true);
+  
+  // البيانات
+  categories = signal<any[]>([]);
+  products = signal<any[]>([]);
+  
+  // بيانات الباجينيشين
+  paginationInfo = signal({
+    pageIndex: 1,
+    pageSize: 12,
+    totalCount: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
+  
+  // الفلاتر
+  filters = signal<any>({
+    pageIndex: 1,
+    pageSize: 12,
+    search: '',
+    sort: 'newest',
+    sortDescending: true
+  });
+  
+  // كلمة البحث
+  searchQuery = signal('');
+  
+  // الفئات المختارة
+  selectedCategories = signal<number[]>([]);
+  
+  // نطاق السعر
+  priceRange = signal({ min: 0, max: 1000 });
+  tempPriceRange = signal({ min: 0, max: 1000 });
+  
+  // خيارات الترتيب
+  sortOptions = [
+    { value: 'newest', label: 'الأحدث أولاً', sortBy: 'createdAt', descending: true },
+    { value: 'price_asc', label: 'السعر: من الأقل إلى الأعلى', sortBy: 'unitPrice', descending: false },
+    { value: 'price_desc', label: 'السعر: من الأعلى إلى الأقل', sortBy: 'unitPrice', descending: true },
+    { value: 'name_asc', label: 'الاسم: من أ إلى ي', sortBy: 'name', descending: false },
+    { value: 'name_desc', label: 'الاسم: من ي إلى أ', sortBy: 'name', descending: true }
+  ];
+  
+  // القيم المحسوبة
+  totalItems = computed(() => this.paginationInfo().totalCount);
+  currentPage = computed(() => this.paginationInfo().pageIndex);
+  totalPages = computed(() => this.paginationInfo().totalPages);
+  hasNextPage = computed(() => this.paginationInfo().hasNextPage);
+  hasPreviousPage = computed(() => this.paginationInfo().hasPreviousPage);
+  
+  // الصفحات المرقمة للعرض
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const pages: number[] = [];
+    
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      if (current <= 3) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+      } else if (current >= total - 2) {
+        for (let i = total - 4; i <= total; i++) pages.push(i);
+      } else {
+        for (let i = current - 2; i <= current + 2; i++) pages.push(i);
+      }
+    }
+    return pages;
+  });
+  
+  ngOnInit(): void {
+    this.loadCategories();
+    this.loadProducts();
+  }
+  
+  /**
+   * جلب الفئات من الـ API
+   */
+  loadCategories(): void {
+    this.productsService.getAllCategories().subscribe({
+      next: (response) => {
+        if (response.isSuccess && response.data) {
+          this.categories.set(response.data);
+        }
+      },
+      error: (error) => {
+        console.error('خطأ في جلب الفئات:', error);
+      }
+    });
+  }
+  
+  /**
+   * جلب المنتجات مع تطبيق الفلاتر
+   */
+  loadProducts(): void {
+    this.isLoading.set(true);
+    
+    const currentFilters = this.filters();
+    const currentPrice = this.priceRange();
+    
+    const params: any = {
+      ...currentFilters,
+      minPrice: currentPrice.min > 0 ? currentPrice.min : undefined,
+      maxPrice: currentPrice.max < 1000 ? currentPrice.max : undefined,
+      categoryId: this.selectedCategories().length === 1 ? this.selectedCategories()[0] : undefined
+    };
+    
+    this.productsService.getProducts(params).subscribe({
+      next: (response) => {
+        if (response.isSuccess && response.data) {
+          this.products.set(response.data.data);
+          this.paginationInfo.set({
+            pageIndex: response.data.pageIndex,
+            pageSize: response.data.pageSize,
+            totalCount: response.data.count,
+            totalPages: response.data.totalPages,
+            hasNextPage: response.data.hasNextPage,
+            hasPreviousPage: response.data.hasPreviousPage
+          });
+        }
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('خطأ في جلب المنتجات:', error);
+        this.isLoading.set(false);
+      }
+    });
+  }
+  
+  /**
+   * تطبيق فلتر الفئات
+   */
+  toggleCategory(categoryId: number, event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    const currentSelected = this.selectedCategories();
+    
+    if (isChecked) {
+      this.selectedCategories.set([...currentSelected, categoryId]);
+    } else {
+      this.selectedCategories.set(currentSelected.filter(id => id !== categoryId));
+    }
+    
+    this.resetPageAndReload();
+  }
+  
+  /**
+   * تغيير الفلتر حسب الترتيب
+   */
+  onSortChange(sortValue: string): void {
+    const selectedSort = this.sortOptions.find(opt => opt.value === sortValue);
+    if (selectedSort) {
+      this.filters.update(f => ({
+        ...f,
+        sort: selectedSort.sortBy,
+        sortDescending: selectedSort.descending,
+        pageIndex: 1
+      }));
+      this.loadProducts();
+    }
+  }
+  
+  /**
+   * تغيير نطاق السعر
+   */
+  onPriceRangeChange(): void {
+    this.priceRange.set({ ...this.tempPriceRange() });
+    this.resetPageAndReload();
+  }
+  
+  /**
+   * البحث عن المنتجات
+   */
+  onSearch(): void {
+    this.filters.update(f => ({
+      ...f,
+      search: this.searchQuery(),
+      pageIndex: 1
+    }));
+    this.loadProducts();
+  }
+  
+  /**
+   * إعادة تعيين جميع الفلاتر
+   */
+  resetAllFilters(): void {
+    this.searchQuery.set('');
+    this.selectedCategories.set([]);
+    this.priceRange.set({ min: 0, max: 1000 });
+    this.tempPriceRange.set({ min: 0, max: 1000 });
+    this.filters.set({
+      pageIndex: 1,
+      pageSize: 12,
+      search: '',
+      sort: 'newest',
+      sortDescending: true
+    });
+    this.loadProducts();
+  }
+  
+  /**
+   * تغيير الصفحة
+   */
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.filters.update(f => ({ ...f, pageIndex: page }));
+      this.loadProducts();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+  
+  /**
+   * الصفحة التالية
+   */
+  nextPage(): void {
+    if (this.hasNextPage()) {
+      this.goToPage(this.currentPage() + 1);
+    }
+  }
+  
+  /**
+   * الصفحة السابقة
+   */
+  previousPage(): void {
+    if (this.hasPreviousPage()) {
+      this.goToPage(this.currentPage() - 1);
+    }
+  }
+  
+  /**
+   * إعادة تعيين الصفحة وإعادة التحميل
+   */
+  private resetPageAndReload(): void {
+    this.filters.update(f => ({ ...f, pageIndex: 1 }));
+    this.loadProducts();
+  }
+  
+  /**
+   * الحصول على اسم الفئة بالعربية
+   */
+  getCategoryName(category:any): string {
+    return category.nameAr || category.name;
+  }
+}
