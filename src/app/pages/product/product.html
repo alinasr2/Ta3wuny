@@ -1,8 +1,7 @@
-<!-- product-detail.component.html -->
 <div class="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl mx-auto">
-    <!-- Back Button -->
     <button
+      (click)="goBack()"
       class="mb-6 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors duration-200"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,540 +12,189 @@
           d="M10 19l-7-7m0 0l7-7m-7 7h18"
         ></path>
       </svg>
-      Back to Products
+      العودة للمنتجات
     </button>
 
-    <!-- Product Main Section -->
-    <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-8">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
-        <!-- Product Image -->
-        <div class="bg-accent rounded-xl overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1464965911861-746a04b4bca5?w=800&h=600&fit=crop"
-            alt="Organic Fresh Strawberries"
-            class="w-full h-80 md:h-96 object-cover"
-          />
-        </div>
+    @if (isLoading) {
+      <div class="flex justify-center items-center h-64">
+        <i class="pi pi-spinner pi-spin text-4xl text-primary"></i>
+      </div>
+    }
 
-        <!-- Product Info -->
-        <div>
-          <div class="mb-2">
-            <span
-              class="text-sm text-primary font-medium bg-primary-light/10 px-3 py-1 rounded-full"
-              >Fresh Fruits</span
-            >
-          </div>
-          <h1 class="text-3xl md:text-4xl font-bold text-text-primary mb-3">
-            Organic Fresh Strawberries
-          </h1>
-
-          <!-- Rating Summary -->
-          <div class="flex items-center gap-3 mb-4">
-            <div class="flex items-center gap-1">
-              <span class="text-primary font-bold">4.4</span>
-              <div class="flex">
-                <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-              </div>
-              <span class="text-text-secondary text-sm">(5 reviews)</span>
-            </div>
-            <span class="w-1 h-1 bg-text-secondary rounded-full"></span>
-            <span class="text-text-secondary text-sm">156 units available</span>
-          </div>
-
-          <!-- Price -->
-          <div class="mb-6">
-            <span class="text-4xl font-bold text-primary">$4.99</span>
-            <span class="text-text-secondary"> / 500g</span>
-          </div>
-
-          <!-- Description -->
-          <p class="text-text-secondary leading-relaxed mb-6">
-            Our organically grown strawberries are hand-picked at peak ripeness. Grown without
-            synthetic pesticides or fertilizers, these sweet and juicy berries are perfect for
-            snacking, baking, or adding to your morning smoothie. Farm-fresh and delivered within 24
-            hours of harvest.
-          </p>
-
-          <!-- Quantity Selector -->
-          <div class="flex items-center gap-4 mb-6">
-            <span class="text-text-primary font-medium">Quantity:</span>
-            <div class="flex items-center border border-gray-200 rounded-lg">
-              <button class="px-3 py-2 text-text-secondary hover:text-primary transition-colors">
-                -
-              </button>
-              <span class="w-12 text-center text-text-primary">1</span>
-              <button class="px-3 py-2 text-text-secondary hover:text-primary transition-colors">
-                +
-              </button>
-            </div>
-            <span class="text-text-secondary text-sm">500g per unit</span>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 mb-8">
-            <button
-              class="flex-1 flex items-center justify-center gap-2 bg-surface border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-light/10 transition-all duration-200"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                ></path>
-              </svg>
-              Contact Farmer
-            </button>
-            <button
-              (click)="addToCart()"
-              [class.added]="added"
-              class="flex-1 flex items-center justify-center gap-2 bg-primary text-text-on-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all duration-200"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 21h6M12 18v3"
-                ></path>
-              </svg>
-              {{ added ? '✓ تمت الإضافة' : 'أضف للسلة' }}
-            </button>
-          </div>
-
-          <!-- Farmer Info Card -->
-          <div class="bg-surface-hover rounded-xl p-4">
-            <div class="flex items-center gap-4">
+    @if (!isLoading && product) {
+      <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+          <div>
+            <div class="bg-accent rounded-xl overflow-hidden mb-4">
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
-                alt="Ahmed Hassan"
-                class="w-14 h-14 rounded-full object-cover border-2 border-primary"
+                [src]="selectedImage"
+                [alt]="product.name"
+                class="w-full h-80 md:h-96 object-cover"
               />
-              <div class="flex-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h3 class="font-semibold text-text-primary">Ahmed Hassan</h3>
-                  <div class="flex items-center gap-1">
-                    <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                      ></path>
-                    </svg>
-                    <span class="text-sm text-text-primary">4.8</span>
+            </div>
+
+            @if (product.imageUrls.length > 1) {
+              <div class="flex gap-2 overflow-x-auto">
+                @for (url of product.imageUrls; track url) {
+                  <div
+                    (click)="selectImage(url)"
+                    class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all"
+                    [class.border-primary]="selectedImage === url"
+                    [class.border-transparent]="selectedImage !== url"
+                  >
+                    <img [src]="url" [alt]="product.name" class="w-full h-full object-cover" />
                   </div>
-                </div>
-                <div class="flex items-center gap-3 text-sm text-text-secondary mt-1">
-                  <span class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
-                    Nile Delta, Egypt
-                  </span>
-                  <span>1,247+ sales</span>
-                </div>
+                }
               </div>
-              <button class="text-primary hover:text-primary-dark text-sm font-medium">
-                View Profile
+            }
+          </div>
+
+          <div>
+            <div class="mb-2">
+              <span
+                class="text-sm text-primary font-medium bg-primary-light/10 px-3 py-1 rounded-full"
+              >
+                {{ product.categoryName }}
+              </span>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-text-primary mb-3">
+              {{ product.name }}
+            </h1>
+
+            <div class="flex items-center gap-3 mb-4 text-text-secondary text-sm">
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  ></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  ></path>
+                </svg>
+                {{ product.farmerGovernorate }}، {{ product.farmerCity }}
+              </span>
+              <span>•</span>
+              <span>{{ product.quantity }} {{ product.unit }} متاح</span>
+            </div>
+
+            <div class="mb-6">
+              <span class="text-4xl font-bold text-primary">{{
+                product.unitPrice | currency
+              }}</span>
+              <span class="text-text-secondary"> / {{ product.unit }}</span>
+            </div>
+
+            <p class="text-text-secondary leading-relaxed mb-6">{{ product.description }}</p>
+
+            <div class="flex gap-4 mb-6 text-sm text-text-secondary">
+              @if (product.harvestDate) {
+                <span>🌾 تاريخ الحصاد: {{ product.harvestDate | date: 'mediumDate' }}</span>
+              }
+              @if (product.expiryDate) {
+                <span>📅 الصلاحية: {{ product.expiryDate | date: 'mediumDate' }}</span>
+              }
+            </div>
+
+            <div class="flex items-center gap-4 mb-6">
+              <span class="text-text-primary font-medium">الكمية:</span>
+              <div class="flex items-center border border-gray-200 rounded-lg">
+                <button
+                  (click)="changeQuantity(-1)"
+                  class="px-3 py-2 text-text-secondary hover:text-primary transition-colors"
+                >
+                  -
+                </button>
+                <span class="w-12 text-center text-text-primary">{{ quantity }}</span>
+                <button
+                  (click)="changeQuantity(1)"
+                  class="px-3 py-2 text-text-secondary hover:text-primary transition-colors"
+                >
+                  +
+                </button>
+              </div>
+              <span class="text-text-secondary text-sm">{{ product.unit }} لكل وحدة</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 mb-8">
+              <button
+                class="flex-1 flex items-center justify-center gap-2 bg-surface border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-light/10 transition-all duration-200"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                (click)="addToCart()"
+                class="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200"
+                [class.bg-primary]="!added"
+                [class.text-text-on-primary]="!added"
+                [class.hover:bg-primary-dark]="!added"
+                [class.bg-green-500]="added"
+                [class.text-white]="added"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 21h6M12 18v3"
+                  ></path>
+                </svg>
+                {{ added ? '✓ تمت الإضافة' : 'أضف للسلة' }}
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Reviews Section -->
-    <div class="bg-surface rounded-2xl shadow-sm overflow-hidden">
-      <div class="p-6 md:p-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h2 class="text-2xl font-bold text-text-primary">Customer Reviews</h2>
-          <button
-            class="flex items-center justify-center gap-2 bg-primary text-text-on-primary px-5 py-2 rounded-lg font-medium hover:bg-primary-dark transition-all duration-200"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              ></path>
-            </svg>
-            Write a Review
-          </button>
-        </div>
-
-        <!-- Rating Summary Bar -->
-        <div class="bg-surface-hover rounded-xl p-6 mb-8">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="text-center md:text-left">
-              <div class="text-5xl font-bold text-primary mb-2">4.4</div>
-              <div class="flex justify-center md:justify-start items-center gap-1 mb-2">
-                <svg class="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-              </div>
-              <p class="text-text-secondary">Based on 5 reviews</p>
-            </div>
-            <div class="space-y-2">
-              <!-- 5 stars -->
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-text-secondary w-12">5 stars</span>
-                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-secondary rounded-full" style="width: 60%"></div>
-                </div>
-                <span class="text-sm text-text-secondary w-10">3</span>
-              </div>
-              <!-- 4 stars -->
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-text-secondary w-12">4 stars</span>
-                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-secondary rounded-full" style="width: 20%"></div>
-                </div>
-                <span class="text-sm text-text-secondary w-10">1</span>
-              </div>
-              <!-- 3 stars -->
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-text-secondary w-12">3 stars</span>
-                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-secondary rounded-full" style="width: 20%"></div>
-                </div>
-                <span class="text-sm text-text-secondary w-10">1</span>
-              </div>
-              <!-- 2 stars -->
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-text-secondary w-12">2 stars</span>
-                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-secondary rounded-full" style="width: 0%"></div>
-                </div>
-                <span class="text-sm text-text-secondary w-10">0</span>
-              </div>
-              <!-- 1 star -->
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-text-secondary w-12">1 star</span>
-                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-secondary rounded-full" style="width: 0%"></div>
-                </div>
-                <span class="text-sm text-text-secondary w-10">0</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reviews List -->
-        <div class="space-y-6">
-          <!-- Review 1 -->
-          <div class="border-b border-gray-100 pb-6">
-            <div class="flex items-start gap-4">
-              <div
-                class="w-10 h-10 bg-primary-light/20 rounded-full flex items-center justify-center text-primary font-semibold"
-              >
-                S
-              </div>
-              <div class="flex-1">
+            <div class="bg-surface-hover rounded-xl p-4">
+              <div class="flex items-center gap-4">
                 <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2"
+                  class="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl"
                 >
-                  <div>
-                    <h4 class="font-semibold text-text-primary">Sarah Mohamed</h4>
-                    <div class="flex items-center gap-1 mt-1">
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="text-sm text-text-secondary">March 15, 2024</span>
+                  {{ product.farmerName.charAt(0) }}
                 </div>
-                <p class="text-text-secondary leading-relaxed">
-                  Absolutely delicious! The strawberries are so fresh and sweet. Will definitely
-                  order again.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Review 2 -->
-          <div class="border-b border-gray-100 pb-6">
-            <div class="flex items-start gap-4">
-              <div
-                class="w-10 h-10 bg-primary-light/20 rounded-full flex items-center justify-center text-primary font-semibold"
-              >
-                O
-              </div>
-              <div class="flex-1">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2"
+                <div class="flex-1">
+                  <h3 class="font-semibold text-text-primary">{{ product.farmerName }}</h3>
+                  <div class="flex items-center gap-3 text-sm text-text-secondary mt-1">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        ></path>
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        ></path>
+                      </svg>
+                      {{ product.farmerGovernorate }}، {{ product.farmerCity }}
+                    </span>
+                  </div>
+                </div>
+                <a
+                  [routerLink]="['/farmers', product.farmerId]"
+                  class="text-primary hover:text-primary-dark text-sm font-medium"
                 >
-                  <div>
-                    <h4 class="font-semibold text-text-primary">Omar Khaled</h4>
-                    <div class="flex items-center gap-1 mt-1">
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="text-sm text-text-secondary">March 10, 2024</span>
-                </div>
-                <p class="text-text-secondary leading-relaxed">
-                  Very fresh and well-packaged. A bit pricey but worth the quality.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Review 3 -->
-          <div class="border-b border-gray-100 pb-6">
-            <div class="flex items-start gap-4">
-              <div
-                class="w-10 h-10 bg-primary-light/20 rounded-full flex items-center justify-center text-primary font-semibold"
-              >
-                L
-              </div>
-              <div class="flex-1">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2"
-                >
-                  <div>
-                    <h4 class="font-semibold text-text-primary">Layla Ibrahim</h4>
-                    <div class="flex items-center gap-1 mt-1">
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="text-sm text-text-secondary">March 5, 2024</span>
-                </div>
-                <p class="text-text-secondary leading-relaxed">
-                  Best strawberries I've ever had! You can really taste the difference with organic
-                  farming.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Review 4 -->
-          <div class="border-b border-gray-100 pb-6">
-            <div class="flex items-start gap-4">
-              <div
-                class="w-10 h-10 bg-primary-light/20 rounded-full flex items-center justify-center text-primary font-semibold"
-              >
-                M
-              </div>
-              <div class="flex-1">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2"
-                >
-                  <div>
-                    <h4 class="font-semibold text-text-primary">Mahmoud Ali</h4>
-                    <div class="flex items-center gap-1 mt-1">
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="text-sm text-text-secondary">February 28, 2024</span>
-                </div>
-                <p class="text-text-secondary leading-relaxed">
-                  Good quality but delivery took longer than expected.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Review 5 -->
-          <div class="pb-6">
-            <div class="flex items-start gap-4">
-              <div
-                class="w-10 h-10 bg-primary-light/20 rounded-full flex items-center justify-center text-primary font-semibold"
-              >
-                N
-              </div>
-              <div class="flex-1">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2"
-                >
-                  <div>
-                    <h4 class="font-semibold text-text-primary">Nour El Din</h4>
-                    <div class="flex items-center gap-1 mt-1">
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                      <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="text-sm text-text-secondary">February 20, 2024</span>
-                </div>
-                <p class="text-text-secondary leading-relaxed">
-                  Perfect for my smoothies! The farmer is very responsive to messages.
-                </p>
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    }
   </div>
 </div>
