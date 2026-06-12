@@ -29,7 +29,7 @@ export class ProductCardComponent {
   /**
    * الحصول على التقييم الوهمي أو قيمة افتراضية
    */
-  get rating(): number {
+  get rating(): string {
     // يمكن جلب التقييم من API آخر أو جعله وهمياً
     return (this.product?.rating || 4.5).toFixed(1);
   }
@@ -38,7 +38,7 @@ export class ProductCardComponent {
    * هل المنتج عليه عرض أو جديد؟
    */
   get badgeText(): string {
-    if (this.product?.hasActiveAcution) {
+    if (this.product?.hasActiveAuction) {
       return 'مزاد نشط';
     }
     return 'حصاد طازج';

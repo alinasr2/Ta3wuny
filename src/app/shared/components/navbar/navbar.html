@@ -62,6 +62,7 @@
               </a>
               <a [routerLink]="'/cart'" routerLinkActive="text-secondary" title="السلة" class="text-white w-8 h-8 rounded-full flex justify-center items-center hover:bg-white/20 transition-all">
                 <i class="pi pi-shopping-cart text-lg"></i>
+                <span class="bg-secondary text-text-on-secondary text-xs font-bold px-1.5 py-0.5 rounded-full shadow-sm">{{ cartItemCount }}</span>
               </a>
             </div>
             <button (click)="logOut()" class="text-white bg-error/90 hover:bg-error px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 shadow-sm">

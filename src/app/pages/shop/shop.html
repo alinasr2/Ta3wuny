@@ -1,22 +1,33 @@
 <div class="bg-background text-text-primary">
-  
-  <section class="relative h-64 bg-cover bg-center flex items-center justify-center text-white" 
-           style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&q=80&w=1470');">
+  <section
+    class="relative h-64 bg-cover bg-center flex items-center justify-center text-white"
+    style="
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+        url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&q=80&w=1470');
+    "
+  >
     <div class="container">
       <h1 class="text-5xl font-bold mb-2">السوق</h1>
-      <p class="text-xl mb-6 text-accent">اكتشف المنتجات العضوية الطازجة ومنتجات المزارع عالية الجودة</p>
-      
-      <div class="relative max-w-2xl bg-surface rounded-full shadow-lg overflow-hidden flex items-center px-4 py-1">
+      <p class="text-xl mb-6 text-accent">
+        اكتشف المنتجات العضوية الطازجة ومنتجات المزارع عالية الجودة
+      </p>
+
+      <div
+        class="relative max-w-2xl bg-surface rounded-full shadow-lg overflow-hidden flex items-center px-4 py-1"
+      >
         <i class="pi pi-search text-text-secondary me-2"></i>
-        <input 
-          type="text" 
+        <input
+          type="text"
           [(ngModel)]="searchQuery"
           (keyup.enter)="onSearch()"
-          placeholder="ابحث عن المنتجات الطازجة، الألبان، الحبوب، والمزيد..." 
-          class="w-full py-3 outline-none text-text-primary placeholder:text-text-secondary/50">
-        <button 
+          placeholder="ابحث عن المنتجات الطازجة، الألبان، الحبوب، والمزيد..."
+          class="w-full py-3 outline-none text-text-primary placeholder:text-text-secondary/50"
+        />
+        <button
           (click)="onSearch()"
-          class="bg-primary text-white px-6 py-2 rounded-full me-1 hover:bg-primary-dark transition-colors">
+          class="bg-primary text-white px-6 py-2 rounded-full me-1 hover:bg-primary-dark transition-colors"
+        >
           بحث
         </button>
       </div>
@@ -24,20 +35,19 @@
   </section>
 
   <div class="container py-12 flex flex-col lg:flex-row gap-8">
-    
     <aside class="w-full lg:w-1/4 bg-surface p-6 rounded-2xl shadow-sm h-fit">
       <div class="space-y-6">
-        
         <div>
           <label class="block font-bold mb-3">التصنيفات</label>
           <div class="space-y-2">
             @for (category of categories(); track category.id) {
               <label class="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   [checked]="selectedCategories().includes(category.id)"
                   (change)="toggleCategory(category.id, $event)"
-                  class="accent-primary">
+                  class="accent-primary"
+                />
                 <span class="text-text-secondary">{{ getCategoryName(category) }}</span>
               </label>
             }
@@ -47,51 +57,54 @@
           </div>
         </div>
 
-       <!-- استبدال جزء range السعر بهذا -->
-<div>
-  <label class="block font-bold mb-2">نطاق السعر (جنيه مصري)</label>
-  
-  <!-- الحد الأدنى -->
-  <div class="mb-3">
-    <div class="flex justify-between text-sm text-text-secondary mb-1">
-      <span>الحد الأدنى</span>
-      <span>{{ tempPriceRange().min }} جنيه</span>
-    </div>
-    <input 
-      type="range" 
-      [value]="tempPriceRange().min"
-      (input)="tempPriceRange.update(r => ({ ...r, min: +($event.target as HTMLInputElement).value }))"
-      (change)="onPriceRangeChange()"
-      [min]="0" 
-      [max]="tempPriceRange().max" 
-      class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer">
-  </div>
-  
-  <!-- الحد الأقصى -->
-  <div>
-    <div class="flex justify-between text-sm text-text-secondary mb-1">
-      <span>الحد الأقصى</span>
-      <span>{{ tempPriceRange().max }} جنيه</span>
-    </div>
-    <input 
-      type="range" 
-      [value]="tempPriceRange().max"
-      (input)="tempPriceRange.update(r => ({ ...r, max: +($event.target as HTMLInputElement).value }))"
-      (change)="onPriceRangeChange()"
-      [min]="tempPriceRange().min" 
-      [max]="1000" 
-      class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer">
-  </div>
-  
-  <div class="flex justify-between text-sm text-text-secondary mt-3">
-    <span>0 جنيه</span>
-    <span>500 جنيه</span>
-    <span>1000+ جنيه</span>
-  </div>
-</div>
-        <button 
+        <!-- استبدال جزء range السعر بهذا -->
+        <div>
+          <label class="block font-bold mb-2">نطاق السعر (جنيه مصري)</label>
+
+          <!-- الحد الأدنى -->
+          <div class="mb-3">
+            <div class="flex justify-between text-sm text-text-secondary mb-1">
+              <span>الحد الأدنى</span>
+              <span>{{ tempPriceRange().min }} جنيه</span>
+            </div>
+            <input
+              type="range"
+              [value]="tempPriceRange().min"
+              (input)="tempPriceRange.update(r => ({ ...r, min: +$any($event.target).value }))"
+              (change)="onPriceRangeChange()"
+              [min]="0"
+              [max]="tempPriceRange().max"
+              class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <!-- الحد الأقصى -->
+          <div>
+            <div class="flex justify-between text-sm text-text-secondary mb-1">
+              <span>الحد الأقصى</span>
+              <span>{{ tempPriceRange().max }} جنيه</span>
+            </div>
+            <input
+              type="range"
+              [value]="tempPriceRange().max"
+              (input)="tempPriceRange.update(r => ({ ...r, max: +$any($event.target).value }))"
+              (change)="onPriceRangeChange()"
+              [min]="tempPriceRange().min"
+              [max]="1000"
+              class="w-full accent-primary h-2 bg-accent rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div class="flex justify-between text-sm text-text-secondary mt-3">
+            <span>0 جنيه</span>
+            <span>500 جنيه</span>
+            <span>1000+ جنيه</span>
+          </div>
+        </div>
+        <button
           (click)="resetAllFilters()"
-          class="w-full bg-accent text-primary-dark font-semibold py-2 rounded-lg hover:bg-primary-light/20 transition-colors">
+          class="w-full bg-accent text-primary-dark font-semibold py-2 rounded-lg hover:bg-primary-light/20 transition-colors"
+        >
           إعادة تعيين الفلاتر
         </button>
       </div>
@@ -100,18 +113,28 @@
     <main class="w-full lg:w-3/4">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-xl font-bold">
-          المحاصيل المتاحة 
-          <span class="text-text-secondary font-normal text-sm ms-2">({{ totalItems() }} عنصر)</span>
+          المحاصيل المتاحة
+          <span class="text-text-secondary font-normal text-sm ms-2"
+            >({{ totalItems() }} عنصر)</span
+          >
         </h2>
         <div class="flex items-center gap-2 text-sm">
           <span class="text-text-secondary">ترتيب حسب:</span>
-          <select 
-            [ngModel]="filters().sort === 'newest' ? 'newest' : 
-                       filters().sort === 'unitPrice' && !filters().sortDescending ? 'price_asc' :
-                       filters().sort === 'unitPrice' && filters().sortDescending ? 'price_desc' :
-                       filters().sort === 'name' && !filters().sortDescending ? 'name_asc' : 'newest'"
+          <select
+            [ngModel]="
+              filters().sort === 'newest'
+                ? 'newest'
+                : filters().sort === 'unitPrice' && !filters().sortDescending
+                  ? 'price_asc'
+                  : filters().sort === 'unitPrice' && filters().sortDescending
+                    ? 'price_desc'
+                    : filters().sort === 'name' && !filters().sortDescending
+                      ? 'name_asc'
+                      : 'newest'
+            "
             (ngModelChange)="onSortChange($event)"
-            class="bg-transparent font-bold outline-none">
+            class="bg-transparent font-bold outline-none"
+          >
             @for (option of sortOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
             }
@@ -124,7 +147,7 @@
         <div class="flex justify-center items-center py-20">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
-      } 
+      }
 
       <!-- عرض المنتجات -->
       @else if (products().length > 0) {
@@ -133,16 +156,14 @@
             <app-product-card-component [product]="product"></app-product-card-component>
           }
         </div>
-      } 
+      }
 
       <!-- لا توجد نتائج -->
       @else {
         <div class="text-center py-20 bg-surface rounded-2xl">
           <i class="pi pi-search text-6xl text-text-secondary/50 mb-4"></i>
           <p class="text-text-secondary">لا توجد منتجات تطابق معايير البحث</p>
-          <button 
-            (click)="resetAllFilters()"
-            class="mt-4 text-primary hover:underline">
+          <button (click)="resetAllFilters()" class="mt-4 text-primary hover:underline">
             إعادة تعيين الفلاتر
           </button>
         </div>
@@ -151,31 +172,34 @@
       <!-- الباجينيشين -->
       @if (totalPages() > 1) {
         <div class="flex justify-end mt-12 gap-2">
-          <button 
+          <button
             (click)="previousPage()"
             [disabled]="!hasPreviousPage()"
             [class.opacity-50]="!hasPreviousPage()"
-            class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary">
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary"
+          >
             <i class="pi pi-angle-right"></i>
           </button>
-          
+
           @for (page of pageNumbers(); track page) {
-            <button 
+            <button
               (click)="goToPage(page)"
               [class.bg-primary]="currentPage() === page"
               [class.text-white]="currentPage() === page"
               [class.shadow-md]="currentPage() === page"
               [class.shadow-primary/20]="currentPage() === page"
-              class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent">
+              class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent"
+            >
               {{ page }}
             </button>
           }
-          
-          <button 
+
+          <button
             (click)="nextPage()"
             [disabled]="!hasNextPage()"
             [class.opacity-50]="!hasNextPage()"
-            class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary">
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-accent hover:bg-accent text-text-secondary"
+          >
             <i class="pi pi-angle-left"></i>
           </button>
         </div>

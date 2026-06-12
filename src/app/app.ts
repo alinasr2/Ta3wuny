@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Navbar } from "./shared/components/navbar/navbar";
 import { Footer } from "./shared/components/footer/footer";
@@ -13,11 +14,12 @@ import { Auth } from './core/services/auth/auth';
 export class App {
   protected readonly title = signal('ta3wuny');
   private readonly authService = inject(Auth);
+  private readonly platformId = inject(PLATFORM_ID);
 
   ngOnInit(): void {
-    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-    //Add 'implements OnInit' to the class.
+    if (isPlatformBrowser(this.platformId)) {
       this.authService.setLoggedIn().subscribe();
+    }
 
   }
 }

@@ -2,10 +2,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, HostListener, inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Auth } from '../../../core/services/auth/auth';
+import { BasketService } from '../../../core/services/basket/basket-service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink,RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
 })
@@ -15,9 +17,21 @@ export class Navbar {
   isLoggedIn = this.authState.isLoggedIn;
   isSidebarOpen = false;
   isMobileScreen: boolean = false;
+  private basketService = inject(BasketService);
+  private sub = new Subscription();
+  cartItemCount = 0;
 
   ngOnInit() {
     this.checkScreenSize();
+    this.sub.add(
+      this.basketService.basket.subscribe((basket) => {
+        this.cartItemCount = basket?.items.length ?? 0;
+      }),
+    );
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
   }
 
   private checkScreenSize() {
@@ -62,11 +76,11 @@ export class Navbar {
 
   private router = inject(Router);
 
-  logOut(){
+  logOut() {
     this.authState.Logout().subscribe({
-      next:(res)=>{
-        this.router.navigate(['/'])
-      }
-    })
+      next: (res) => {
+        this.router.navigate(['/']);
+      },
+    });
   }
 }
