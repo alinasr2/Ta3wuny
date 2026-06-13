@@ -35,6 +35,12 @@
               </a>
             </li>
             <li>
+              <a [routerLink]="'/traders'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                التجار
+              </a>
+            <li>
               <a [routerLink]="'/community'" 
                 routerLinkActive="bg-white/15 text-secondary shadow-sm"
                 class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
@@ -133,6 +139,13 @@
              routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
              class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
             <i class="pi pi-shopping-bag me-3 text-lg"></i> <span>المزارعون</span>
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="'/traders'" (click)="closeSidebar()" 
+             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary" 
+             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
+            <i class="pi pi-shopping-bag me-3 text-lg"></i> <span>التجار</span>
           </a>
         </li>
         <li>
