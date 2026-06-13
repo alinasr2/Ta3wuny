@@ -18,7 +18,9 @@ export class Auth {
       })
       .pipe(
         tap((res: any) => {
-          this.isLoggedIn.set(res === true || res?.isAuthenticated === true);
+          console.log(res);
+          
+          this.isLoggedIn.set(res.key === true );
         }),
         catchError(() => {
           this.isLoggedIn.set(false);

@@ -11,6 +11,7 @@ import { Profile } from './pages/profile/profile';
 import { Farmers } from './pages/farmers/farmers';
 import { Farmer } from './pages/farmer/farmer';
 import { Community } from './pages/community/community';
+import { Auctions } from './pages/auctions/auctions';
 
 export const routes: Routes = [
     {path:"",component:Home},
@@ -23,6 +24,7 @@ export const routes: Routes = [
     {path:"cart",component:Cart},
     {path:"profile",component:Profile},
     {path:"farmers",component:Farmers},
-    {path:"farmer",component:Farmer},
-    {path:"community",component:Community}
+    {path:"farmer/:id",component:Farmer},
+    {path:"community",component:Community},
+    {path:"auctions",component:Auctions}
 ];

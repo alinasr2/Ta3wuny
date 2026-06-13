@@ -42,6 +42,13 @@
               </a>
             </li>
             <li>
+              <a [routerLink]="'/auctions'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                المزادات
+              </a>
+            </li>
+            <li>
               <a [routerLink]="'/contact'" 
                 routerLinkActive="bg-white/15 text-secondary shadow-sm"
                 class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
@@ -113,6 +120,13 @@
              class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5">
             <i class="pi pi-shopping-bag me-3 text-lg"></i> <span>المتجر</span>
           </a>
+        </li>
+        <li>
+              <a [routerLink]="'/auctions'" 
+                routerLinkActive="bg-white/15 text-secondary shadow-sm"
+                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all">
+                المزادات
+              </a>
         </li>
         <li>
           <a [routerLink]="'/farmers'" (click)="closeSidebar()" 
