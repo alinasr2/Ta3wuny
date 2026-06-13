@@ -12,19 +12,23 @@ import { Farmers } from './pages/farmers/farmers';
 import { Farmer } from './pages/farmer/farmer';
 import { Community } from './pages/community/community';
 import { Auctions } from './pages/auctions/auctions';
+import { Trader } from './pages/trader/trader';
+import { Traders } from './pages/traders/traders';
 
 export const routes: Routes = [
-    {path:"",component:Home},
-    {path:"marketplace", component:Shop},
-    {path:'contact' , component:Contact},
-    {path:"register",component:Register},
-    {path:"login",component:Login},
-    {path:"product",component:Product},
-    {path:"chat",component:Chat},
-    {path:"cart",component:Cart},
-    {path:"profile",component:Profile},
-    {path:"farmers",component:Farmers},
-    {path:"farmer/:id",component:Farmer},
-    {path:"community",component:Community},
-    {path:"auctions",component:Auctions}
+  { path: '', component: Home },
+  { path: 'marketplace', component: Shop },
+  { path: 'contact', component: Contact },
+  { path: 'register', component: Register },
+  { path: 'login', component: Login },
+  { path: 'product', component: Product },
+  { path: 'chat', component: Chat },
+  { path: 'cart', component: Cart },
+  { path: 'profile', component: Profile },
+  { path: 'farmers', component: Farmers },
+  { path: 'farmer/:id', component: Farmer },
+  { path: 'traders', component: Traders },
+  { path: 'trader/:id', component: Trader },
+  { path: 'community', component: Community },
+  { path: 'auctions', component: Auctions },
 ];
