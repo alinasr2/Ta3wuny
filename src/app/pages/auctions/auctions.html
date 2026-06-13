@@ -1,30 +1,41 @@
 <!-- auctions.html -->
-<div class="auctions-container">
-  <!-- Header -->
-  <div class="auctions-header">
-    <h1 class="auctions-title">المزادات</h1>
-    <p class="auctions-subtitle">اكتشف أفضل العروض وشارك في المزادات المثيرة</p>
+<!-- Main Container -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  
+  <!-- Header Section -->
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+      المزادات
+    </h1>
+    <p class="text-lg text-gray-600 dark:text-gray-400">
+      اكتشف أفضل العروض وشارك في المزادات المثيرة
+    </p>
   </div>
 
-  <!-- Filters -->
-  <div class="auctions-filters">
-    <div class="search-box">
-      <i class="pi pi-search search-icon"></i>
+  <!-- Filters Section -->
+  <div class="mb-8 space-y-4">
+    <!-- Search Box -->
+    <div class="relative">
+      <i class="pi pi-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
       <input
         type="text"
         placeholder="ابحث عن مزاد..."
         [(ngModel)]="searchTerm"
         (input)="onSearchChange()"
-        class="search-input"
+        class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-white"
       />
     </div>
 
-    <div class="status-filter">
+    <!-- Status Filters -->
+    <div class="flex flex-wrap gap-2">
       <button
         *ngFor="let status of statuses"
         [class.active]="selectedStatus === status.value"
         (click)="selectedStatus = status.value; onStatusChange()"
-        class="status-btn"
+        class="px-4 py-2 rounded-lg font-medium transition-all duration-200"
+        [class]="selectedStatus === status.value 
+          ? 'bg-primary text-white shadow-md' 
+          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
       >
         {{ status.label }}
       </button>
@@ -32,178 +43,267 @@
   </div>
 
   <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="loading-container">
+  <div *ngIf="isLoading" class="flex justify-center items-center py-20">
     <mat-spinner diameter="50"></mat-spinner>
   </div>
 
   <!-- Auctions Grid -->
-  <div *ngIf="!isLoading" class="auctions-grid">
+  <div *ngIf="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Auction Card -->
     <div
       *ngFor="let auction of filteredAuctions"
-      class="auction-card"
       (click)="openAuctionDialog(auction)"
+      class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
     >
-      <div class="card-image">
-        <img [src]="auction.product?.imageUrl || 'assets/default-auction.jpg'" [alt]="auction.product?.name" />
-        <span class="card-status" [class]="getStatusClass(auction.status)">
+      <!-- Card Image -->
+      <div class="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-700">
+        <img 
+          [src]="auction.product?.imageUrl || 'assets/default-auction.jpg'" 
+          [alt]="auction.product?.name"
+          class="w-full h-full object-cover"
+        />
+        <span 
+          [class]="getStatusClass(auction.status)"
+          class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold shadow-md"
+        >
           {{ getStatusLabel(auction.status) }}
         </span>
       </div>
 
-      <div class="card-content">
-        <h3 class="card-title">{{ auction.product?.name }}</h3>
-        <p class="card-description">{{ (auction.product?.description | slice:0:80) || 'لا يوجد وصف' }}...</p>
+      <!-- Card Content -->
+      <div class="p-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">
+          {{ auction.product?.name }}
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+          {{ (auction.product?.description | slice:0:80) || 'لا يوجد وصف' }}...
+        </p>
 
-        <div class="card-stats">
-          <div class="stat">
-            <i class="pi pi-tag"></i>
-            <span>{{ auction.startingPrice | currency:'EGP':'symbol':'1.0-0' }}</span>
-            <small>سعر البداية</small>
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <i class="pi pi-tag text-primary text-sm"></i>
+            <div class="text-sm font-bold text-gray-900 dark:text-white mt-1">
+              {{ auction.startingPrice | currency:'EGP':'symbol':'1.0-0' }}
+            </div>
+            <small class="text-xs text-gray-500 dark:text-gray-400">سعر البداية</small>
           </div>
-          <div class="stat">
-            <i class="pi pi-chart-line"></i>
-            <span>{{ auction.reservePrice | currency:'EGP':'symbol':'1.0-0' }}</span>
-            <small>سعار الاحتياطي</small>
+          <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <i class="pi pi-chart-line text-primary text-sm"></i>
+            <div class="text-sm font-bold text-gray-900 dark:text-white mt-1">
+              {{ auction.reservePrice | currency:'EGP':'symbol':'1.0-0' }}
+            </div>
+            <small class="text-xs text-gray-500 dark:text-gray-400">سعر الاحتياطي</small>
           </div>
         </div>
 
-        <div class="card-time" [class.ended]="auction.status !== 1">
+        <!-- Time Remaining -->
+        <div 
+          class="flex items-center justify-center gap-2 text-sm mb-4 p-2 rounded-lg"
+          [class]="auction.status !== 1 ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'"
+        >
           <i class="pi pi-clock"></i>
           <span>{{ getTimeRemaining(auction.endDate) }}</span>
         </div>
 
-        <button class="bid-btn" [disabled]="auction.status !== 1">
+        <!-- Bid Button -->
+        <button 
+          [disabled]="auction.status !== 1"
+          class="w-full py-3 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-2"
+          [class]="auction.status === 1 
+            ? 'bg-primary hover:bg-primary-dark text-white shadow-md' 
+            : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'"
+        >
           شارك في المزاد <i class="pi pi-arrow-left"></i>
         </button>
       </div>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="filteredAuctions.length === 0" class="empty-state">
-      <i class="pi pi-inbox"></i>
-      <p>لا توجد مزادات متاحة حالياً</p>
+    <div *ngIf="filteredAuctions.length === 0" class="col-span-full text-center py-20">
+      <i class="pi pi-inbox text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+      <p class="text-gray-500 dark:text-gray-400 text-lg">لا توجد مزادات متاحة حالياً</p>
     </div>
   </div>
 </div>
 
 <!-- Dialog Modal -->
-<div class="dialog-overlay" *ngIf="showDialog" (click)="closeDialog()">
-  <div class="dialog-container" (click)="$event.stopPropagation()">
-    <div class="dialog-header">
-      <h2>{{ selectedAuction?.product?.name }}</h2>
-      <button class="close-btn" (click)="closeDialog()">
-        <i class="pi pi-times"></i>
+<div 
+  *ngIf="showDialog" 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+  (click)="closeDialog()"
+>
+  <div 
+    class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Dialog Header -->
+    <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+        {{ selectedAuction?.product?.name }}
+      </h2>
+      <button 
+        (click)="closeDialog()"
+        class="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
+      >
+        <i class="pi pi-times text-gray-500 dark:text-gray-400"></i>
       </button>
     </div>
 
-    <div class="dialog-content" *ngIf="selectedAuction">
-      <div class="auction-image">
-        <img [src]="selectedAuction.product?.imageUrl || 'assets/default-auction.jpg'" [alt]="selectedAuction.product?.name" />
-      </div>
-
-      <div class="auction-info">
-        <p class="description">{{ selectedAuction.product?.description || 'لا يوجد وصف' }}</p>
-
-        <div class="info-grid">
-          <div class="info-item">
-            <i class="pi pi-tag"></i>
-            <div>
-              <label>سعر البداية</label>
-              <span>{{ selectedAuction.startingPrice | currency:'EGP':'symbol':'1.0-0' }}</span>
-            </div>
-          </div>
-
-          <div class="info-item">
-            <i class="pi pi-chart-line"></i>
-            <div>
-              <label>أعلى عرض</label>
-              <span class="highest-bid">{{ getHighestBid() | currency:'EGP':'symbol':'1.0-0' }}</span>
-            </div>
-          </div>
-
-          <div class="info-item">
-            <i class="pi pi-users"></i>
-            <div>
-              <label>عدد العروض</label>
-              <span>{{ getBidCount() }}</span>
-            </div>
-          </div>
-
-          <div class="info-item">
-            <i class="pi pi-clock"></i>
-            <div>
-              <label>الوقت المتبقي</label>
-              <span [class.ended]="!isAuctionActive()">
-                {{ getTimeRemaining(selectedAuction.endDate) }}
-              </span>
-            </div>
-          </div>
-
-          <div class="info-item">
-            <i class="pi pi-info-circle"></i>
-            <div>
-              <label>الحالة</label>
-              <span [class]="getStatusClass(selectedAuction.status)">
-                {{ getStatusLabel(selectedAuction.status) }}
-              </span>
-            </div>
-          </div>
+    <!-- Dialog Content -->
+    <div class="p-6" *ngIf="selectedAuction">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Image -->
+        <div class="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+          <img 
+            [src]="selectedAuction.product?.imageUrl || 'assets/default-auction.jpg'" 
+            [alt]="selectedAuction.product?.name"
+            class="w-full h-auto object-cover"
+          />
         </div>
 
-        <!-- Bids History -->
-        <div class="bids-history" *ngIf="auctionBids.length > 0">
-          <h4>عروض المزاد</h4>
-          <div class="bids-list">
-            <div *ngFor="let bid of auctionBids | slice:0:5" class="bid-item">
-              <div class="bidder-info">
-                <i class="pi pi-user"></i>
-                <span>{{ bid.userName || 'مستخدم' }}</span>
-              </div>
-              <div class="bid-amount">
-                {{ bid.amount | currency:'EGP':'symbol':'1.0-0' }}
-              </div>
-              <div class="bid-time">
-                {{ bid.createdAt | date:'short' }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Place Bid Section -->
-        <div class="place-bid" *ngIf="isAuctionActive()">
-          <label>أضف عرضك</label>
-          <div class="bid-input-group">
-            <input
-              type="number"
-              [(ngModel)]="bidAmount"
-              [min]="minBidAmount"
-              placeholder="أدخل مبلغ العرض"
-              class="bid-input"
-            />
-            <button
-              [disabled]="!isValidBid() || isSubmittingBid"
-              (click)="placeBid()"
-              class="submit-bid-btn"
-            >
-              <i class="pi pi-send" *ngIf="!isSubmittingBid"></i>
-              <mat-spinner diameter="20" *ngIf="isSubmittingBid"></mat-spinner>
-              {{ isSubmittingBid ? '' : 'إضافة عرض' }}
-            </button>
-          </div>
-          <p class="min-bid-hint">الحد الأدنى للعرض: {{ minBidAmount | currency:'EGP':'symbol' }}</p>
-        </div>
-
-        <div class="auction-ended" *ngIf="!isAuctionActive() && selectedAuction.status !== 2 && selectedAuction.status !== 4">
-          <i class="pi pi-hourglass"></i>
-          <p>هذا المزاد غير نشط حالياً</p>
-        </div>
-
-        <div class="auction-ended" *ngIf="selectedAuction.status === 2 || selectedAuction.status === 4">
-          <i class="pi pi-flag-checkered"></i>
-          <p>{{ selectedAuction.status === 2 ? 'هذا المزاد قد انتهى' : 'تم بيع هذا المنتج' }}</p>
-          <p *ngIf="selectedAuction.winnerId" class="winner-info">
-            الفائز: {{ selectedAuction.winnerId }}
+        <!-- Auction Info -->
+        <div class="space-y-6">
+          <!-- Description -->
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+            {{ selectedAuction.product?.description || 'لا يوجد وصف' }}
           </p>
+
+          <!-- Info Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Starting Price -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <i class="pi pi-tag text-primary text-xl"></i>
+              <div>
+                <label class="text-xs text-gray-500 dark:text-gray-400 block">سعر البداية</label>
+                <span class="text-lg font-bold text-gray-900 dark:text-white">
+                  {{ selectedAuction.startingPrice | currency:'EGP':'symbol':'1.0-0' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Highest Bid -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <i class="pi pi-chart-line text-primary text-xl"></i>
+              <div>
+                <label class="text-xs text-gray-500 dark:text-gray-400 block">أعلى عرض</label>
+                <span class="text-lg font-bold text-green-600 dark:text-green-400">
+                  {{ getHighestBid() | currency:'EGP':'symbol':'1.0-0' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Bids Count -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <i class="pi pi-users text-primary text-xl"></i>
+              <div>
+                <label class="text-xs text-gray-500 dark:text-gray-400 block">عدد العروض</label>
+                <span class="text-lg font-bold text-gray-900 dark:text-white">
+                  {{ getBidCount() }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Time Remaining -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <i class="pi pi-clock text-primary text-xl"></i>
+              <div>
+                <label class="text-xs text-gray-500 dark:text-gray-400 block">الوقت المتبقي</label>
+                <span 
+                  class="text-lg font-bold"
+                  [class]="!isAuctionActive() ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'"
+                >
+                  {{ getTimeRemaining(selectedAuction.endDate) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <i class="pi pi-info-circle text-primary text-xl"></i>
+              <div>
+                <label class="text-xs text-gray-500 dark:text-gray-400 block">الحالة</label>
+                <span [class]="getStatusClass(selectedAuction.status)">
+                  {{ getStatusLabel(selectedAuction.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bids History -->
+          <div *ngIf="auctionBids.length > 0" class="space-y-3">
+            <h4 class="text-lg font-bold text-gray-900 dark:text-white">عروض المزاد</h4>
+            <div class="space-y-2 max-h-60 overflow-y-auto">
+              <div 
+                *ngFor="let bid of auctionBids | slice:0:5" 
+                class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              >
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-gray-500 dark:text-gray-400"></i>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ bid.userName || 'مستخدم' }}
+                  </span>
+                </div>
+                <div class="text-sm font-bold text-primary">
+                  {{ bid.amount | currency:'EGP':'symbol':'1.0-0' }}
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ bid.createdAt | date:'short' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Place Bid Section -->
+          <div *ngIf="isAuctionActive()" class="space-y-3">
+            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300">
+              أضف عرضك
+            </label>
+            <div class="flex gap-3">
+              <input
+                type="number"
+                [(ngModel)]="bidAmount"
+                [min]="minBidAmount"
+                placeholder="أدخل مبلغ العرض"
+                class="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              />
+              <button
+                [disabled]="!isValidBid() || isSubmittingBid"
+                (click)="placeBid()"
+                class="px-6 py-3 bg-primary hover:bg-primary-dark disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-xl font-bold transition-all duration-200 flex items-center gap-2"
+              >
+                <i class="pi pi-send" *ngIf="!isSubmittingBid"></i>
+                <mat-spinner diameter="20" *ngIf="isSubmittingBid"></mat-spinner>
+                {{ isSubmittingBid ? '' : 'إضافة عرض' }}
+              </button>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              الحد الأدنى للعرض: {{ minBidAmount | currency:'EGP':'symbol' }}
+            </p>
+          </div>
+
+          <!-- Auction Ended (Not Active) -->
+          <div 
+            *ngIf="!isAuctionActive() && selectedAuction.status !== 2 && selectedAuction.status !== 4" 
+            class="text-center p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl"
+          >
+            <i class="pi pi-hourglass text-3xl text-yellow-600 dark:text-yellow-400 mb-2 block"></i>
+            <p class="text-yellow-800 dark:text-yellow-200">هذا المزاد غير نشط حالياً</p>
+          </div>
+
+          <!-- Auction Ended or Sold -->
+          <div 
+            *ngIf="selectedAuction.status === 2 || selectedAuction.status === 4" 
+            class="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl"
+          >
+            <i class="pi pi-flag-checkered text-3xl text-blue-600 dark:text-blue-400 mb-2 block"></i>
+            <p class="text-blue-800 dark:text-blue-200">
+              {{ selectedAuction.status === 2 ? 'هذا المزاد قد انتهى' : 'تم بيع هذا المنتج' }}
+            </p>
+            <p *ngIf="selectedAuction.winnerId" class="text-sm text-blue-600 dark:text-blue-300 mt-2">
+              الفائز: {{ selectedAuction.winnerId }}
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -9,8 +9,6 @@ import { BaseUrl } from '../../../shared/environments/base-url';
 export class AuctionsService {
   private http = inject(HttpClient);
   baseUrl = BaseUrl.url;
-
-  // POST /api/Auctions - Create new auction
   createAuction(auctionData: {
     productId: number;
     startDate: string;
@@ -21,7 +19,6 @@ export class AuctionsService {
     return this.http.post(`${this.baseUrl}api/Auctions`, auctionData);
   }
 
-  // GET /api/Auctions - Get all auctions with filters
   getAllAuctions(params?: {
     productId?: number;
     farmerId?: string;
@@ -57,44 +54,37 @@ export class AuctionsService {
         httpParams = httpParams.set('pageSize', params.pageSize.toString());
       }
       if (params.pageIndex !== undefined) {
-        httpParams = httpParams.set('PageIndex', params.pageIndex.toString());
+        httpParams = httpParams.set('PageIndex', params.pageIndex.toString()+1);
       }
     }
     
     return this.http.get(`${this.baseUrl}api/Auctions`, { params: httpParams });
   }
 
-  // GET /api/Auctions/{auctionId} - Get auction details by auction id
   getAuctionById(auctionId: number): Observable<any> {
     return this.http.get(`${this.baseUrl}api/Auctions/${auctionId}`);
   }
 
-  // DELETE /api/Auctions/{auctionId} - Delete auction
   deleteAuction(auctionId: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}api/Auctions/${auctionId}`);
   }
 
-  // GET /api/Auctions/products/{productId} - Get auction details by product id
   getAuctionByProductId(productId: number): Observable<any> {
     return this.http.get(`${this.baseUrl}api/Auctions/products/${productId}`);
   }
 
-  // GET /api/Auctions/my - Get my auctions
   getMyAuctions(): Observable<any> {
     return this.http.get(`${this.baseUrl}api/Auctions/my`);
   }
 
-  // POST /api/Auctions/{auctionId}/bids - Place a bid on an auction
   placeBid(auctionId: number, bidData: { amount: number }): Observable<any> {
     return this.http.post(`${this.baseUrl}api/Auctions/${auctionId}/bids`, bidData);
   }
 
-  // GET /api/Auctions/{id}/bids - Get all bids for an auction
   getAuctionBids(auctionId: number): Observable<any> {
     return this.http.get(`${this.baseUrl}api/Auctions/${auctionId}/bids`);
   }
 
-  // GET /api/Auctions/my/bids - Get my bids
   getMyBids(): Observable<any> {
     return this.http.get(`${this.baseUrl}api/Auctions/my/bids`);
   }

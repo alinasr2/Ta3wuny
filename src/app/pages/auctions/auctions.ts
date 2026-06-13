@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -49,6 +49,7 @@ interface Bid {
   ],
   templateUrl: './auctions.html',
   styleUrls: ['./auctions.scss'],
+ changeDetection: ChangeDetectionStrategy.Default 
 })
 export class Auctions implements OnInit {
   // متغيرات المزادات
@@ -85,49 +86,61 @@ export class Auctions implements OnInit {
   }
 
   loadAuctions(): void {
-    this.isLoading = true;
-    this.auctionsService.getAllAuctions({ pageSize: 100, pageIndex: 0 }).subscribe({
-      next: (response: any) => {
-        if (response && response.data) {
-          this.auctions = response.data;
-        } else if (response && response.items) {
-          this.auctions = response.items;
-        } else if (Array.isArray(response)) {
-          this.auctions = response;
-        } else {
-          this.auctions = [];
-        }
-        this.filterAuctions();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading auctions:', error);
-        this.snackBar.open('حدث خطأ في تحميل المزادات', 'إغلاق', { duration: 3000 });
-        this.isLoading = false;
-      },
-    });
-  }
+  this.isLoading = true;
+  this.auctionsService.getAllAuctions({ pageSize: 100, pageIndex: 0 }).subscribe({
+    next: (response: any) => {
+      console.log(response);
+      
+      // المفتاح: الوصول إلى المسار الصحيح للبيانات
+      let auctionsData: Auction[] = [];
+      
+      if (response?.data?.data && Array.isArray(response.data.data)) {
+        // هذا هو الشكل الصحيح لاستجابتك
+        auctionsData = response.data.data;
+      } 
+      else if (response?.data && Array.isArray(response.data)) {
+        auctionsData = response.data;
+      }
+      else if (response?.items && Array.isArray(response.items)) {
+        auctionsData = response.items;
+      }
+      else if (Array.isArray(response)) {
+        auctionsData = response;
+      }
+      
+      // مهم مع OnPush: إنشاء مصفوفة جديدة (وليس تعديل الموجودة)
+      this.auctions = [...auctionsData];
+      this.filterAuctions();
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading auctions:', error);
+      this.snackBar.open('حدث خطأ في تحميل المزادات', 'إغلاق', { duration: 3000 });
+      this.isLoading = false;
+    },
+  });
+}
 
   filterAuctions(): void {
-    let filtered = [...this.auctions];
+  let filtered = [...this.auctions];  // إنشاء نسخة جديدة
 
-    if (this.selectedStatus !== 'all') {
-      filtered = filtered.filter(
-        (auction) => auction.status.toString() === this.selectedStatus
-      );
-    }
-
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (auction) =>
-          auction.product?.name?.toLowerCase().includes(term) ||
-          auction.product?.description?.toLowerCase().includes(term)
-      );
-    }
-
-    this.filteredAuctions = filtered;
+  if (this.selectedStatus !== 'all') {
+    filtered = filtered.filter(
+      (auction) => auction.status.toString() === this.selectedStatus
+    );
   }
+
+  if (this.searchTerm.trim()) {
+    const term = this.searchTerm.toLowerCase();
+    filtered = filtered.filter(
+      (auction) =>
+        auction.product?.name?.toLowerCase().includes(term) ||
+        auction.product?.description?.toLowerCase().includes(term)
+    );
+  }
+
+  this.filteredAuctions = [...filtered];  // مرجع جديد وليس تعديل مباشر
+}
 
   onSearchChange(): void {
     this.filterAuctions();
@@ -157,23 +170,26 @@ export class Auctions implements OnInit {
 
   // تحميل عروض المزاد
   loadAuctionBids(auctionId: number): void {
-    this.auctionsService.getAuctionBids(auctionId).subscribe({
-      next: (response: any) => {
-        if (response && response.data) {
-          this.auctionBids = response.data;
-        } else if (Array.isArray(response)) {
-          this.auctionBids = response;
-        } else {
-          this.auctionBids = [];
-        }
-        this.calculateMinBid();
-      },
-      error: (error) => {
-        console.error('Error loading bids:', error);
-        this.auctionBids = [];
-      },
-    });
-  }
+  this.auctionsService.getAuctionBids(auctionId).subscribe({
+    next: (response: any) => {
+      let bidsData: Bid[] = [];
+      
+      if (response?.data && Array.isArray(response.data)) {
+        bidsData = response.data;
+      } else if (Array.isArray(response)) {
+        bidsData = response;
+      }
+      
+      // إنشاء مصفوفة جديدة
+      this.auctionBids = [...bidsData];
+      this.calculateMinBid();
+    },
+    error: (error) => {
+      console.error('Error loading bids:', error);
+      this.auctionBids = [];
+    },
+  });
+}
 
   // حساب أقل عرض مسموح
   calculateMinBid(): void {

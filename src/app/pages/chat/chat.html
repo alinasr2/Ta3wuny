@@ -1,137 +1,79 @@
-<!-- chats.component.html -->
 <div class="bg-background py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl mx-auto">
-    <!-- حاوية الدردشة -->
     <div class="bg-surface rounded-2xl shadow-sm">
       <div class="grid grid-cols-1 lg:grid-cols-3 h-[600px]">
-        <!-- الشريط الجانبي لقائمة الدردشات - مع تمرير مستقل -->
+        
+        <!-- الشريط الجانبي -->
         <div class="border-r border-gray-100 flex flex-col h-full overflow-hidden">
-          <!-- شريط البحث - ثابت -->
+          
+          <!-- شريط البحث -->
           <div class="p-4 border-b border-gray-100 flex-shrink-0">
             <div class="relative">
               <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
-              <input type="text" placeholder="ابحث في المحادثات..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-background text-text-primary placeholder-text-secondary">
+              <input 
+                type="text" 
+                [(ngModel)]="searchTerm"
+                placeholder="ابحث في المحادثات..." 
+                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-background text-text-primary placeholder-text-secondary">
             </div>
           </div>
 
-          <!-- قائمة الدردشات - مع تمرير -->
+          <!-- قائمة الدردشات -->
           <div class="flex-1 overflow-y-auto">
-            <!-- عنصر دردشة 1 - نشط -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors bg-primary-light/5 border-r-4 border-primary">
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="flex justify-center p-4">
+              <i class="pi pi-spin pi-spinner text-primary text-2xl"></i>
+            </div>
+
+            <!-- List of conversations -->
+            <div 
+              *ngFor="let conv of filteredConversations"
+              (click)="selectConversation(conv)"
+              class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors"
+              [class.bg-primary-light/5]="selectedConversation?.id === conv.id"
+              [class.border-r-4]="selectedConversation?.id === conv.id"
+              [class.border-primary]="selectedConversation?.id === conv.id">
+              
               <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
+                <img [src]="conv.otherUserImageUrl || 'assets/default-avatar.png'" 
+                     class="w-12 h-12 rounded-full object-cover">
                 <div class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
               </div>
+              
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">أحمد حسن</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">10:30 ص</span>
+                  <h3 class="font-semibold text-text-primary truncate">{{ conv.otherUserName }}</h3>
+                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">{{ conv.lastMessageAt | date:'shortTime' }}</span>
                 </div>
-                <p class="text-sm text-text-secondary truncate">الفراولة الخاصة بك جاهزة للتوصيل!</p>
+                <p class="text-sm text-text-secondary truncate">{{ conv.lastMessage || 'ابدأ المحادثة الآن' }}</p>
+              </div>
+              
+              <div *ngIf="conv.unreadCount > 0" 
+                   class="bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                {{ conv.unreadCount }}
               </div>
             </div>
 
-            <!-- عنصر دردشة 2 -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors">
-              <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
-                <div class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">فاطمة السيد</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">الأمس</span>
-                </div>
-                <p class="text-sm text-text-secondary truncate">أنا مهتمة بالطماطم العضوية الخاصة بك</p>
-              </div>
-              <div class="bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">2</div>
-            </div>
-
-            <!-- عنصر دردشة 3 -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors">
-              <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
-                <div class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">محمد إبراهيم</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">الأمس</span>
-                </div>
-                <p class="text-sm text-text-secondary truncate">شكراً على الرد السريع!</p>
-              </div>
-            </div>
-
-            <!-- عنصر دردشة 4 -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors">
-              <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
-                <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 rounded-full border-2 border-white"></div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">نادية خليل</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">الثلاثاء</span>
-                </div>
-                <p class="text-sm text-text-secondary truncate">هل يمكنك إرسال المزيد من الصور؟</p>
-              </div>
-            </div>
-
-            <!-- عنصر دردشة 5 -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors">
-              <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
-                <div class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">طارق منصور</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">الاثنين</span>
-                </div>
-                <p class="text-sm text-text-secondary truncate">منتجات ذات جودة رائعة!</p>
-              </div>
-            </div>
-
-            <!-- عنصر دردشة 6 -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors">
-              <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
-                <div class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">سميرة أحمد</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">25 مارس</span>
-                </div>
-                <p class="text-sm text-text-secondary truncate">متى سيتوفر لديك مخزون إضافي؟</p>
-              </div>
-            </div>
-
-            <!-- عنصر دردشة 7 -->
-            <div class="flex items-center gap-3 p-4 hover:bg-surface-hover cursor-pointer transition-colors">
-              <div class="relative flex-shrink-0">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" class="w-12 h-12 rounded-full object-cover">
-                <div class="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 rounded-full border-2 border-white"></div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-text-primary truncate">يوسف جمال</h3>
-                  <span class="text-xs text-text-secondary flex-shrink-0 mr-2">23 مارس</span>
-                </div>
-                <p class="text-sm text-text-secondary truncate">تفاوض على سعر الطلب بالجملة</p>
-              </div>
+            <!-- Empty State -->
+            <div *ngIf="!isLoading && filteredConversations.length === 0" 
+                 class="text-center p-8 text-text-secondary">
+              <i class="pi pi-comments text-4xl mb-2 opacity-50"></i>
+              <p>لا توجد محادثات بعد</p>
+              <p class="text-sm">ابدأ محادثة جديدة مع العملاء</p>
             </div>
           </div>
         </div>
 
-        <!-- منطقة الدردشة - الجزء الأيمن -->
-        <div class="lg:col-span-2 flex flex-col h-full overflow-hidden">
-          <!-- رأس الدردشة - ثابت -->
+        <!-- منطقة الدردشة -->
+        <div class="lg:col-span-2 flex flex-col h-full overflow-hidden" *ngIf="selectedConversation; else noChatSelected">
+          
+          <!-- رأس الدردشة -->
           <div class="p-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-10 h-10 rounded-full object-cover">
+              <img [src]="selectedConversation.otherUserImageUrl || 'assets/default-avatar.png'" 
+                   class="w-10 h-10 rounded-full object-cover">
               <div>
-                <h2 class="font-semibold text-text-primary">أحمد حسن</h2>
+                <h2 class="font-semibold text-text-primary">{{ selectedConversation.otherUserName }}</h2>
                 <div class="flex items-center gap-1 text-xs text-success">
                   <span class="w-2 h-2 bg-success rounded-full"></span>
                   <span>متصل</span>
@@ -151,82 +93,64 @@
             </div>
           </div>
 
-          <!-- منطقة الرسائل - مع تمرير -->
+          <!-- منطقة الرسائل -->
           <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
             <!-- رسالة مستلمة -->
-            <div class="flex items-start gap-3">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
-              <div>
-                <div class="bg-surface rounded-2xl rounded-tl-none px-4 py-2 shadow-sm max-w-md">
-                  <p class="text-text-primary">بالتأكيد! يوم الخميس مناسب تماماً. يرجى مشاركة عنوانك الكامل ورقم هاتفك لأتمكن من ترتيب التوصيل.</p>
-                </div>
-                <span class="text-xs text-text-secondary mt-1 block">10:36 ص</span>
+            <div *ngFor="let msg of messages" 
+                 [class.flex]="true"
+                 [class.justify-end]="isMyMessage(msg.senderId)"
+                 class="flex items-start gap-3"
+                 [class.justify-end]="isMyMessage(msg.senderId)">
+              
+              <div *ngIf="!isMyMessage(msg.senderId)" class="flex-shrink-0">
+                <img [src]="selectedConversation.otherUserImageUrl || 'assets/default-avatar.png'" 
+                     class="w-8 h-8 rounded-full object-cover">
               </div>
-            </div>
-
-            <!-- رسالة مرسلة -->
-            <div class="flex items-start gap-3 justify-end">
-              <div class="text-right">
-                <div class="bg-primary text-text-on-primary rounded-2xl rounded-tr-none px-4 py-2 max-w-md">
-                  <p>رائع! عنواني هو 123 شارع النيل، المعادي. رقم الهاتف: 01234567890. أتطلع لتجربة الفراولة الخاصة بك!</p>
+              
+              <div [class.text-right]="isMyMessage(msg.senderId)">
+                <div [class.bg-surface]="!isMyMessage(msg.senderId)"
+                     [class.bg-primary]="isMyMessage(msg.senderId)"
+                     [class.text-text-on-primary]="isMyMessage(msg.senderId)"
+                     class="rounded-2xl px-4 py-2 shadow-sm max-w-md"
+                     [class.rounded-tl-none]="!isMyMessage(msg.senderId)"
+                     [class.rounded-tr-none]="isMyMessage(msg.senderId)">
+                  <p>{{ msg.content }}</p>
                 </div>
-                <span class="text-xs text-text-secondary mt-1 block">10:38 ص</span>
-              </div>
-            </div>
-
-            <!-- رسالة مستلمة -->
-            <div class="flex items-start gap-3">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
-              <div>
-                <div class="bg-surface rounded-2xl rounded-tl-none px-4 py-2 shadow-sm max-w-md">
-                  <p class="text-text-primary">ممتاز! لقد سجلت طلبك. سأرسل لك تأكيداً يوم الأربعاء مع وقت التوصيل المحدد. شكراً لاختيارك مزرعتنا! 🌱</p>
-                </div>
-                <span class="text-xs text-text-secondary mt-1 block">10:40 ص</span>
-              </div>
-            </div>
-
-            <!-- رسالة مرسلة -->
-            <div class="flex items-start gap-3 justify-end">
-              <div class="text-right">
-                <div class="bg-primary text-text-on-primary rounded-2xl rounded-tr-none px-4 py-2 max-w-md">
-                  <p>شكراً جزيلاً! لا أطيق الانتظار لتجربتها 😊</p>
-                </div>
-                <span class="text-xs text-text-secondary mt-1 block">10:41 ص</span>
-              </div>
-            </div>
-
-            <!-- مؤشر الكتابة -->
-            <div class="flex items-start gap-3">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
-              <div class="bg-surface rounded-2xl rounded-tl-none px-4 py-2 shadow-sm">
-                <div class="flex gap-1">
-                  <span class="w-2 h-2 bg-text-secondary rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-                  <span class="w-2 h-2 bg-text-secondary rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-                  <span class="w-2 h-2 bg-text-secondary rounded-full animate-bounce" style="animation-delay: 300ms"></span>
-                </div>
+                <span class="text-xs text-text-secondary mt-1 block">{{ msg.sentAt | date:'shortTime' }}</span>
               </div>
             </div>
           </div>
 
-          <!-- حقل إدخال الرسالة - ثابت -->
+          <!-- حقل إدخال الرسالة -->
           <div class="p-4 border-t border-gray-100 bg-surface flex-shrink-0">
             <div class="flex items-center gap-3">
               <button class="p-2 hover:bg-surface-hover rounded-full transition-colors">
                 <i class="pi pi-paperclip text-text-secondary text-xl"></i>
               </button>
-              <input type="text" placeholder="اكتب رسالة..." class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-background text-text-primary placeholder-text-secondary">
-              <button class="p-2 bg-primary hover:bg-primary-dark rounded-full transition-colors">
+              <input 
+                type="text" 
+                [(ngModel)]="newMessageText"
+                (keyup.enter)="sendMessage()"
+                placeholder="اكتب رسالة..." 
+                class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-background text-text-primary placeholder-text-secondary">
+              <button (click)="sendMessage()" 
+                      class="p-2 bg-primary hover:bg-primary-dark rounded-full transition-colors">
                 <i class="pi pi-send text-white text-lg"></i>
               </button>
             </div>
           </div>
         </div>
+
+        <!-- حالة عدم اختيار محادثة -->
+        <ng-template #noChatSelected>
+          <div class="lg:col-span-2 flex flex-col items-center justify-center h-full bg-background">
+            <i class="pi pi-comments text-6xl text-text-secondary opacity-30 mb-4"></i>
+            <h3 class="text-xl font-semibold text-text-primary mb-2">مرحباً بك في مركز المحادثات</h3>
+            <p class="text-text-secondary">اختر محادثة من القائمة الجانبية للبدء</p>
+          </div>
+        </ng-template>
+        
       </div>
     </div>
-
-    <!-- زر بدء محادثة جديدة (عائم) -->
-    <button class="fixed bottom-8 right-8 bg-primary hover:bg-primary-dark text-white p-4 rounded-full shadow-lg transition-all duration-200 hover:scale-105">
-      <i class="pi pi-plus text-xl"></i>
-    </button>
   </div>
 </div>
