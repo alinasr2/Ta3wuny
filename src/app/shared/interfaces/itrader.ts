@@ -2,8 +2,8 @@ export interface ITraderAddress {
   id: number;
   userId: string;
   street: string;
-  city: string | null;
-  governorate: string | null;
+  city: string;
+  governorate: string;
   postalCode: number;
   country: string;
   latitude: number;
