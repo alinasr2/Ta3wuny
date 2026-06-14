@@ -1,63 +1,113 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+// chat.component.ts
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal, computed, effect, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../../core/services/chat/chat-service';
 import { FormsModule } from '@angular/forms';
-import { NgIf, NgFor, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-chats',
   templateUrl: './chat.html',
-  imports: [FormsModule, NgIf, NgFor, CommonModule],
-  styleUrls: ['./chat.scss']
+  imports: [FormsModule, CommonModule], // لم نعد بحاجة NgIf, NgFor منفصلة
+  styleUrls: ['./chat.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush // ← مهم! استخدام OnPush مع Signals
 })
 export class Chat implements OnInit, OnDestroy {
   
-  conversations: any[] = [];
-  messages: any[] = [];
-  selectedConversation: any | null = null;
-  newMessageText: string = '';
-  isLoading: boolean = false;
-  searchTerm: string = '';
-  isSignalRConnected: boolean = false;
+  // استخدام Signals بدلاً من properties العادية
+  private conversationsSignal = signal<any[]>([]);
+  private messagesSignal = signal<any[]>([]);
+  private selectedConversationSignal = signal<any | null>(null);
+  private isLoadingSignal = signal<boolean>(false);
+  searchTermSignal = signal<string>('');
+  private isSignalRConnectedSignal = signal<boolean>(false);
+  private currentUserIdSignal = signal<string>('');
+  
+  // computed values (تشتق قيمها من signals أخرى)
+  readonly conversations = this.conversationsSignal.asReadonly();
+  readonly messages = this.messagesSignal.asReadonly();
+  readonly selectedConversation = this.selectedConversationSignal.asReadonly();
+  readonly isLoading = this.isLoadingSignal.asReadonly();
+  readonly searchTerm = this.searchTermSignal.asReadonly();
+  readonly isSignalRConnected = this.isSignalRConnectedSignal.asReadonly();
+  
+  // Computed signal للرسائل المفلترة
+  readonly filteredConversations = computed(() => {
+    const searchTerm = this.searchTermSignal();
+    const conversations = this.conversationsSignal();
+    
+    if (!searchTerm) return conversations;
+    
+    return conversations.filter(conv => 
+      conv.otherUserName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+  
+  // للربط الثنائي في الـ template
+  newMessageText = signal<string>('');
   
   private subscriptions: Subscription = new Subscription();
-  private currentUserId: string = '';
+  
+  private chatService = inject(ChatService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  constructor(
-    public chatService: ChatService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
-
-  async ngOnInit(): Promise<void> {
-    this.getCurrentUserId();
-    
-    // بدء اتصال SignalR
-    await this.initializeSignalR();
-    
-    this.loadConversations();
-    this.listenForNewMessages();
-
-     this.checkForTargetUserId();
+  constructor() {
+    // تأثير للاستجابة للتغييرات
+    effect(() => {
+      // يمكنك مراقبة أي تغييرات هنا
+      console.log('Selected conversation changed:', this.selectedConversationSignal());
+    });
   }
 
+  async ngOnInit(): Promise<void> {
+
+    this.getCurrentUserId();
+
+    await this.initializeSignalR();
+
+    await this.loadConversations();
+
+    this.handleDeepLink();
+
+    this.listenForNewMessages();
+  }
+
+  private handleDeepLink(): void {
+
+  const targetUserId =
+    this.route.snapshot.queryParamMap.get('id');
+
+  if (!targetUserId) return;
+
+  if (targetUserId === this.currentUserIdSignal()) return;
+
+  const existing = this.conversationsSignal().find(
+    c => c.otherUserId === targetUserId
+  );
+
+  if (existing) {
+    this.selectConversation(existing);
+    return;
+  }
+
+  this.startOrOpenConversation(targetUserId);
+}
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    // قطع اتصال SignalR عند الخروج
     this.chatService.stopSignalRConnection();
   }
 
   private async initializeSignalR(): Promise<void> {
     try {
       await this.chatService.startSignalRConnection();
-      this.isSignalRConnected = true;
+      this.isSignalRConnectedSignal.set(true);
       console.log('SignalR connected successfully');
     } catch (error) {
       console.error('Failed to connect SignalR:', error);
-      this.isSignalRConnected = false;
+      this.isSignalRConnectedSignal.set(false);
       
-      // محاولة إعادة الاتصال بعد 5 ثواني
       setTimeout(() => {
         this.initializeSignalR();
       }, 5000);
@@ -65,218 +115,225 @@ export class Chat implements OnInit, OnDestroy {
   }
 
   private getCurrentUserId(): void {
-    // جلب userId من localStorage
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        this.currentUserId = user.id || user.userId;
-      } catch(e) {
-        console.error('Error parsing user data', e);
-      }
-    }
-    
-    // إذا كان فيه Auth service، استخدمه
-    // const user = this.auth.user();
-    // if (user) {
-    //   this.currentUserId = user.id;
-    // }
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.uid || payload.sub || payload.nameid;
+    this.currentUserIdSignal.set(userId);
   }
 
   private checkForTargetUserId(): void {
-    // جلب الـ id من Query Parameters
-    const targetUserId = this.route.snapshot.queryParamMap.get('id');
-    
-    console.log('Target User ID from URL:', targetUserId);
-    
-    if (targetUserId && targetUserId !== this.currentUserId) {
-      this.startOrOpenConversation(targetUserId);
-    }
+    this.route.queryParams.subscribe(params => {
+      const targetUserId = params['id'];
+      if (targetUserId && targetUserId !== this.currentUserIdSignal()) {
+        this.startOrOpenConversation(targetUserId);
+      }
+    });
   }
 
-private startOrOpenConversation(targetUserId: string): void {
+  private startOrOpenConversation(targetUserId: string): void {
+    this.isLoadingSignal.set(true);
 
-  this.isLoading = true;
+    this.chatService.startConversation(targetUserId).subscribe({
+      next: (response) => {
+        this.isLoadingSignal.set(false);
 
-  this.chatService.startConversation(targetUserId).subscribe({
-    next: (response) => {
+        if (!response.isSuccess) return;
 
-      if (!response.isSuccess) {
-        console.error(response.message);
-        this.isLoading = false;
-        return;
+        const conv = response.data;
+        const conversation = {
+          id: conv.id,
+          otherUserId: conv.otherUserId,
+          otherUserName: conv.otherUserName,
+          otherUserImageUrl: conv.otherUserImageUrl,
+          unreadCount: 0,
+          lastMessage: '',
+          lastMessageAt: new Date()
+        };
+
+        const exists = this.conversationsSignal().find(x => x.id === conversation.id);
+
+        if (!exists) {
+          this.conversationsSignal.update(convs => [conversation, ...convs]);
+        }
+
+        this.selectedConversationSignal.set(conversation);
+        this.messagesSignal.set([]);
+        this.loadMessages(conversation.id);
+      },
+      error: (err) => {
+        this.isLoadingSignal.set(false);
+        console.error(err);
       }
+    });
+  }
 
-      const conv = response.data;
+ private loadConversations(): Promise<void> {
+  return new Promise((resolve) => {
 
-      // 👇 افتح الشات مباشرة بدون انتظار القائمة
-      this.selectedConversation = {
-        id: conv.id,
-        otherUserId: conv.otherUserId,
-        otherUserName: conv.otherUserName,
-        otherUserImageUrl: conv.otherUserImageUrl
-      };
+    this.isLoadingSignal.set(true);
 
-      // 👇 امسح الرسائل القديمة
-      this.messages = [];
+    this.chatService.getMyConversations().subscribe({
+      next: (response) => {
 
-      // 👇 حمّل الرسائل
-      this.loadMessages(conv.id);
+        if (response.isSuccess) {
+          this.conversationsSignal.set(response.data);
+        }
 
-      this.isLoading = false;
-    },
-    error: (err) => {
-      console.error('Start conversation error:', err);
-      this.isLoading = false;
-    }
+        this.isLoadingSignal.set(false);
+        resolve();
+      },
+
+      error: () => {
+        this.isLoadingSignal.set(false);
+        resolve();
+      }
+    });
+
   });
 }
-  loadConversations(): void {
 
-  this.isLoading = true;
-
-  this.chatService.getMyConversations().subscribe({
-    next: (response) => {
-
-      if (response.isSuccess) {
-        this.conversations = response.data;
-      }
-
-      this.isLoading = false;
-
-      // 👇 هنا الصحيح
-      this.checkForTargetUserId();
-    },
-    error: (error) => {
-      console.error('Error loading conversations:', error);
-      this.isLoading = false;
-    }
-  });
-}
   listenForNewMessages(): void {
     this.subscriptions.add(
-      this.chatService.newMessage$.subscribe((message) => {
-        if (message && message.conversationId === this.selectedConversation?.id) {
-          this.messages.push(message);
+      this.chatService.newMessage$.subscribe(message => {
+        if (!message) return;
+
+        const messages = this.messagesSignal();
+        if (messages.some(x =>
+          x.content === message.content &&
+          x.senderId === message.senderId &&
+          x.conversationId === message.conversationId
+        )) {
+          return;
+        }
+
+        const selectedConv = this.selectedConversationSignal();
+        
+        if (message.conversationId === selectedConv?.id) {
+          this.messagesSignal.update(msgs => [...msgs, message]);
           this.scrollToBottom();
           this.chatService.markAsRead(message.conversationId);
-        } else if (message) {
+        } else {
           this.updateConversationLastMessage(message);
         }
       })
     );
   }
 
-  updateConversationLastMessage(message: any): void {
-    const conv = this.conversations.find(c => c.id === message.conversationId);
-    if (conv) {
-      conv.lastMessage = message.content;
-      conv.lastMessageAt = message.sentAt;
-      if (message.senderId !== this.currentUserId) {
-        conv.unreadCount++;
+  private updateConversationLastMessage(message: any): void {
+    this.conversationsSignal.update(convs => {
+      const conv = convs.find(c => c.id === message.conversationId);
+      if (conv) {
+        this.conversationsSignal.update(convs =>
+  convs.map(c =>
+    c.id === message.conversationId
+      ? {
+          ...c,
+          lastMessage: message.content,
+          lastMessageAt: message.sentAt,
+          unreadCount:
+            message.senderId !== this.currentUserIdSignal()
+              ? c.unreadCount + 1
+              : c.unreadCount
+        }
+      : c
+  )
+);
+        conv.lastMessageAt = message.sentAt;
+        if (message.senderId !== this.currentUserIdSignal()) {
+          conv.unreadCount++;
+        }
       }
-    }
+      return [...convs]; // نعيد نسخة جديدة للـ signal
+    });
   }
 
   selectConversation(conversation: any): void {
-    this.selectedConversation = conversation;
+    this.selectedConversationSignal.set(conversation);
     this.loadMessages(conversation.id);
     this.chatService.markAsRead(conversation.id);
     
-    // تصفير unread count
-    const conv = this.conversations.find(c => c.id === conversation.id);
-    if (conv) {
-      conv.unreadCount = 0;
-    }
-    
-    // إزالة الـ ID من الـ URL بعد فتح المحادثة (اختياري)
+    // تحديث unreadCount
+    this.conversationsSignal.update(convs => {
+      const conv = convs.find(c => c.id === conversation.id);
+      if (conv) conv.unreadCount = 0;
+      return [...convs];
+    });
+
     this.router.navigate([], {
-      queryParams: {},
+      queryParams: { id: conversation.otherUserId },
       replaceUrl: true
     });
   }
 
- loadMessages(conversationId: number): void {
+  loadMessages(conversationId: number): void {
+    this.isLoadingSignal.set(true);
 
-  this.isLoading = true;
-
-  this.chatService.getConversationMessages(conversationId).subscribe({
-    next: (response) => {
-
-      if (response.isSuccess) {
-        this.messages = response.data?.data ?? [];
-      } else {
-        this.messages = [];
+    this.chatService.getConversationMessages(conversationId).subscribe({
+      next: (response) => {
+        if (response.isSuccess) {
+          this.messagesSignal.set(response.data?.data ?? []);
+        } else {
+          this.messagesSignal.set([]);
+        }
+        this.isLoadingSignal.set(false);
+        setTimeout(() => this.scrollToBottom(), 100);
+      },
+      error: (error) => {
+        console.error('Error loading messages:', error);
+        this.messagesSignal.set([]);
+        this.isLoadingSignal.set(false);
       }
-
-      this.isLoading = false;
-
-      setTimeout(() => this.scrollToBottom(), 100);
-    },
-    error: (error) => {
-      console.error('Error loading messages:', error);
-
-      // 👇 مهم جدًا: حتى لو فشل، الشات يفضل شغال
-      this.messages = [];
-      this.isLoading = false;
-    }
-  });
-}
+    });
+  }
 
   sendMessage(): void {
-    if (!this.newMessageText.trim() || !this.selectedConversation) {
-      return;
-    }
+    const messageText = this.newMessageText().trim();
+    const selectedConv = this.selectedConversationSignal();
     
-    if (!this.isSignalRConnected) {
+    if (!messageText || !selectedConv) return;
+    
+    if (!this.isSignalRConnectedSignal()) {
       console.error('SignalR not connected, cannot send message');
-      // عرض رسالة للمستخدم
       alert('جاري الاتصال بالخادم، حاول مرة أخرى');
       return;
     }
     
-    const content = this.newMessageText.trim();
-    
-    // إضافة رسالة مؤقتة قبل الإرسال
-    const tempId = -Date.now(); // ID مؤقت
+    const tempId = -Date.now();
     const tempMessage: any = {
       id: tempId,
-      conversationId: this.selectedConversation.id,
-      senderId: this.currentUserId,
-      receiverId: this.selectedConversation.otherUserId,
-      content: content,
+      conversationId: selectedConv.id,
+      senderId: this.currentUserIdSignal(),
+      receiverId: selectedConv.otherUserId,
+      content: messageText,
       sentAt: new Date().toISOString(),
       isRead: false
     };
     
-    this.messages.push(tempMessage);
-    this.newMessageText = '';
+    this.messagesSignal.update(msgs => [...msgs, tempMessage]);
+    
+    this.conversationsSignal.update(convs => {
+      const conv = convs.find(c => c.id === selectedConv.id);
+      if (conv) {
+        conv.lastMessage = messageText;
+        conv.lastMessageAt = new Date();
+      }
+      return [...convs];
+    });
+    
+    this.newMessageText.set('');
     this.scrollToBottom();
     
-    // إرسال الرسالة عبر SignalR
-    this.chatService.sendMessage(this.selectedConversation.id, content).catch(error => {
+    this.chatService.sendMessage(selectedConv.id, messageText).catch(error => {
       console.error('Error sending message:', error);
-      
-      // إزالة الرسالة المؤقتة إذا فشل الإرسال
-      const index = this.messages.findIndex(m => m.id === tempId);
-      if (index !== -1) {
-        this.messages.splice(index, 1);
-      }
-      
-      // عرض رسالة خطأ للمستخدم
+      this.messagesSignal.update(msgs => msgs.filter(m => m.id !== tempId));
       alert('فشل إرسال الرسالة، حاول مرة أخرى');
     });
   }
 
   startNewConversation(targetUserId: string): void {
     this.startOrOpenConversation(targetUserId);
-  }
-
-  get filteredConversations(): any[] {
-    if (!this.searchTerm) return this.conversations;
-    return this.conversations.filter(conv => 
-      conv.otherUserName.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
   }
 
   scrollToBottom(): void {
@@ -289,38 +346,6 @@ private startOrOpenConversation(targetUserId: string): void {
   }
 
   isMyMessage(senderId: string): boolean {
-    return senderId === this.currentUserId;
-  }
-
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    
-    // أقل من 24 ساعة
-    if (diff < 24 * 60 * 60 * 1000) {
-      return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-    }
-    
-    // أقل من 7 أيام
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return date.toLocaleDateString('ar-EG', { weekday: 'short' });
-    }
-    
-    // أقدم
-    return date.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  }
-
-  getConversationLastMessageTime(conversation: any): string {
-    if (!conversation.lastMessageAt) return '';
-    return this.formatDate(conversation.lastMessageAt);
-  }
-
-  trackByConversationId(index: number, conversation: any): number {
-    return conversation.id;
-  }
-
-  trackByMessageId(index: number, message: any): number {
-    return message.id;
+    return senderId === this.currentUserIdSignal();
   }
 }

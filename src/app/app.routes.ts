@@ -14,6 +14,7 @@ import { Community } from './pages/community/community';
 import { Auctions } from './pages/auctions/auctions';
 import { Trader } from './pages/trader/trader';
 import { Traders } from './pages/traders/traders';
+import { Auction } from './pages/auction/auction';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -31,4 +32,5 @@ export const routes: Routes = [
   { path: 'trader/:id', component: Trader },
   { path: 'community', component: Community },
   { path: 'auctions', component: Auctions },
+  { path: 'auctions/:id', component: Auction },
 ];

@@ -119,7 +119,7 @@ export class Users {
     //   ]
     // }
 
-    return this.http.get(`${BaseUrl.url}/api/Reviews/users/${userId}/rating-summary`);
+    return this.http.get(`${BaseUrl.url}api/Reviews/users/${userId}/rating-summary`);
   }
 
   getAllTraders(): Observable<any> {

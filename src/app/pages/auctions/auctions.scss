@@ -1,60 +1,38 @@
-// Status badge styles
-.status-pending {
-  @apply bg-yellow-100 text-yellow-800;
+// auctions.scss
+
+:host {
+  display: block;
 }
 
-.status-active {
-  @apply bg-green-100 text-green-800;
-}
+.auction-card {
+  cursor: pointer;
 
-.status-ended {
-  @apply bg-gray-100 text-gray-800;
-}
-
-.status-cancelled {
-  @apply bg-red-100 text-red-800;
-}
-
-.status-sold {
-  @apply bg-blue-100 text-blue-800;
-}
-
-// Custom utility classes
-.bg-primary {
-  background-color: var(--mat-sys-primary);
-}
-
-.bg-primary-dark {
-  background-color: var(--mat-sys-primary-fixed-dim);
-}
-
-.text-primary {
-  color: var(--mat-sys-primary);
-}
-
-.hover\:bg-primary-dark:hover {
-  background-color: var(--mat-sys-primary-fixed-dim);
-}
-
-// Dark mode support
-.dark {
-  .status-pending {
-    @apply bg-yellow-900/30 text-yellow-300;
+  &:hover img {
+    transform: scale(1.04);
+    transition: transform 0.3s ease;
   }
-  
-  .status-active {
-    @apply bg-green-900/30 text-green-300;
+
+  img {
+    transition: transform 0.3s ease;
   }
-  
-  .status-ended {
-    @apply bg-gray-800 text-gray-300;
+}
+
+// Paginator RTL fix
+::ng-deep .mat-mdc-paginator {
+  direction: rtl;
+  font-family: 'Cairo', sans-serif !important;
+
+  .mat-mdc-paginator-range-label {
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.8rem;
   }
-  
-  .status-cancelled {
-    @apply bg-red-900/30 text-red-300;
+
+  .mat-mdc-select-value {
+    font-family: 'Cairo', sans-serif;
   }
-  
-  .status-sold {
-    @apply bg-blue-900/30 text-blue-300;
-  }
+}
+
+// Spinner color override
+::ng-deep .mat-mdc-progress-spinner circle {
+  stroke: #40916c !important;
 }

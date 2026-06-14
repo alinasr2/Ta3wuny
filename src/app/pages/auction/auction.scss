@@ -1,0 +1,65 @@
+// auction.scss
+
+:host {
+  display: block;
+}
+
+// Live bid flash animation
+@keyframes bid-flash {
+  0%   { background-color: rgba(64, 145, 108, 0.15); }
+  50%  { background-color: rgba(64, 145, 108, 0.05); }
+  100% { background-color: transparent; }
+}
+
+.new-bid {
+  animation: bid-flash 1.4s ease-out;
+}
+
+// Slide-in for newly added bids
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bid-row {
+  animation: slide-in 0.3s ease-out;
+}
+
+// Fix paginator font
+::ng-deep .mat-mdc-paginator {
+  font-family: 'Cairo', sans-serif !important;
+  direction: rtl;
+}
+
+// Spinner override for primary color
+::ng-deep .mat-mdc-progress-spinner circle {
+  stroke: #40916c !important;
+}
+
+// Snackbar success style
+::ng-deep .snack-success {
+  --mdc-snackbar-container-color: #40916c;
+  --mdc-snackbar-supporting-text-color: white;
+  font-family: 'Cairo', sans-serif;
+}
+
+// Number input - hide arrows
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+// Ring transition for live price card
+.ring-primary {
+  transition: ring 0.3s ease;
+}

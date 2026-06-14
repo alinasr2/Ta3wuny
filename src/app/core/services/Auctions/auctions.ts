@@ -9,16 +9,6 @@ import { BaseUrl } from '../../../shared/environments/base-url';
 export class AuctionsService {
   private http = inject(HttpClient);
   baseUrl = BaseUrl.url;
-  createAuction(auctionData: {
-    productId: number;
-    startDate: string;
-    endDate: string;
-    startingPrice: number;
-    reservePrice: number;
-  }): Observable<any> {
-    return this.http.post(`${this.baseUrl}api/Auctions`, auctionData);
-  }
-
   getAllAuctions(params?: {
     productId?: number;
     farmerId?: string;
@@ -29,39 +19,39 @@ export class AuctionsService {
     pageSize?: number;
     pageIndex?: number;
   }): Observable<any> {
-    let httpParams = new HttpParams();
+    let httpParams:any = {};
     
     if (params) {
       if (params.productId !== undefined) {
-        httpParams = httpParams.set('ProductId', params.productId.toString());
+        httpParams.ProductId = params.productId.toString();
       }
       if (params.farmerId) {
-        httpParams = httpParams.set('FarmerId', params.farmerId);
+        httpParams.FarmerId = params.farmerId;
       }
       if (params.winnerId) {
-        httpParams = httpParams.set('WinnerId', params.winnerId);
+        httpParams.WinnerId = params.winnerId;
       }
       if (params.status !== undefined) {
-        httpParams = httpParams.set('Status', params.status.toString());
+        httpParams.Status = params.status.toString();
       }
       if (params.sort) {
-        httpParams = httpParams.set('Sort', params.sort);
+        httpParams.Sort = params.sort;
       }
       if (params.sortDescending !== undefined) {
-        httpParams = httpParams.set('SortDescending', params.sortDescending.toString());
+        httpParams.SortDescending = params.sortDescending.toString();
       }
       if (params.pageSize !== undefined) {
-        httpParams = httpParams.set('pageSize', params.pageSize.toString());
+        httpParams.pageSize = params.pageSize.toString();
       }
       if (params.pageIndex !== undefined) {
-        httpParams = httpParams.set('PageIndex', params.pageIndex.toString()+1);
+        httpParams.PageIndex = params.pageIndex + 1;
       }
     }
     
     return this.http.get(`${this.baseUrl}api/Auctions`, { params: httpParams });
   }
 
-  getAuctionById(auctionId: number): Observable<any> {
+  getAuctionById(auctionId: any): Observable<any> {
     return this.http.get(`${this.baseUrl}api/Auctions/${auctionId}`);
   }
 

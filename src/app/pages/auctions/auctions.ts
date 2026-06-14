@@ -1,40 +1,49 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { AuctionsService } from '../../core/services/Auctions/auctions';
+import { RouterLink } from '@angular/router';
 
+export type AuctionStatus = 0 | 1 | 2 | 3 | 4;
 
-interface Auction {
+export interface Auction {
   id: number;
-  productId: number;
-  farmerId: string;
-  winnerId?: string;
+  status: string;
   startDate: string;
   endDate: string;
   startingPrice: number;
-  reservePrice: number;
-  status: number; // 0: pending, 1: active, 2: ended, 3: cancelled, 4: sold
-  product?: {
-    name: string;
-    description: string;
-    imageUrl?: string;
-    category?: string;
-  };
-  bids?: Bid[];
+  currentPrice: number;
+  totalBids: number;
+  isEnded: boolean;
+  minutesRemaining: number;
+  productId: number;
+  productName: string;
+  productUnit: string;
+  productQuantity: number;
+  mainImageUrl: string;
+  farmerId: string;
+  farmerName: string;
+  farmerImage: string;
+  winnerId: string;
+  winnerName: string;
+  winnerImage: string;
 }
 
-interface Bid {
-  id: number;
-  auctionId: number;
-  userId: string;
-  userName?: string;
-  amount: number;
-  createdAt: string;
-}
+const STATUS_MAP: Record<AuctionStatus, { label: string; color: string; icon: string }> = {
+  0: { label: 'الكل', color: 'bg-gray-100 text-gray-600', icon: 'list' },
+  1: { label: 'قادمة', color: 'bg-blue-100 text-blue-700', icon: 'schedule' },
+  2: { label: 'جارية', color: 'bg-green-100 text-green-700', icon: 'play_circle' },
+  3: { label: 'منتهية', color: 'bg-red-100 text-red-600', icon: 'check_circle' },
+  4: { label: 'ملغاة', color: 'bg-yellow-100 text-yellow-700', icon: 'cancel' },
+};
 
 @Component({
   selector: 'app-auctions',
@@ -42,251 +51,130 @@ interface Bid {
   imports: [
     CommonModule,
     FormsModule,
-    MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
+    MatTooltipModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatChipsModule,
+    MatPaginatorModule,
+    RouterLink
   ],
   templateUrl: './auctions.html',
   styleUrls: ['./auctions.scss'],
- changeDetection: ChangeDetectionStrategy.Default 
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Auctions implements OnInit {
-  // متغيرات المزادات
-  auctions: Auction[] = [];
-  filteredAuctions: Auction[] = [];
-  isLoading = true;
-  searchTerm = '';
-  selectedStatus = 'all';
+  private auctionsService = inject(AuctionsService);
 
-  statuses = [
-    { value: 'all', label: 'الكل' },
-    { value: '0', label: 'قيد الانتظار' },
-    { value: '1', label: 'نشط' },
-    { value: '2', label: 'منتهي' },
-    { value: '3', label: 'ملغي' },
-    { value: '4', label: 'تم البيع' },
-  ];
+  // State signals
+  auctions = signal<Auction[]>([]);
+  loading = signal(false);
+  error = signal<string | null>(null);
+  totalCount = signal(0);
+  totalPages = signal(0);
 
-  // متغيرات الـ Dialog
-  showDialog = false;
-  selectedAuction: Auction | null = null;
-  bidAmount: number | null = null;
-  isSubmittingBid = false;
-  minBidAmount: number = 0;
-  auctionBids: Bid[] = [];
+  // Filter/pagination signals
+  selectedStatus = signal<AuctionStatus | undefined>(undefined);
+  pageIndex = signal(0);
+  pageSize = signal(10);
+  sortDescending = signal(true);
 
-  constructor(
-    private auctionsService: AuctionsService,
-    private snackBar: MatSnackBar
-  ) {}
+  // View mode
+  viewMode = signal<'grid' | 'list'>('grid');
+
+  // Computed
+  statusOptions = computed(() => ([
+    { value: undefined, label: 'الكل', icon: 'list', color: 'text-gray-600' },
+    { value: 1, label: 'قادمة', icon: 'schedule', color: 'text-blue-600' },
+    { value: 2, label: 'جارية', icon: 'play_circle', color: 'text-green-600' },
+    { value: 3, label: 'منتهية', icon: 'check_circle', color: 'text-red-500' },
+    { value: 4, label: 'ملغاة', icon: 'cancel', color: 'text-yellow-600' },
+  ]));
+
+  hasAuctions = computed(() => this.auctions().length > 0);
 
   ngOnInit(): void {
     this.loadAuctions();
   }
 
   loadAuctions(): void {
-  this.isLoading = true;
-  this.auctionsService.getAllAuctions({ pageSize: 100, pageIndex: 0 }).subscribe({
-    next: (response: any) => {
-      console.log(response);
-      
-      // المفتاح: الوصول إلى المسار الصحيح للبيانات
-      let auctionsData: Auction[] = [];
-      
-      if (response?.data?.data && Array.isArray(response.data.data)) {
-        // هذا هو الشكل الصحيح لاستجابتك
-        auctionsData = response.data.data;
-      } 
-      else if (response?.data && Array.isArray(response.data)) {
-        auctionsData = response.data;
-      }
-      else if (response?.items && Array.isArray(response.items)) {
-        auctionsData = response.items;
-      }
-      else if (Array.isArray(response)) {
-        auctionsData = response;
-      }
-      
-      // مهم مع OnPush: إنشاء مصفوفة جديدة (وليس تعديل الموجودة)
-      this.auctions = [...auctionsData];
-      this.filterAuctions();
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error('Error loading auctions:', error);
-      this.snackBar.open('حدث خطأ في تحميل المزادات', 'إغلاق', { duration: 3000 });
-      this.isLoading = false;
-    },
-  });
-}
+    this.loading.set(true);
+    this.error.set(null);
 
-  filterAuctions(): void {
-  let filtered = [...this.auctions];  // إنشاء نسخة جديدة
-
-  if (this.selectedStatus !== 'all') {
-    filtered = filtered.filter(
-      (auction) => auction.status.toString() === this.selectedStatus
-    );
+    this.auctionsService
+      .getAllAuctions({
+        status: this.selectedStatus(),
+        pageIndex: this.pageIndex(),
+        pageSize: this.pageSize(),
+        sortDescending: this.sortDescending(),
+      })
+      .subscribe({
+        next: (res) => {
+          console.log(res)
+          if (res?.isSuccess) {
+            this.auctions.set(res.data.data);
+            this.totalCount.set(res.data.count);
+            this.totalPages.set(res.data.totalPages);
+          } else {
+            this.error.set(res?.message || 'حدث خطأ ما');
+          }
+          this.loading.set(false);
+        },
+        error: (err) => {
+          console.log(err);
+          this.auctions.set([]);
+          this.totalCount.set(0);
+          this.totalPages.set(1);
+          // this.error.set('تعذّر الاتصال بالخادم، يرجى المحاولة لاحقاً');
+          this.loading.set(false);
+        },
+      });
   }
 
-  if (this.searchTerm.trim()) {
-    const term = this.searchTerm.toLowerCase();
-    filtered = filtered.filter(
-      (auction) =>
-        auction.product?.name?.toLowerCase().includes(term) ||
-        auction.product?.description?.toLowerCase().includes(term)
-    );
+  onStatusChange(status: AuctionStatus | undefined): void {
+    this.selectedStatus.set(status);
+    this.pageIndex.set(0);
+    this.loadAuctions();
   }
 
-  this.filteredAuctions = [...filtered];  // مرجع جديد وليس تعديل مباشر
-}
-
-  onSearchChange(): void {
-    this.filterAuctions();
+  onPageChange(event: PageEvent): void {
+    console.log(event);
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+    this.loadAuctions();
   }
 
-  onStatusChange(): void {
-    this.filterAuctions();
+  toggleSort(): void {
+    this.sortDescending.set(!this.sortDescending());
+    this.loadAuctions();
   }
 
-  // فتح الـ Dialog
-  openAuctionDialog(auction: Auction): void {
-    this.selectedAuction = auction;
-    this.showDialog = true;
-    this.bidAmount = null;
-    this.loadAuctionBids(auction.id);
-    this.calculateMinBid();
+  setViewMode(mode: 'grid' | 'list'): void {
+    this.viewMode.set(mode);
   }
 
-  // إغلاق الـ Dialog
-  closeDialog(): void {
-    this.showDialog = false;
-    this.selectedAuction = null;
-    this.bidAmount = null;
-    this.isSubmittingBid = false;
-    this.auctionBids = [];
-  }
-
-  // تحميل عروض المزاد
-  loadAuctionBids(auctionId: number): void {
-  this.auctionsService.getAuctionBids(auctionId).subscribe({
-    next: (response: any) => {
-      let bidsData: Bid[] = [];
-      
-      if (response?.data && Array.isArray(response.data)) {
-        bidsData = response.data;
-      } else if (Array.isArray(response)) {
-        bidsData = response;
-      }
-      
-      // إنشاء مصفوفة جديدة
-      this.auctionBids = [...bidsData];
-      this.calculateMinBid();
-    },
-    error: (error) => {
-      console.error('Error loading bids:', error);
-      this.auctionBids = [];
-    },
-  });
-}
-
-  // حساب أقل عرض مسموح
-  calculateMinBid(): void {
-    if (!this.selectedAuction) return;
-    const highestBid = this.getHighestBid();
-    this.minBidAmount = highestBid + (highestBid * 0.05);
-  }
-
-  getHighestBid(): number {
-    if (!this.auctionBids || this.auctionBids.length === 0) {
-      return this.selectedAuction?.startingPrice || 0;
-    }
-    return Math.max(...this.auctionBids.map((bid) => bid.amount));
-  }
-
-  getBidCount(): number {
-    return this.auctionBids?.length || 0;
-  }
-
-  getTimeRemaining(endDate: string): string {
-    const end = new Date(endDate);
-    const now = new Date();
-    const diff = end.getTime() - now.getTime();
-
-    if (diff <= 0) {
-      return 'انتهى المزاد';
-    }
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) {
-      return `متبقي ${days} يوم ${hours} ساعة`;
-    }
-    if (hours > 0) {
-      return `متبقي ${hours} ساعة ${minutes} دقيقة`;
-    }
-    return `متبقي ${minutes} دقيقة`;
-  }
-
-  isAuctionActive(): boolean {
-    if (!this.selectedAuction) return false;
-    return this.selectedAuction.status === 1 && 
-           new Date(this.selectedAuction.endDate).getTime() > new Date().getTime();
-  }
-
-  isValidBid(): boolean {
-    return (
-      this.bidAmount !== null &&
-      this.selectedAuction !== null &&
-      this.bidAmount >= this.minBidAmount &&
-      this.isAuctionActive()
-    );
-  }
-
-  placeBid(): void {
-    if (!this.isValidBid() || !this.selectedAuction) return;
-
-    this.isSubmittingBid = true;
-
-    this.auctionsService.placeBid(this.selectedAuction.id, { amount: this.bidAmount! }).subscribe({
-      next: (response: any) => {
-        this.snackBar.open('تم إضافة عرضك بنجاح!', 'إغلاق', { duration: 3000 });
-        
-        // إعادة تحميل العروض
-        this.loadAuctionBids(this.selectedAuction!.id);
-        this.bidAmount = null;
-        this.isSubmittingBid = false;
-      },
-      error: (error) => {
-        console.error('Error placing bid:', error);
-        this.snackBar.open(error.error?.message || 'حدث خطأ في إضافة العرض', 'إغلاق', { duration: 3000 });
-        this.isSubmittingBid = false;
-      },
-    });
-  }
-
-  getStatusLabel(status: number): string {
-    const statuses: Record<number, string> = {
-      0: 'قيد الانتظار',
-      1: 'نشط',
-      2: 'منتهي',
-      3: 'ملغي',
-      4: 'تم البيع',
+  getStatusConfig(statusStr: string) {
+    const map: Record<string, { label: string; bgClass: string; textClass: string; icon: string }> = {
+      Upcoming: { label: 'قادم',   bgClass: 'bg-blue-50',   textClass: 'text-blue-700',  icon: 'schedule'     },
+      Active:   { label: 'جارٍ',   bgClass: 'bg-green-50',  textClass: 'text-green-700', icon: 'play_circle'  },
+      Ended:    { label: 'منتهي',  bgClass: 'bg-red-50',    textClass: 'text-red-600',   icon: 'check_circle' },
+      Canceled: { label: 'ملغي',   bgClass: 'bg-yellow-50', textClass: 'text-yellow-700',icon: 'cancel'       },
+      // Failed: { label: 'انتهي ',   bgClass: 'bg-yellow-50', textClass: 'text-yellow-700',icon: 'cancel'       },
     };
-    return statuses[status] || 'غير معروف';
+    return map[statusStr] ?? { label: statusStr, bgClass: 'bg-gray-100', textClass: 'text-gray-600', icon: 'info' };
   }
 
-  getStatusClass(status: number): string {
-    const classes: Record<number, string> = {
-      0: 'status-pending',
-      1: 'status-active',
-      2: 'status-ended',
-      3: 'status-cancelled',
-      4: 'status-sold',
-    };
-    return classes[status] || '';
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(price);
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  trackById(_: number, item: Auction): number {
+    return item.id;
   }
 }

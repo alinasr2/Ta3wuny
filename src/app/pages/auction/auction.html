@@ -1,0 +1,365 @@
+<div class="auction-detail-page min-h-screen bg-background" dir="rtl">
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <mat-spinner [diameter]="52"></mat-spinner>
+      <p class="text-text-secondary font-medium">جارٍ تحميل تفاصيل المزاد...</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!loading() && error()) {
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4 p-8">
+      <mat-icon class="!text-6xl text-red-300">error_outline</mat-icon>
+      <p class="text-red-500 font-bold text-lg text-center">{{ error() }}</p>
+      <button (click)="loadAuction(auctionId())"
+        class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all">
+        <mat-icon class="!text-base">refresh</mat-icon>
+        إعادة المحاولة
+      </button>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (!loading() && !error() && auction(); as a) {
+    <!-- Hero Banner -->
+    <div class="relative h-64 md:h-80 overflow-hidden">
+      <img [src]="a.mainImageUrl" [alt]="a.productName"
+        class="w-full h-full object-cover"
+        onerror="this.src='https://placehold.co/1200x400?text=لا+توجد+صورة'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+
+      <!-- Back button -->
+      <a routerLink="/auctions"
+        class="absolute top-5 right-5 flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/30 transition-all">
+        <mat-icon class="!text-base">arrow_forward</mat-icon>
+        العودة للمزادات
+      </a>
+
+      <!-- Live indicator -->
+      @if (a.status === 'Active') {
+        <div class="absolute top-5 left-5 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl">
+          <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+          <span class="text-white text-xs font-bold">مباشر</span>
+          @if (isConnected()) {
+            <mat-icon class="!text-xs text-green-400" matTooltip="متصل بالخادم">wifi</mat-icon>
+          } @else {
+            <mat-icon class="!text-xs text-red-400" matTooltip="غير متصل">wifi_off</mat-icon>
+          }
+        </div>
+      }
+
+      <!-- Product name overlay -->
+      <div class="absolute bottom-5 right-5 left-5">
+        <div class="flex items-end justify-between flex-wrap gap-3">
+          <div>
+            <p class="text-white/70 text-sm mb-1">منتج المزاد</p>
+            <h1 class="text-white text-3xl font-bold drop-shadow-lg">{{ a.productName }}</h1>
+            <p class="text-white/80 text-sm mt-1 flex items-center gap-1">
+              <mat-icon class="!text-sm">inventory_2</mat-icon>
+              {{ a.productQuantity | number:'1.0-0' }} {{ a.productUnit }}
+            </p>
+          </div>
+          <!-- Status badge -->
+          <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold shadow-lg"
+            [class]="statusConfig().bgClass + ' ' + statusConfig().textClass">
+            <span class="w-2 h-2 rounded-full" [class]="statusConfig().dotClass + (a.status === 'Active' ? ' animate-pulse' : '')"></span>
+            <mat-icon class="!text-base">{{ statusConfig().icon }}</mat-icon>
+            {{ statusConfig().label }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- ── Left Column: Bid Panel + Bids History ── -->
+        <div class="lg:col-span-1 flex flex-col gap-5">
+
+          <!-- Current Price Card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            [class.ring-2]="liveActivity()"
+            [class.ring-primary]="liveActivity()">
+            <div class="bg-gradient-to-l from-primary to-primary-dark p-5 text-white">
+              <p class="text-white/80 text-xs font-medium mb-1">السعر الحالي</p>
+              <p class="text-4xl font-bold transition-all">{{ formatPrice(a.currentPrice) }}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-white/70 text-xs">ابتداءً من {{ formatPrice(a.startingPrice) }}</span>
+                <span class="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                  <mat-icon class="!text-xs">trending_up</mat-icon>
+                  +{{ priceIncreasePercent() }}%
+                </span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 divide-x divide-x-reverse divide-gray-100 p-0">
+              <div class="p-4 text-center">
+                <p class="text-2xl font-bold text-text-primary">{{ a.totalBids }}</p>
+                <p class="text-xs text-text-secondary flex items-center justify-center gap-1 mt-0.5">
+                  <mat-icon class="!text-xs">gavel</mat-icon>مزايدة
+                </p>
+              </div>
+              <div class="p-4 text-center">
+                <p class="text-2xl font-bold text-text-primary">{{ a.minutesRemaining }}</p>
+                <p class="text-xs text-text-secondary flex items-center justify-center gap-1 mt-0.5">
+                  <mat-icon class="!text-xs">timer</mat-icon>دقيقة متبقية
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Place Bid Panel -->
+          @if (canBid()) {
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <mat-icon class="text-primary">gavel</mat-icon>
+                قدّم مزايدتك
+              </h2>
+
+              <div class="mb-4">
+                <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
+                  مبلغ المزايدة (جنيه)
+                </label>
+                <div class="relative">
+                  <input
+                    type="number"
+                    [min]="minBidAmount()"
+                    [ngModel]="bidAmount()"
+                    (ngModelChange)="bidAmount.set($event)"
+                    [placeholder]="'الحد الأدنى: ' + formatPrice(minBidAmount())"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 font-bold text-text-primary placeholder:text-gray-300 placeholder:font-normal text-lg" />
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary text-sm">ج.م</span>
+                </div>
+                <p class="text-xs text-text-secondary mt-1.5 flex items-center gap-1">
+                  <mat-icon class="!text-xs text-primary">info</mat-icon>
+                  يجب أن يتجاوز {{ formatPrice(a.currentPrice) }}
+                </p>
+              </div>
+
+              @if (bidError()) {
+                <div class="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl p-3 mb-4 text-red-600 text-sm">
+                  <mat-icon class="!text-base flex-shrink-0">error</mat-icon>
+                  {{ bidError() }}
+                </div>
+              }
+
+              <button
+                (click)="placeBid()"
+                [disabled]="bidLoading()"
+                class="w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                @if (bidLoading()) {
+                  <mat-spinner [diameter]="20" color="accent"></mat-spinner>
+                  جارٍ الإرسال...
+                } @else {
+                  <mat-icon>gavel</mat-icon>
+                  تقديم المزايدة
+                }
+              </button>
+            </div>
+          }
+
+          <!-- Ended Winner Card -->
+          @if (a.isEnded && a.winnerName) {
+            <div class="bg-gradient-to-l from-yellow-400 to-yellow-500 rounded-2xl p-5 text-white shadow-sm">
+              <div class="flex items-center gap-2 mb-4">
+                <mat-icon class="!text-2xl">emoji_events</mat-icon>
+                <h2 class="text-base font-bold">الفائز بالمزاد</h2>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full border-2 border-white/50 overflow-hidden bg-white/20 flex items-center justify-center flex-shrink-0">
+                  @if (getAvatarUrl(a.winnerImage)) {
+                    <img [src]="a.winnerImage" [alt]="a.winnerName" class="w-full h-full object-cover" />
+                  } @else {
+                    <mat-icon class="!text-2xl text-white">business</mat-icon>
+                  }
+                </div>
+                <div>
+                  <p class="text-white/80 text-xs">الشركة الفائزة</p>
+                  <p class="font-bold text-base">{{ a.winnerName }}</p>
+                  <p class="text-white/90 font-bold text-lg mt-0.5">{{ formatPrice(a.currentPrice) }}</p>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Dates -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-sm font-bold text-text-secondary mb-3 flex items-center gap-1.5">
+              <mat-icon class="!text-base text-primary">date_range</mat-icon>
+              مدة المزاد
+            </h2>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-text-secondary flex items-center gap-1">
+                  <mat-icon class="!text-xs">play_arrow</mat-icon> بداية المزاد
+                </span>
+                <span class="text-sm font-bold text-text-primary">{{ formatDate(a.startDate) }}</span>
+              </div>
+              <div class="h-px bg-gray-100"></div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-text-secondary flex items-center gap-1">
+                  <mat-icon class="!text-xs">stop</mat-icon> نهاية المزاد
+                </span>
+                <span class="text-sm font-bold text-text-primary">{{ formatDate(a.endDate) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Right Column: Details + Bids History ── -->
+        <div class="lg:col-span-2 flex flex-col gap-5">
+
+          <!-- Farmer Card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">agriculture</mat-icon>
+              المزارع
+            </h2>
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 rounded-2xl overflow-hidden bg-accent flex items-center justify-center flex-shrink-0">
+                @if (getAvatarUrl(a.farmerImage)) {
+                  <img [src]="a.farmerImage" [alt]="a.farmerName" class="w-full h-full object-cover" />
+                } @else {
+                  <mat-icon class="!text-3xl text-primary">person</mat-icon>
+                }
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">اسم المزارع</p>
+                <p class="text-xl font-bold text-text-primary">{{ a.farmerName }}</p>
+                <p class="text-xs text-text-secondary mt-1 font-mono opacity-60">{{ a.farmerId.slice(0,8) }}...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Stats -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">bar_chart</mat-icon>
+              تفاصيل المنتج
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div class="bg-accent rounded-xl p-4">
+                <p class="text-xs text-text-secondary mb-1">اسم المنتج</p>
+                <p class="font-bold text-text-primary">{{ a.productName }}</p>
+              </div>
+              <div class="bg-accent rounded-xl p-4">
+                <p class="text-xs text-text-secondary mb-1">الكمية المتاحة</p>
+                <p class="font-bold text-text-primary">{{ a.productQuantity | number:'1.0-0' }} {{ a.productUnit }}</p>
+              </div>
+              <div class="bg-accent rounded-xl p-4">
+                <p class="text-xs text-text-secondary mb-1">سعر البداية</p>
+                <p class="font-bold text-primary">{{ formatPrice(a.startingPrice) }}</p>
+              </div>
+              <div class="bg-accent rounded-xl p-4">
+                <p class="text-xs text-text-secondary mb-1">السعر الحالي</p>
+                <p class="font-bold text-primary text-lg">{{ formatPrice(a.currentPrice) }}</p>
+              </div>
+              <div class="bg-accent rounded-xl p-4">
+                <p class="text-xs text-text-secondary mb-1">إجمالي المزايدات</p>
+                <p class="font-bold text-text-primary">{{ a.totalBids }} مزايدة</p>
+              </div>
+              <div class="bg-accent rounded-xl p-4">
+                <p class="text-xs text-text-secondary mb-1">نسبة الارتفاع</p>
+                <p class="font-bold text-green-600 flex items-center gap-1">
+                  <mat-icon class="!text-base">trending_up</mat-icon>
+                  {{ priceIncreasePercent() }}%
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bids History -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">history</mat-icon>
+              سجل المزايدات
+              <span class="mr-auto text-xs bg-primary/10 text-primary font-bold px-2.5 py-1 rounded-full">
+                {{ a.totalBids }} مزايدة
+              </span>
+            </h2>
+
+            @if (sortedBids().length === 0) {
+              <div class="flex flex-col items-center py-10 gap-3 text-center">
+                <mat-icon class="!text-4xl text-gray-300">gavel</mat-icon>
+                <p class="text-text-secondary text-sm">لا توجد مزايدات بعد</p>
+                @if (canBid()) {
+                  <p class="text-xs text-gray-400">كن أول من يزايد!</p>
+                }
+              </div>
+            }
+
+            @if (sortedBids().length > 0) {
+              <div class="relative">
+                <!-- Timeline line -->
+                <div class="absolute right-5 top-4 bottom-4 w-px bg-gray-100 hidden sm:block"></div>
+
+                <div class="space-y-3">
+                  @for (bid of sortedBids(); track trackById($index, bid); let i = $index) {
+                    <div class="flex items-start gap-4 relative bid-row"
+                      [class.new-bid]="i === 0 && liveActivity()">
+
+                      <!-- Avatar with timeline dot -->
+                      <div class="relative flex-shrink-0 z-10">
+                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 flex items-center justify-center"
+                          [class.border-yellow-400]="bid.isWinning"
+                          [class.border-gray-200]="!bid.isWinning"
+                          [class.bg-yellow-50]="bid.isWinning"
+                          [class.bg-gray-50]="!bid.isWinning">
+                          @if (getAvatarUrl(bid.bidderImage)) {
+                            <img [src]="bid.bidderImage" [alt]="bid.bidderName" class="w-full h-full object-cover" />
+                          } @else {
+                            <mat-icon class="!text-lg" [class.text-yellow-500]="bid.isWinning" [class.text-gray-400]="!bid.isWinning">
+                              business
+                            </mat-icon>
+                          }
+                        </div>
+                        @if (bid.isWinning) {
+                          <div class="absolute -top-1 -left-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center shadow-sm">
+                            <mat-icon class="!text-[10px] text-white">star</mat-icon>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Bid info -->
+                      <div class="flex-1 min-w-0 bg-gray-50 rounded-xl px-4 py-3"
+                        [class.bg-yellow-50]="bid.isWinning"
+                        [class.border]="bid.isWinning"
+                        [class.border-yellow-200]="bid.isWinning">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                          <div>
+                            <p class="text-sm font-bold text-text-primary truncate">{{ bid.bidderName }}</p>
+                            <p class="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
+                              <mat-icon class="!text-xs">schedule</mat-icon>
+                              {{ formatDateTime(bid.bidTime) }}
+                            </p>
+                          </div>
+                          <div class="text-left">
+                            <p class="text-base font-bold"
+                              [class.text-yellow-600]="bid.isWinning"
+                              [class.text-text-primary]="!bid.isWinning">
+                              {{ formatPrice(bid.amount) }}
+                            </p>
+                            @if (bid.isWinning) {
+                              <p class="text-xs text-yellow-600 font-bold flex items-center gap-0.5">
+                                <mat-icon class="!text-xs">emoji_events</mat-icon>
+                                أعلى مزايدة
+                              </p>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
