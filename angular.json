@@ -33,11 +33,10 @@
             "styles": [
               "src/styles.scss"
             ],
-            "outputMode": "static",  // ✅ تغيير من "server" إلى "static"
+            "outputMode": "static", 
             "security": {
               "allowedHosts": []
             }
-            // ✅ حذف ssr و prerender و server و ssr.entry تماماً
           },
           "configurations": {
             "production": {
