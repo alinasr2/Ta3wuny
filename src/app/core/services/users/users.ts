@@ -45,7 +45,7 @@ export class Users {
     //   ]
     // }
 
-    return this.http.get(`${BaseUrl.url}api/Farmers/farmer-profiles/${id}`);
+    return this.http.get(`${BaseUrl.url}api/Farmers/farmer-profile?id=${id}`);
   }
   getFarmerProducts(id: any): Observable<any> {
     // {

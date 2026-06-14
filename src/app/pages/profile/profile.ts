@@ -45,9 +45,10 @@ export class Profile implements OnInit, AfterViewInit {
   auctions: Auction[] = [];
   
   // Loading states
-  loadingProducts = true; // Changed to true initially
-  loadingAuctions = true; // Changed to true initially
+  loadingProducts = true;
+  loadingAuctions = true;
   submittingProduct = false;
+  submittingEdit = false;
   
   // Pagination
   currentPage = 0;
@@ -61,8 +62,15 @@ export class Profile implements OnInit, AfterViewInit {
   selectedImages: File[] = [];
   imagePreviews: string[] = [];
 
+  // Edit Product Dialog State
+  showEditProductDialog = false;
+  editProductForm!: FormGroup;
+  selectedProductForEdit: any = null;
+  existingImages: string[] = [];
+
   ngOnInit(): void {
     this.initProductForm();
+    this.initEditProductForm();
     // Load data with setTimeout to avoid ExpressionChangedAfterItHasBeenChecked
     setTimeout(() => {
       this.loadMyProducts();
@@ -88,6 +96,19 @@ export class Profile implements OnInit, AfterViewInit {
     });
   }
 
+  initEditProductForm(): void {
+    this.editProductForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', Validators.required],
+      categoryId: ['', [Validators.required, Validators.min(1)]],
+      quantity: ['', [Validators.required, Validators.min(0.1)]],
+      unit: ['kg', Validators.required],
+      unitPrice: ['', [Validators.required, Validators.min(0.1)]],
+      harvestDate: [''],
+      expiryDate: ['']
+    });
+  }
+
   loadMyProducts(): void {
     this.loadingProducts = true;
     this.profileService.getMyProducts().subscribe({
@@ -106,7 +127,7 @@ export class Profile implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Error loading products:', error);
-        this.showError(error.message || 'Error loading products');
+        console.log(error.message || 'Error loading products');
         this.products = [];
         this.loadingProducts = false;
         this.cdr.detectChanges();
@@ -130,7 +151,7 @@ export class Profile implements OnInit, AfterViewInit {
       error: (error) => {
         console.error('Error loading auctions:', error);
         if (error.status !== 404) {
-          this.showError(error.message || 'Error loading auctions');
+          console.log(error.message || 'Error loading auctions');
         }
         this.auctions = [];
         this.loadingAuctions = false;
@@ -139,6 +160,7 @@ export class Profile implements OnInit, AfterViewInit {
     });
   }
 
+  // Add Product Methods
   openAddProductDialog(): void {
     this.showAddProductDialog = true;
     this.productForm.reset({
@@ -187,12 +209,12 @@ export class Profile implements OnInit, AfterViewInit {
       Object.keys(this.productForm.controls).forEach(key => {
         this.productForm.get(key)?.markAsTouched();
       });
-      this.showError('Please fill all required fields correctly');
+      console.log('Please fill all required fields correctly');
       return;
     }
 
     if (this.selectedImages.length === 0) {
-      this.showError('Please select at least one product image');
+      console.log('Please select at least one product image');
       return;
     }
 
@@ -218,12 +240,12 @@ export class Profile implements OnInit, AfterViewInit {
       next: (response) => {
         this.submittingProduct = false;
         if (response.isSuccess) {
-          this.showSuccess('Product added successfully!');
+          console.log('Product added successfully!');
           this.closeAddProductDialog();
           this.loadMyProducts();
         } else {
           const errorMsg = response.errors?.join(', ') || response.message || 'Failed to add product';
-          this.showError(errorMsg);
+          console.log(errorMsg);
         }
         this.cdr.detectChanges();
       },
@@ -231,7 +253,86 @@ export class Profile implements OnInit, AfterViewInit {
         this.submittingProduct = false;
         console.error('Add product error:', error);
         const errorMsg = error.error?.errors?.join(', ') || error.message || 'Error adding product';
-        this.showError(errorMsg);
+        console.log(errorMsg);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // Edit Product Methods
+  openEditProductDialog(product: any): void {
+    this.selectedProductForEdit = product;
+    this.showEditProductDialog = true;
+    
+    // Fill form with product data
+    this.editProductForm.patchValue({
+      name: product.name,
+      description: product.description,
+      categoryId: product.categoryId,
+      quantity: product.quantity,
+      unit: product.unit,
+      unitPrice: product.unitPrice,
+      harvestDate: product.harvestDate || '',
+      expiryDate: product.expiryDate || ''
+    });
+    
+    this.existingImages = product.imageUrls || [];
+    this.cdr.detectChanges();
+  }
+
+  closeEditProductDialog(): void {
+    this.showEditProductDialog = false;
+    this.selectedProductForEdit = null;
+    this.existingImages = [];
+    this.editProductForm.reset({
+      unit: 'kg'
+    });
+    this.cdr.detectChanges();
+  }
+
+  submitEditProduct(): void {
+    if (this.editProductForm.invalid) {
+      Object.keys(this.editProductForm.controls).forEach(key => {
+        this.editProductForm.get(key)?.markAsTouched();
+      });
+      console.log('يرجى ملء جميع الحقول المطلوبة بشكل صحيح');
+      return;
+    }
+
+    this.submittingEdit = true;
+    this.cdr.detectChanges();
+    
+    const formValue = this.editProductForm.value;
+    const editData = {
+      id: this.selectedProductForEdit.id,
+      name: formValue.name,
+      description: formValue.description,
+      categoryId: formValue.categoryId,
+      quantity: formValue.quantity,
+      unit: formValue.unit,
+      unitPrice: formValue.unitPrice,
+      harvestDate: formValue.harvestDate,
+      expiryDate: formValue.expiryDate
+    };
+
+    this.profileService.editProduct(editData).subscribe({
+      next: (response) => {
+        this.submittingEdit = false;
+        if (response.isSuccess) {
+          console.log('تم تحديث المنتج بنجاح!');
+          this.closeEditProductDialog();
+          this.loadMyProducts(); // Refresh products list
+        } else {
+          const errorMsg = response.errors?.join(', ') || response.message || 'فشل تحديث المنتج';
+          console.log(errorMsg);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.submittingEdit = false;
+        console.error('Edit product error:', error);
+        const errorMsg = error.error?.errors?.join(', ') || error.message || 'خطأ في تحديث المنتج';
+        console.log(errorMsg);
         this.cdr.detectChanges();
       },
     });
@@ -242,15 +343,15 @@ export class Profile implements OnInit, AfterViewInit {
       this.profileService.deleteProduct(productId).subscribe({
         next: (response) => {
           if (response.isSuccess) {
-            this.showSuccess('Product deleted successfully');
+            console.log('Product deleted successfully');
             this.loadMyProducts();
           } else {
-            this.showError(response.message || 'Failed to delete product');
+            console.log(response.message || 'Failed to delete product');
           }
         },
         error: (error) => {
           console.error('Delete error:', error);
-          this.showError(error.message || 'Error deleting product');
+          console.log(error.message || 'Error deleting product');
         },
       });
     }
@@ -296,7 +397,7 @@ export class Profile implements OnInit, AfterViewInit {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('ar-EG', {
       year: 'numeric',
-      month: 'long',
+      month:'long',
       day: 'numeric',
     });
   }
