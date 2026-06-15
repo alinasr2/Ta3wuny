@@ -1,467 +1,751 @@
-<div class="farmer-profile">
-  <!-- قسم الرأس -->
-  <div class="profile-header">
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-white">لوحة التحكم</h1>
-          <p class="text-green-100 mt-1">إدارة منتجاتك ومزاداتك</p>
+<div class="profile-page min-h-screen bg-background" dir="rtl">
+
+  <!-- ════ PROFILE HEADER ════ -->
+  @if (profileLoading()) {
+    <div class="flex items-center justify-center py-20">
+      <mat-spinner [diameter]="48"></mat-spinner>
+    </div>
+  }
+
+  @if (!profileLoading() && profile(); as p) {
+    <div class="profile-hero relative overflow-hidden">
+      <!-- Cover gradient -->
+      <div class="h-40 bg-gradient-to-l from-primary-dark via-primary to-primary-light relative">
+        <div class="absolute inset-0 opacity-10"
+          style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+      </div>
+
+      <!-- Profile card -->
+      <div class="container relative">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 -mt-12 p-6">
+          <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
+
+            <!-- Avatar -->
+            <div class="relative -mt-16 sm:-mt-20 flex-shrink-0">
+              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-accent flex items-center justify-center">
+                @if (p.profileImageUrl && p.profileImageUrl !== 'https://t3awuny.runasp.net') {
+                  <img [src]="p.profileImageUrl" [alt]="p.name" class="w-full h-full object-cover" />
+                } @else {
+                  <mat-icon class="!text-5xl text-primary">person</mat-icon>
+                }
+              </div>
+              <!-- Change image button -->
+              <label class="absolute -bottom-2 -left-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary-dark transition-all"
+                [matTooltip]="'تغيير الصورة'">
+                @if (profileImageLoading()) {
+                  <mat-spinner [diameter]="16" color="accent"></mat-spinner>
+                } @else {
+                  <mat-icon class="!text-sm text-white">photo_camera</mat-icon>
+                }
+                <input type="file" accept="image/*" class="hidden" (change)="onProfileImageChange($event)" />
+              </label>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0 pb-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold text-text-primary">{{ p.name }}</h1>
+                @if (p.isVerified) {
+                  <span class="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">
+                    <mat-icon class="!text-xs">verified</mat-icon> موثّق
+                  </span>
+                }
+              </div>
+              <p class="text-text-secondary text-sm mt-0.5 flex items-center gap-1">
+                <mat-icon class="!text-sm text-primary">agriculture</mat-icon>
+                {{ p.farmName || 'لم يُحدَّد اسم المزرعة' }}
+              </p>
+              @if (p.address) {
+                <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                  <mat-icon class="!text-xs">location_on</mat-icon>
+                  {{ p.address.city }}، {{ p.address.governorate }}، {{ p.address.country }}
+                </p>
+              }
+              @if (p.description) {
+                <p class="text-text-secondary text-sm mt-2 line-clamp-2">{{ p.description }}</p>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-shrink-0 pb-1">
+              <p class="text-xs text-gray-400 hidden sm:block">
+                انضم {{ formatDate(p.joinDate) }}
+              </p>
+              <button (click)="openEditModal()"
+                class="flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
+                <mat-icon class="!text-base">edit</mat-icon>
+                تعديل البروفايل
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats row -->
+          <div class="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-gray-100">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-text-primary">{{ productsTotal() }}</p>
+              <p class="text-xs text-text-secondary flex items-center justify-center gap-1 mt-0.5">
+                <mat-icon class="!text-xs text-primary">inventory_2</mat-icon> منتج
+              </p>
+            </div>
+            <div class="text-center border-x border-gray-100">
+              <p class="text-2xl font-bold text-text-primary">{{ activeAuctions() }}</p>
+              <p class="text-xs text-text-secondary flex items-center justify-center gap-1 mt-0.5">
+                <mat-icon class="!text-xs text-primary">gavel</mat-icon> مزاد نشط
+              </p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-yellow-600">{{ pendingOrders() }}</p>
+              <p class="text-xs text-text-secondary flex items-center justify-center gap-1 mt-0.5">
+                <mat-icon class="!text-xs text-yellow-500">pending_actions</mat-icon> طلب معلّق
+              </p>
+            </div>
+          </div>
         </div>
-        <button
-          (click)="openAddProductDialog()"
-          class="bg-white text-green-700 hover:bg-gray-100 px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg">
-          <mat-icon>add</mat-icon>
-          إضافة منتج جديد
-        </button>
       </div>
     </div>
-  </div>
 
-  <!-- المحتوى الرئيسي -->
-  <div class="container mx-auto px-4 py-6">
-    <mat-tab-group animationDuration="0ms" class="custom-tabs">
-      
-      <!-- تبويب المنتجات -->
-      <mat-tab label="منتجاتي">
-        <div class="py-6">
-          <!-- حالة التحميل -->
-          <div *ngIf="loadingProducts" class="flex justify-center items-center py-20">
-            <mat-spinner diameter="50"></mat-spinner>
+    <!-- ════ TABS ════ -->
+    <div class="container mt-6">
+      <!-- Tab Nav -->
+      <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto">
+        @for (tab of [
+          { id: 'overview', label: 'نظرة عامة', icon: 'dashboard' },
+          { id: 'products', label: 'منتجاتي', icon: 'inventory_2' },
+          { id: 'orders',   label: 'الطلبات',   icon: 'receipt_long' },
+          { id: 'auctions', label: 'مزاداتي',   icon: 'gavel' }
+        ]; track tab.id) {
+          <button
+            (click)="setTab($any(tab.id))"
+            [class.bg-primary]="activeTab() === tab.id"
+            [class.text-white]="activeTab() === tab.id"
+            [class.text-text-secondary]="activeTab() !== tab.id"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex-1 justify-center hover:bg-green-50">
+            <mat-icon class="!text-base">{{ tab.icon }}</mat-icon>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- ── Overview Tab ── -->
+      @if (activeTab() === 'overview') {
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <!-- Profile Details Card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">person</mat-icon> بيانات الحساب
+            </h2>
+            <div class="space-y-3">
+              @for (row of [
+                { icon: 'badge', label: 'الاسم', value: p.name },
+                { icon: 'alternate_email', label: 'البريد الإلكتروني', value: p.email },
+                { icon: 'account_circle', label: 'اسم المستخدم', value: p.userName },
+                { icon: 'agriculture', label: 'اسم المزرعة', value: p.farmName }
+              ]; track row.label) {
+                <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                    <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
+                  </div>
+                  <div>
+                    <p class="text-xs text-text-secondary">{{ row.label }}</p>
+                    <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
+                  </div>
+                </div>
+              }
+              @if (p.description) {
+                <div class="pt-2">
+                  <p class="text-xs text-text-secondary mb-1 flex items-center gap-1">
+                    <mat-icon class="!text-xs">description</mat-icon> الوصف
+                  </p>
+                  <p class="text-sm text-text-primary leading-relaxed">{{ p.description }}</p>
+                </div>
+              }
+            </div>
           </div>
 
-          <!-- شبكة المنتجات -->
-          <div *ngIf="!loadingProducts && products.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <mat-card *ngFor="let product of products" class="product-card">
-              <div class="relative h-48 overflow-hidden">
-                <img
-                  [src]="product.mainImageUrl || 'assets/default-product.jpg'"
-                  [alt]="product.name"
-                  class="w-full h-full object-cover"
-                  onerror="this.src='assets/default-product.jpg'">
-                <div class="absolute top-3 right-3">
-                  <span [class]="'px-2 py-1 rounded-lg text-xs font-medium ' + getProductStatusColor(product.status)">
-                    {{ getProductStatusBadge(product.status) }}
-                  </span>
-                </div>
-                <button
-                  [matMenuTriggerFor]="menu"
-                  class="absolute top-3 left-3 bg-white rounded-full p-1.5 shadow-md hover:bg-gray-50">
-                  <mat-icon class="text-gray-600 text-sm">more_vert</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                  <button mat-menu-item (click)="openEditProductDialog(product)">
-                    <mat-icon>edit</mat-icon>
-                    <span>تعديل المنتج</span>
-                  </button>
-                  <button mat-menu-item (click)="deleteProduct(product.id, product.name)">
-                    <mat-icon class="text-red-600">delete</mat-icon>
-                    <span class="text-red-600">حذف</span>
-                  </button>
-                </mat-menu>
+          <!-- Address Card -->
+          @if (p.address) {
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <mat-icon class="text-primary">location_on</mat-icon> العنوان
+              </h2>
+              <div class="space-y-3">
+                @for (row of [
+                  { icon: 'signpost', label: 'الشارع', value: p.address.street },
+                  { icon: 'location_city', label: 'المدينة', value: p.address.city },
+                  { icon: 'map', label: 'المحافظة', value: p.address.governorate },
+                  { icon: 'flag', label: 'الدولة', value: p.address.country },
+                  { icon: 'local_post_office', label: 'الرمز البريدي', value: p.address.postalCode }
+                ]; track row.label) {
+                  <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                      <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
+                    </div>
+                    <div>
+                      <p class="text-xs text-text-secondary">{{ row.label }}</p>
+                      <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
+                    </div>
+                  </div>
+                }
               </div>
+            </div>
+          }
 
-              <mat-card-content class="p-4">
-                <h3 class="text-lg font-bold text-gray-800 mb-1 line-clamp-1">{{ product.name }}</h3>
-                <p class="text-gray-500 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
-                
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-2xl font-bold text-green-600">{{ formatPrice(product.unitPrice) }}</span>
-                  <span class="text-sm text-gray-500">{{ product.quantity }} {{ product.unit }}</span>
-                </div>
-
-                <div class="flex items-center gap-2 text-xs text-gray-500 mt-3 pt-3 border-t">
-                  <mat-icon class="text-sm">local_offer</mat-icon>
-                  <span>{{ product.categoryName }}</span>
-                  <mat-icon class="text-sm ml-2">person</mat-icon>
-                  <span>{{ product.farmerName }}</span>
-                </div>
-
-                <div *ngIf="product.hasActiveAcution" class="mt-3">
-                  <span class="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-lg">
-                    <mat-icon class="text-sm">gavel</mat-icon>
-                    مزاد نشط
-                  </span>
-                </div>
-              </mat-card-content>
-            </mat-card>
+          <!-- Quick actions -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">bolt</mat-icon> إجراءات سريعة
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              @for (action of [
+                { label: 'إضافة منتج', icon: 'add_box', tab: 'products', add: true },
+                { label: 'عرض الطلبات', icon: 'receipt_long', tab: 'orders', add: false },
+                { label: 'مزاداتي', icon: 'gavel', tab: 'auctions', add: false },
+                { label: 'تعديل البروفايل', icon: 'edit', tab: '', add: false }
+              ]; track action.label) {
+                <button
+                  (click)="action.tab ? setTab($any(action.tab)) : openEditModal(); action.add ? openAddProduct() : null"
+                  class="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-green-50 transition-all text-text-secondary hover:text-primary">
+                  <mat-icon class="!text-2xl">{{ action.icon }}</mat-icon>
+                  <span class="text-xs font-bold">{{ action.label }}</span>
+                </button>
+              }
+            </div>
           </div>
+        </div>
+      }
 
-          <!-- حالة عدم وجود منتجات -->
-          <div *ngIf="!loadingProducts && products.length === 0" class="text-center py-20">
-            <mat-icon class="text-6xl w-full text-gray-300">inventory_2</mat-icon>
-            <h3 class="text-xl font-medium text-gray-600 mt-4">لا توجد منتجات بعد</h3>
-            <p class="text-gray-400 mt-2">ابدأ بإضافة منتجك الأول</p>
-            <button
-              (click)="openAddProductDialog()"
-              class="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors">
+      <!-- ── Products Tab ── -->
+      @if (activeTab() === 'products') {
+        <div class="mt-6">
+
+          <!-- Toolbar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <div class="relative flex-1 max-w-xs">
+                <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 !text-base text-gray-400">search</mat-icon>
+                <input
+                  type="text"
+                  placeholder="ابحث عن منتج..."
+                  [ngModel]="productSearch()"
+                  (ngModelChange)="productSearch.set($event)"
+                  (keyup.enter)="onProductSearch()"
+                  class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white" />
+              </div>
+              <!-- Status filter -->
+              <select
+                [ngModel]="productStatusFilter()"
+                (ngModelChange)="productStatusFilter.set($event === '' ? null : +$event); onProductSearch()"
+                class="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white text-text-secondary">
+                <option value="">كل الحالات</option>
+                <option value="0">مسودة</option>
+                <option value="1">نشط</option>
+                <option value="3">مؤرشف</option>
+              </select>
+            </div>
+            <button (click)="openAddProduct()"
+              class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all">
+              <mat-icon class="!text-base">add</mat-icon>
               إضافة منتج
             </button>
           </div>
+
+          @if (productsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!productsLoading() && products().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">inventory_2</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد منتجات</p>
+              <button (click)="openAddProduct()" class="text-primary text-sm font-bold hover:underline">أضف منتجك الأول</button>
+            </div>
+          }
+
+          <!-- Products Grid -->
+          @if (!productsLoading() && products().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+              @for (product of products(); track product.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
+                  <!-- Image -->
+                  <div class="relative h-40 bg-gray-50 overflow-hidden">
+                    <img [src]="product.mainImageUrl || 'https://placehold.co/400x300?text=لا+صورة'"
+                      [alt]="product.name"
+                      class="w-full h-full object-cover"
+                      onerror="this.src='https://placehold.co/400x300?text=لا+صورة'" />
+                    <!-- Status badge -->
+                    <div class="absolute top-2 right-2">
+                      @let pStatus = getProductStatus(product.status);
+                      <span class="text-xs font-bold px-2 py-0.5 rounded-full" [class]="pStatus.bgClass + ' ' + pStatus.textClass">
+                        {{ pStatus.label }}
+                      </span>
+                    </div>
+                    @if (product.hasActiveAcution) {
+                      <div class="absolute top-2 left-2">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-white flex items-center gap-0.5">
+                          <mat-icon class="!text-xs">gavel</mat-icon> مزاد
+                        </span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Content -->
+                  <div class="p-4 flex flex-col flex-1 gap-2">
+                    <h3 class="font-bold text-text-primary text-sm leading-tight">{{ product.name }}</h3>
+                    <p class="text-xs text-text-secondary">{{ product.categoryName }}</p>
+                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+                      <div>
+                        <p class="text-primary font-bold text-sm">{{ formatPrice(product.unitPrice) }}</p>
+                        <p class="text-xs text-gray-400">{{ product.quantity }} {{ product.unit }}</p>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <!-- Status toggle -->
+                        @if (product.status === 1) {
+                          <button (click)="changeProductStatus(product, 3)"
+                            matTooltip="أرشفة"
+                            class="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-600 transition-all">
+                            <mat-icon class="!text-base">archive</mat-icon>
+                          </button>
+                        } @else if (product.status === 0 || product.status === 3) {
+                          <button (click)="changeProductStatus(product, 1)"
+                            matTooltip="نشر"
+                            class="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-all">
+                            <mat-icon class="!text-base">publish</mat-icon>
+                          </button>
+                        }
+                        <button (click)="openEditProduct(product)"
+                          matTooltip="تعديل"
+                          class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                          <mat-icon class="!text-base">edit</mat-icon>
+                        </button>
+                        <button (click)="confirmDeleteProduct(product.id)"
+                          matTooltip="حذف"
+                          class="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all">
+                          <mat-icon class="!text-base">delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Paginator -->
+            <div class="flex justify-center">
+              <mat-paginator
+                [length]="productsTotal()"
+                [pageSize]="productsPageSize()"
+                [pageIndex]="productsPageIndex()"
+                [pageSizeOptions]="[8, 16, 32]"
+                (page)="onProductsPage($event)"
+                showFirstLastButtons
+                class="rounded-2xl border border-gray-100 shadow-sm bg-white">
+              </mat-paginator>
+            </div>
+          }
         </div>
-      </mat-tab>
+      }
 
-      <!-- تبويب المزادات -->
-      <mat-tab label="مزاداتي">
-        <div class="py-6">
-          <!-- حالة التحميل -->
-          <div *ngIf="loadingAuctions" class="flex justify-center items-center py-20">
-            <mat-spinner diameter="50"></mat-spinner>
-          </div>
+      <!-- ── Orders Tab ── -->
+      @if (activeTab() === 'orders') {
+        <div class="mt-6">
+          @if (ordersLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
 
-          <!-- قائمة المزادات -->
-          <div *ngIf="!loadingAuctions && auctions.length > 0" class="space-y-4">
-            <mat-card *ngFor="let auction of auctions" class="auction-card">
-              <div class="p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-lg font-bold text-gray-800">المنتج رقم {{ auction.productId }}</h3>
-                    <span [class]="'px-2 py-1 rounded-lg text-xs font-medium ' + getAuctionStatusColor(auction.status)">
-                      {{ auction.status }}
-                    </span>
+          @if (!ordersLoading() && orders().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">receipt_long</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد طلبات بعد</p>
+            </div>
+          }
+
+          @if (!ordersLoading() && orders().length > 0) {
+            <div class="flex flex-col gap-4">
+              @for (order of orders(); track order.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <!-- Order header -->
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50 flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
+                        <mat-icon class="!text-base text-primary">receipt_long</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm">طلب #{{ order.id }}</p>
+                        <p class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">person</mat-icon>
+                          {{ order.buyerName }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      @let oStatus = getOrderStatus(order.status);
+                      <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                        [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                        <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                        {{ oStatus.label }}
+                      </span>
+                      <span class="text-base font-bold text-primary">{{ formatPrice(order.total) }}</span>
+                    </div>
                   </div>
-                  
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
-                    <div>
-                      <p class="text-gray-500">سعر البداية</p>
-                      <p class="font-semibold text-gray-800">{{ formatPrice(auction.startingPrice) }}</p>
-                    </div>
-                    <div>
-                      <p class="text-gray-500">السعر الحالي</p>
-                      <p class="font-semibold text-green-600">{{ formatPrice(auction.currentPrice) }}</p>
-                    </div>
-                    <div>
-                      <p class="text-gray-500">تاريخ البداية</p>
-                      <p class="text-gray-700 text-xs">{{ formatDate(auction.startDate) }}</p>
-                    </div>
-                    <div>
-                      <p class="text-gray-500">تاريخ النهاية</p>
-                      <p class="text-gray-700 text-xs">{{ formatDate(auction.endDate) }}</p>
+
+                  <!-- Order items -->
+                  <div class="p-4 border-b border-gray-50">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      @for (item of order.items; track item.productId) {
+                        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
+                          <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'"
+                            [alt]="item.productName"
+                            class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                            onerror="this.src='https://placehold.co/60x60?text=صورة'" />
+                          <div class="min-w-0">
+                            <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
+                            <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}</p>
+                            <p class="text-xs text-primary font-bold">{{ formatPrice(item.subtotal) }}</p>
+                          </div>
+                        </div>
+                      }
                     </div>
                   </div>
-                  
-                  <div *ngIf="!auction.isEnded && auction.minutesRemaining" class="mt-3">
-                    <span class="inline-flex items-center gap-1 text-sm text-orange-600">
-                      <mat-icon class="text-sm">schedule</mat-icon>
-                      متبقي {{ auction.minutesRemaining }} دقيقة
+
+                  <!-- Actions -->
+                  <div class="p-4 flex items-center gap-2 flex-wrap">
+                    @if (order.status === 'Pending') {
+                      <button (click)="confirmOrder(order.id)" [disabled]="orderActionLoading()"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all disabled:opacity-60">
+                        <mat-icon class="!text-base">check</mat-icon> قبول الطلب
+                      </button>
+                      <button (click)="openRejectModal(order.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">close</mat-icon> رفض الطلب
+                      </button>
+                    }
+                    @if (order.status === 'Confirmed') {
+                      <button (click)="changeOrderStatus(order.id, 2)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white rounded-xl text-sm font-bold hover:bg-purple-600 transition-all">
+                        <mat-icon class="!text-base">inventory</mat-icon> بدء التحضير
+                      </button>
+                    }
+                    @if (order.status === 'Preparing') {
+                      <button (click)="changeOrderStatus(order.id, 3)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-bold hover:bg-cyan-600 transition-all">
+                        <mat-icon class="!text-base">local_shipping</mat-icon> جاهز للشحن
+                      </button>
+                    }
+                    <span class="mr-auto text-xs text-gray-400 flex items-center gap-1">
+                      <mat-icon class="!text-xs">payments</mat-icon> {{ order.paymentStatus }}
                     </span>
                   </div>
                 </div>
-                
-                <button
-                  *ngIf="!auction.isEnded"
-                  mat-raised-button
-                  color="primary"
-                  class="whitespace-nowrap">
-                  عرض العروض
-                </button>
-              </div>
-            </mat-card>
-          </div>
-
-          <!-- حالة عدم وجود مزادات -->
-          <div *ngIf="!loadingAuctions && auctions.length === 0" class="text-center py-20">
-            <mat-icon class="text-6xl w-full text-gray-300">gavel</mat-icon>
-            <h3 class="text-xl font-medium text-gray-600 mt-4">لا توجد مزادات بعد</h3>
-            <p class="text-gray-400 mt-2">ستظهر منتجاتك هنا عندما يكون لها مزادات نشطة</p>
-          </div>
+              }
+            </div>
+          }
         </div>
-      </mat-tab>
-    </mat-tab-group>
-  </div>
-</div>
+      }
 
-<!-- نافذة إضافة منتج -->
-<div *ngIf="showAddProductDialog" class="dialog-overlay" (click)="closeAddProductDialog()">
-  <div class="dialog-container" (click)="$event.stopPropagation()">
-    <div class="dialog-header">
-      <h2 class="text-2xl font-bold text-gray-800">إضافة منتج جديد</h2>
-      <button (click)="closeAddProductDialog()" class="text-gray-400 hover:text-gray-600">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
+      <!-- ── Auctions Tab ── -->
+      @if (activeTab() === 'auctions') {
+        <div class="mt-6">
+          @if (auctionsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
 
-    <form [formGroup]="productForm" (ngSubmit)="submitProduct()">
-      <div class="dialog-content">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- اسم المنتج -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">اسم المنتج *</label>
-            <input
-              type="text"
-              formControlName="name"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="أدخل اسم المنتج">
-            <div *ngIf="productForm.get('name')?.touched && productForm.get('name')?.invalid" class="text-red-500 text-xs mt-1">
-              اسم المنتج مطلوب (على الأقل 3 أحرف)
+          @if (!auctionsLoading() && auctions().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">gavel</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد مزادات</p>
             </div>
-          </div>
+          }
 
-          <!-- الوصف -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">الوصف *</label>
-            <textarea
-              formControlName="description"
-              rows="3"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="صف منتجك"></textarea>
-          </div>
+          @if (!auctionsLoading() && auctions().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (auction of auctions(); track auction.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all flex flex-col gap-4">
+                  <!-- Header -->
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                      <mat-icon class="!text-xl text-primary">gavel</mat-icon>
+                    </div>
+                    @let aStatus = getAuctionStatus(auction.status);
+                    <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                      [class]="aStatus.bgClass + ' ' + aStatus.textClass">
+                      <mat-icon class="!text-xs">{{ aStatus.icon }}</mat-icon>
+                      {{ aStatus.label }}
+                    </span>
+                  </div>
 
-          <!-- التصنيف -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">التصنيف *</label>
-            <select
-              formControlName="categoryId"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
-              <option value="">اختر التصنيف</option>
-              <option value="1">خضروات</option>
-              <option value="2">فواكه</option>
-              <option value="3">حبوب</option>
-              <option value="4">ألبان</option>
-            </select>
-          </div>
+                  <!-- Details -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-text-secondary text-xs">المنتج #{{ auction.productId }}</span>
+                      <span class="font-bold text-primary">{{ formatPrice(auction.currentPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">السعر الابتدائي</span>
+                      <span class="text-xs font-bold text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
+                    </div>
+                    @if (!auction.isEnded) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">timer</mat-icon> الوقت المتبقي
+                        </span>
+                        <span class="text-xs font-bold text-primary">{{ auction.minutesRemaining }} دقيقة</span>
+                      </div>
+                    }
+                  </div>
 
-          <!-- الكمية -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">الكمية *</label>
-            <div class="flex gap-2">
-              <input
-                type="number"
-                step="0.1"
-                formControlName="quantity"
-                class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                placeholder="الكمية">
-              <select
-                formControlName="unit"
-                class="w-24 px-2 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
-                <option value="kg">كجم</option>
-                <option value="g">جرام</option>
-                <option value="liter">لتر</option>
-                <option value="piece">قطعة</option>
-              </select>
-            </div>
-          </div>
+                  <!-- Dates -->
+                  <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">البداية</p>
+                      <p class="font-bold text-text-primary">{{ formatDate(auction.startDate) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">النهاية</p>
+                      <p class="font-bold text-text-primary">{{ formatDate(auction.endDate) }}</p>
+                    </div>
+                  </div>
 
-          <!-- سعر الوحدة -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">سعر الوحدة (جنيه) *</label>
-            <input
-              type="number"
-              step="0.1"
-              formControlName="unitPrice"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-              placeholder="السعر لكل وحدة">
-          </div>
-
-          <!-- النشر فوراً -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">النشر</label>
-            <div class="flex items-center gap-2 mt-2">
-              <input
-                type="checkbox"
-                formControlName="publishImmediately"
-                id="publishImmediately"
-                class="w-4 h-4 text-green-600 rounded">
-              <label for="publishImmediately" class="text-sm text-gray-700">نشر فوراً</label>
-            </div>
-          </div>
-
-          <!-- تاريخ الحصاد -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الحصاد</label>
-            <input
-              type="date"
-              formControlName="harvestDate"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
-          </div>
-
-          <!-- تاريخ الصلاحية -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الصلاحية</label>
-            <input
-              type="date"
-              formControlName="expiryDate"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
-          </div>
-
-          <!-- صور المنتج -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">صور المنتج *</label>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                (change)="onImagesSelected($event)"
-                class="hidden"
-                #fileInput>
-              <button
-                type="button"
-                (click)="fileInput.click()"
-                class="w-full py-3 text-center border rounded-lg hover:bg-gray-50 transition-colors">
-                <mat-icon class="text-gray-400">cloud_upload</mat-icon>
-                <p class="text-sm text-gray-600 mt-1">انقر لرفع الصور</p>
-              </button>
-              
-              <!-- معاينة الصور -->
-              <div *ngIf="imagePreviews.length > 0" class="flex gap-2 mt-3 flex-wrap">
-                <div *ngFor="let preview of imagePreviews; let i = index" class="relative">
-                  <img [src]="preview" class="w-20 h-20 object-cover rounded-lg">
-                  <button
-                    type="button"
-                    (click)="removeImage(i)"
-                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    ×
-                  </button>
+                  <a [href]="'/auctions/' + auction.id"
+                    class="flex items-center justify-center gap-2 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
+                    <mat-icon class="!text-base">visibility</mat-icon>
+                    عرض المزاد
+                  </a>
                 </div>
-              </div>
+              }
             </div>
-          </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ════ MODALS ════ -->
+
+  <!-- Edit Profile Modal -->
+  @if (showEditModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">edit</mat-icon>
+            تعديل البروفايل
+          </h2>
+          <button (click)="showEditModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          @for (field of [
+            { key: 'name',        label: 'الاسم الكامل',   icon: 'badge',       type: 'text'     },
+            { key: 'farmName',    label: 'اسم المزرعة',    icon: 'agriculture', type: 'text'     },
+            { key: 'description', label: 'الوصف',          icon: 'description', type: 'textarea' }
+          ]; track field.key) {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">
+                {{ field.label }}
+              </label>
+              @if (field.type === 'textarea') {
+                <textarea
+                  [value]="editForm()[field.key]"
+                  (input)="updateEditForm(field.key, $any($event.target).value)"
+                  rows="3"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 resize-none text-sm">
+                </textarea>
+              } @else {
+                <input
+                  [type]="field.type"
+                  [value]="editForm()[field.key]"
+                  (input)="updateEditForm(field.key, $any($event.target).value)"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm" />
+              }
+            </div>
+          }
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProfile()" [disabled]="editLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (editLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            حفظ التغييرات
+          </button>
+          <button (click)="showEditModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
         </div>
       </div>
-
-      <div class="dialog-footer">
-        <button type="button" (click)="closeAddProductDialog()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          إلغاء
-        </button>
-        <button
-          type="submit"
-          [disabled]="submittingProduct || productForm.invalid"
-          class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-          <mat-icon *ngIf="!submittingProduct">check</mat-icon>
-          <mat-spinner *ngIf="submittingProduct" diameter="20"></mat-spinner>
-          {{ submittingProduct ? 'جاري الإضافة...' : 'إضافة منتج' }}
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- نافذة تعديل المنتج -->
-<div *ngIf="showEditProductDialog" class="dialog-overlay" (click)="closeEditProductDialog()">
-  <div class="dialog-container" (click)="$event.stopPropagation()">
-    <div class="dialog-header">
-      <h2 class="text-2xl font-bold text-gray-800">تعديل المنتج</h2>
-      <button (click)="closeEditProductDialog()" class="text-gray-400 hover:text-gray-600">
-        <mat-icon>close</mat-icon>
-      </button>
     </div>
+  }
 
-    <form [formGroup]="editProductForm" (ngSubmit)="submitEditProduct()">
-      <div class="dialog-content">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- اسم المنتج -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">اسم المنتج *</label>
-            <input
-              type="text"
-              formControlName="name"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="أدخل اسم المنتج">
-            <div *ngIf="editProductForm.get('name')?.touched && editProductForm.get('name')?.invalid" class="text-red-500 text-xs mt-1">
-              اسم المنتج مطلوب (على الأقل 3 أحرف)
-            </div>
-          </div>
+  <!-- Add/Edit Product Modal -->
+  @if (showProductModal()) {
+    <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mb-8">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">{{ productModalMode() === 'add' ? 'add_box' : 'edit' }}</mat-icon>
+            {{ productModalMode() === 'add' ? 'إضافة منتج جديد' : 'تعديل المنتج' }}
+          </h2>
+          <button (click)="showProductModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
 
-          <!-- الوصف -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">الوصف *</label>
-            <textarea
-              formControlName="description"
-              rows="3"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="صف منتجك"></textarea>
-          </div>
-
-          <!-- التصنيف -->
+        <div class="p-5 space-y-4">
+          <!-- Name -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">التصنيف *</label>
-            <select
-              formControlName="categoryId"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-              <option value="">اختر التصنيف</option>
-              <option value="1">خضروات</option>
-              <option value="2">فواكه</option>
-              <option value="3">حبوب</option>
-              <option value="4">ألبان</option>
-            </select>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">اسم المنتج *</label>
+            <input type="text" [value]="productForm().name"
+              (input)="updateProductForm('name', $any($event.target).value)"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
           </div>
 
-          <!-- الكمية -->
+          <!-- Description -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">الكمية *</label>
-            <div class="flex gap-2">
-              <input
-                type="number"
-                step="0.1"
-                formControlName="quantity"
-                class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="الكمية">
-              <select
-                formControlName="unit"
-                class="w-24 px-2 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="kg">كجم</option>
-                <option value="g">جرام</option>
-                <option value="liter">لتر</option>
-                <option value="piece">قطعة</option>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الوصف</label>
+            <textarea [value]="productForm().description"
+              (input)="updateProductForm('description', $any($event.target).value)"
+              rows="2"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm resize-none">
+            </textarea>
+          </div>
+
+          <!-- Category + Unit -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الفئة *</label>
+              <select [ngModel]="productForm().categoryId"
+                (ngModelChange)="updateProductForm('categoryId', $event)"
+                class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm">
+                <option [value]="null">اختر الفئة</option>
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.nameAr || cat.name }}</option>
+                }
               </select>
             </div>
-          </div>
-
-          <!-- سعر الوحدة -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">سعر الوحدة (جنيه) *</label>
-            <input
-              type="number"
-              step="0.1"
-              formControlName="unitPrice"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="السعر لكل وحدة">
-          </div>
-
-          <!-- تاريخ الحصاد -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الحصاد</label>
-            <input
-              type="date"
-              formControlName="harvestDate"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-
-          <!-- تاريخ الصلاحية -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الصلاحية</label>
-            <input
-              type="date"
-              formControlName="expiryDate"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          </div>
-
-          <!-- الصور الحالية -->
-          <div class="col-span-2" *ngIf="existingImages.length > 0">
-            <label class="block text-sm font-medium text-gray-700 mb-2">الصور الحالية</label>
-            <div class="flex gap-2 flex-wrap">
-              <div *ngFor="let img of existingImages; let i = index" class="relative">
-                <img [src]="img" class="w-20 h-20 object-cover rounded-lg border">
-              </div>
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الوحدة</label>
+              <input type="text" [value]="productForm().unit"
+                (input)="updateProductForm('unit', $any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
             </div>
-            <p class="text-xs text-gray-500 mt-2">ملاحظة: لتغيير الصور، استخدم زر تحديث الصور في صفحة المنتج</p>
           </div>
+
+          <!-- Quantity + Price -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الكمية *</label>
+              <input type="number" [value]="productForm().quantity"
+                (input)="updateProductForm('quantity', +$any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">سعر الوحدة *</label>
+              <input type="number" [value]="productForm().unitPrice"
+                (input)="updateProductForm('unitPrice', +$any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">تاريخ الحصاد</label>
+              <input type="date" [value]="productForm().harvestDate"
+                (input)="updateProductForm('harvestDate', $any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">تاريخ الانتهاء</label>
+              <input type="date" [value]="productForm().expiryDate"
+                (input)="updateProductForm('expiryDate', $any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+          </div>
+
+          <!-- Images (add only) -->
+          @if (productModalMode() === 'add') {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الصور *</label>
+              <label class="flex flex-col items-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-5 cursor-pointer hover:border-primary transition-all">
+                <mat-icon class="!text-3xl text-gray-400">cloud_upload</mat-icon>
+                <span class="text-sm text-text-secondary">اضغط لاختيار صور</span>
+                <span class="text-xs text-gray-400">{{ productImages().length > 0 ? productImages().length + ' صورة محددة' : 'PNG, JPG' }}</span>
+                <input type="file" multiple accept="image/*" class="hidden" (change)="onProductImagesChange($event)" />
+              </label>
+            </div>
+          }
+        </div>
+
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProduct()" [disabled]="productLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (productLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            {{ productModalMode() === 'add' ? 'إضافة المنتج' : 'حفظ التعديلات' }}
+          </button>
+          <button (click)="showProductModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
         </div>
       </div>
+    </div>
+  }
 
-      <div class="dialog-footer">
-        <button type="button" (click)="closeEditProductDialog()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          إلغاء
-        </button>
-        <button
-          type="submit"
-          [disabled]="submittingEdit || editProductForm.invalid"
-          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-          <mat-icon *ngIf="!submittingEdit">save</mat-icon>
-          <mat-spinner *ngIf="submittingEdit" diameter="20"></mat-spinner>
-          {{ submittingEdit ? 'جاري التحديث...' : 'تحديث المنتج' }}
-        </button>
+  <!-- Delete Confirm Modal -->
+  @if (deleteProductId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <mat-icon class="!text-3xl text-red-500">delete_forever</mat-icon>
+        </div>
+        <h2 class="text-lg font-bold text-text-primary mb-2">تأكيد الحذف</h2>
+        <p class="text-sm text-text-secondary mb-6">هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="flex gap-2">
+          <button (click)="deleteProduct()" [disabled]="deleteLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (deleteLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            نعم، احذف
+          </button>
+          <button (click)="deleteProductId.set(null)"
+            class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
       </div>
-    </form>
-  </div>
+    </div>
+  }
+
+  <!-- Reject Order Modal -->
+  @if (rejectOrderId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-red-500">block</mat-icon>
+            رفض الطلب
+          </h2>
+        </div>
+        <div class="p-5">
+          <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">سبب الرفض</label>
+          <textarea [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)"
+            rows="3" placeholder="اكتب سبب الرفض..."
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-400 outline-none bg-gray-50 text-sm resize-none">
+          </textarea>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="submitReject()" [disabled]="orderActionLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (orderActionLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            تأكيد الرفض
+          </button>
+          <button (click)="rejectOrderId.set(null)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>
