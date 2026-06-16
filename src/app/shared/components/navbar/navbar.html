@@ -60,15 +60,6 @@
             </li>
             <li>
               <a
-                [routerLink]="'/my-orders'"
-                routerLinkActive="bg-white/15 text-secondary shadow-sm"
-                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all"
-              >
-                طلباتي
-              </a>
-            </li>
-            <li>
-              <a
                 [routerLink]="'/community'"
                 routerLinkActive="bg-white/15 text-secondary shadow-sm"
                 class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all"
@@ -83,15 +74,6 @@
                 class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all"
               >
                 المزادات
-              </a>
-            </li>
-            <li>
-              <a
-                [routerLink]="'/contact'"
-                routerLinkActive="bg-white/15 text-secondary shadow-sm"
-                class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all"
-              >
-                اتصل بنا
               </a>
             </li>
           </ul>
@@ -153,7 +135,7 @@
         <button
           (click)="toggleSidebar()"
           type="button"
-          class="inline-flex items-center p-2 text-white rounded-lg md:hidden hover:bg-white/10"
+          class="inline-flex items-center p-2 text-white rounded-lg md:hidden"
         >
           <i [class]="isSidebarOpen ? 'pi pi-times text-2xl' : 'pi pi-bars text-2xl'"></i>
         </button>
@@ -170,11 +152,11 @@
 
   <aside
     class="fixed top-0 inset-y-0 z-[70] w-72 h-screen transition-transform duration-300 shadow-2xl bg-surface"
-    [class.end-0]="isSidebarOpen"
-    [class.-end-full]="!isSidebarOpen"
+     [class.translate-x-0]="isSidebarOpen"
+  [class.translate-x-full]="!isSidebarOpen"
   >
     <div class="p-6 flex flex-col h-full">
-      <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+      <div class="flex items-center justify-between mb-2 pb-4 border-b border-gray-100">
         <span class="text-xl font-bold text-primary">القائمة</span>
         <button
           (click)="closeSidebar()"
@@ -203,16 +185,16 @@
             routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary"
             class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5"
           >
-            <i class="pi pi-shopping-bag me-3 text-lg"></i> <span>المتجر</span>
+            <i class="pi pi-shopping-cart me-3 text-lg"></i> <span>المتجر</span>
           </a>
         </li>
         <li>
           <a
             [routerLink]="'/auctions'"
-            routerLinkActive="bg-white/15 text-secondary shadow-sm"
-            class="px-4 py-2 rounded-lg text-white/90 font-medium hover:bg-white/10 transition-all"
+            routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary"
+            class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5"
           >
-            المزادات
+            <i class="pi pi-briefcase me-3 text-lg"></i> <span>المزادات</span>
           </a>
         </li>
         <li>
@@ -245,16 +227,6 @@
             <i class="pi pi-users me-3 text-lg"></i> <span>المجتمع</span>
           </a>
         </li>
-        <li>
-          <a
-            [routerLink]="'/contact'"
-            (click)="closeSidebar()"
-            routerLinkActive="bg-primary/10 text-primary border-r-4 border-primary"
-            class="flex items-center p-3 rounded-xl transition-all text-text-primary hover:bg-primary/5"
-          >
-            <i class="pi pi-phone me-3 text-lg"></i> <span>اتصل بنا</span>
-          </a>
-        </li>
 
         @if (isLoggedIn()) {
           <div class="pt-4 mt-4 border-t border-gray-100">
@@ -266,16 +238,6 @@
                 class="flex items-center p-3 rounded-xl text-text-primary hover:bg-primary/5"
               >
                 <i class="pi pi-user me-3"></i> الملف الشخصي
-              </a>
-            </li>
-            <li>
-              <a
-                [routerLink]="'/my-orders'"
-                (click)="closeSidebar()"
-                routerLinkActive="text-primary font-bold"
-                class="flex items-center p-3 rounded-xl text-text-primary hover:bg-primary/5"
-              >
-                <i class="pi pi-list me-3"></i> طلباتي
               </a>
             </li>
             <li>

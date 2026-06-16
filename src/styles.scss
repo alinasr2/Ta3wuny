@@ -10,8 +10,8 @@ html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$magenta-palette,
-        tertiary: mat.$violet-palette,
+        primary: mat.$green-palette,
+        tertiary: mat.$green-palette,
       ),
       typography: Roboto,
       density: 0,
@@ -205,4 +205,10 @@ body {
   .auth__panel {
     display: none;
   }
+}
+
+
+mat-icon{
+  width: auto !important;
+  height: auto !important;
 }

@@ -4,17 +4,19 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../../core/services/chat/chat-service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-chats',
   templateUrl: './chat.html',
-  imports: [FormsModule, CommonModule], // لم نعد بحاجة NgIf, NgFor منفصلة
+  imports: [FormsModule, CommonModule, RouterLink], // لم نعد بحاجة NgIf, NgFor منفصلة
   styleUrls: ['./chat.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush // ← مهم! استخدام OnPush مع Signals
 })
 export class Chat implements OnInit, OnDestroy {
-  
+    isMobile = signal(window.innerWidth < 1024);
+
+
   // استخدام Signals بدلاً من properties العادية
   private conversationsSignal = signal<any[]>([]);
   private messagesSignal = signal<any[]>([]);
@@ -27,7 +29,7 @@ export class Chat implements OnInit, OnDestroy {
   // computed values (تشتق قيمها من signals أخرى)
   readonly conversations = this.conversationsSignal.asReadonly();
   readonly messages = this.messagesSignal.asReadonly();
-  readonly selectedConversation = this.selectedConversationSignal.asReadonly();
+  readonly selectedConversation = this.selectedConversationSignal
   readonly isLoading = this.isLoadingSignal.asReadonly();
   readonly searchTerm = this.searchTermSignal.asReadonly();
   readonly isSignalRConnected = this.isSignalRConnectedSignal.asReadonly();
@@ -54,9 +56,10 @@ export class Chat implements OnInit, OnDestroy {
   private router = inject(Router);
 
   constructor() {
-    // تأثير للاستجابة للتغييرات
+    window.addEventListener('resize', () => {
+      this.isMobile.set(window.innerWidth < 1024);
+    });
     effect(() => {
-      // يمكنك مراقبة أي تغييرات هنا
       console.log('Selected conversation changed:', this.selectedConversationSignal());
     });
   }
@@ -347,5 +350,10 @@ export class Chat implements OnInit, OnDestroy {
 
   isMyMessage(senderId: string): boolean {
     return senderId === this.currentUserIdSignal();
+  }
+
+  closeChat(){
+    this.router.navigate(['/chat'])
+    this.selectedConversation.set(null);
   }
 }

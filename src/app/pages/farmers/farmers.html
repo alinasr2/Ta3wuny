@@ -1,37 +1,9 @@
-<!-- farmers.component.html -->
 <div class="min-h-screen bg-background py-8">
   <div class="container">
 
-    <!-- شريط البحث والتصفية -->
-    <div class="mb-8">
-      <div class="flex flex-col md:flex-row gap-4">
-        <div class="flex-1 relative">
-          <svg class="absolute start-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <input type="text" placeholder="ابحث باسم المزارع أو الموقع..." class="w-full ps-10 pe-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-surface text-text-primary placeholder-text-secondary">
-        </div>
-        <div class="flex gap-3">
-          <select class="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-surface text-text-primary">
-            <option>جميع التصنيفات</option>
-            <option>فواكه</option>
-            <option>خضروات</option>
-            <option>أعشاب</option>
-            <option>حبوب</option>
-          </select>
-          <select class="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-primary bg-surface text-text-primary">
-            <option>ترتيب حسب: التقييم</option>
-            <option>ترتيب حسب: الأحدث</option>
-            <option>ترتيب حسب: الأكثر مبيعاً</option>
-            <option>ترتيب حسب: الاسم أ-ي</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
     <!-- شبكة المزارعين -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      @for (farmer of farmers; track $index) {
+      @for (farmer of farmers(); track $index) {
         <app-farmer-card [farmer]="farmer"></app-farmer-card>  
       }
     </div>

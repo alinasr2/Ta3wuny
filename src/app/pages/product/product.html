@@ -4,101 +4,89 @@
       (click)="goBack()"
       class="mb-6 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors duration-200"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M10 19l-7-7m0 0l7-7m-7 7h18"
-        ></path>
-      </svg>
+      <i class="pi pi-arrow-right text-lg"></i>
       العودة للمنتجات
     </button>
 
-    @if (isLoading) {
+    @if (isLoadingValue) {
       <div class="flex justify-center items-center h-64">
         <i class="pi pi-spinner pi-spin text-4xl text-primary"></i>
       </div>
     }
 
-    @if (!isLoading && product) {
+    @if (!isLoadingValue && productValue) {
       <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+          <!-- Image Section -->
           <div>
             <div class="bg-accent rounded-xl overflow-hidden mb-4">
               <img
-                [src]="selectedImage"
-                [alt]="product.name"
+                [src]="selectedImageValue"
+                [alt]="productValue.name"
                 class="w-full h-80 md:h-96 object-cover"
               />
             </div>
 
-            @if (product.imageUrls.length > 1) {
+            @if (productValue.imageUrls.length > 1) {
               <div class="flex gap-2 overflow-x-auto">
-                @for (url of product.imageUrls; track url) {
+                @for (url of productValue.imageUrls; track url) {
                   <div
                     (click)="selectImage(url)"
                     class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all"
-                    [class.border-primary]="selectedImage === url"
-                    [class.border-transparent]="selectedImage !== url"
+                    [class.border-primary]="selectedImageValue === url"
+                    [class.border-transparent]="selectedImageValue !== url"
                   >
-                    <img [src]="url" [alt]="product.name" class="w-full h-full object-cover" />
+                    <img [src]="url" [alt]="productValue.name" class="w-full h-full object-cover" />
                   </div>
                 }
               </div>
             }
           </div>
 
+          <!-- Product Details -->
           <div>
             <div class="mb-2">
               <span
                 class="text-sm text-primary font-medium bg-primary-light/10 px-3 py-1 rounded-full"
               >
-                {{ product.categoryName }}
+                {{ productValue.categoryName }}
               </span>
             </div>
 
             <h1 class="text-3xl md:text-4xl font-bold text-text-primary mb-3">
-              {{ product.name }}
+              {{ productValue.name }}
             </h1>
 
             <div class="flex items-center gap-3 mb-4 text-text-secondary text-sm">
               <span class="flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  ></path>
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  ></path>
-                </svg>
-                {{ product.farmerGovernorate }}، {{ product.farmerCity }}
+                <i class="pi pi-map-marker text-base"></i>
+                {{ productValue.farmerGovernorate }}، {{ productValue.farmerCity }}
               </span>
               <span>•</span>
-              <span>{{ product.quantity }} {{ product.unit }} متاح</span>
+              <span>{{ productValue.quantity }} {{ productValue.unit }} متاح</span>
             </div>
 
             <div class="mb-6">
               <span class="text-4xl font-bold text-primary">{{
-                product.unitPrice | currency
-              }}</span>
-              <span class="text-text-secondary"> / {{ product.unit }}</span>
+                productValue.unitPrice 
+              }} جنيه</span>
+              <span class="text-text-secondary"> / {{ productValue.unit }}</span>
             </div>
 
-            <p class="text-text-secondary leading-relaxed mb-6">{{ product.description }}</p>
+            <p class="text-text-secondary leading-relaxed mb-6">{{ productValue.description }}</p>
 
             <div class="flex gap-4 mb-6 text-sm text-text-secondary">
-              @if (product.harvestDate) {
-                <span>🌾 تاريخ الحصاد: {{ product.harvestDate | date: 'mediumDate' }}</span>
+              @if (productValue.harvestDate) {
+                <span>
+                  <i class="pi pi-calendar mr-1"></i>
+                  تاريخ الحصاد: {{ productValue.harvestDate | date: 'mediumDate' }}
+                </span>
               }
-              @if (product.expiryDate) {
-                <span>📅 الصلاحية: {{ product.expiryDate | date: 'mediumDate' }}</span>
+              @if (productValue.expiryDate) {
+                <span>
+                  <i class="pi pi-clock mr-1"></i>
+                  الصلاحية: {{ productValue.expiryDate | date: 'mediumDate' }}
+                </span>
               }
             </div>
 
@@ -109,87 +97,67 @@
                   (click)="changeQuantity(-1)"
                   class="px-3 py-2 text-text-secondary hover:text-primary transition-colors"
                 >
-                  -
+                  <i class="pi pi-minus text-sm"></i>
                 </button>
-                <span class="w-12 text-center text-text-primary">{{ quantity }}</span>
+                <span class="w-12 text-center text-text-primary">{{ quantityValue }}</span>
                 <button
                   (click)="changeQuantity(1)"
                   class="px-3 py-2 text-text-secondary hover:text-primary transition-colors"
                 >
-                  +
+                  <i class="pi pi-plus text-sm"></i>
                 </button>
               </div>
-              <span class="text-text-secondary text-sm">{{ product.unit }} لكل وحدة</span>
+              <span class="text-text-secondary text-sm">{{ productValue.unit }} لكل وحدة</span>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mb-8">
+              <!-- Chat Button -->
               <button
+                routerLink="/chat" [queryParams]="{ id: product()?.farmerId }"
                 class="flex-1 flex items-center justify-center gap-2 bg-surface border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-light/10 transition-all duration-200"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  ></path>
-                </svg>
+                <i class="pi pi-comment text-lg"></i>
+                تواصل مع المزارع
               </button>
+
+              <!-- Add to Cart Button -->
               <button
                 (click)="addToCart()"
                 class="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200"
-                [class.bg-primary]="!added"
-                [class.text-text-on-primary]="!added"
-                [class.hover:bg-primary-dark]="!added"
-                [class.bg-green-500]="added"
-                [class.text-white]="added"
+                [class.bg-primary]="!addedValue"
+                [class.text-text-on-primary]="!addedValue"
+                [class.hover:bg-primary-dark]="!addedValue"
+                [class.bg-green-500]="addedValue"
+                [class.text-white]="addedValue"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 21h6M12 18v3"
-                  ></path>
-                </svg>
-                {{ added ? '✓ تمت الإضافة' : 'أضف للسلة' }}
+                <i class="pi" [class.pi-shopping-cart]="!addedValue" [class.pi-check]="addedValue"></i>
+                {{ addedValue ? 'تمت الإضافة' : 'أضف للسلة' }}
               </button>
             </div>
 
+            <!-- Farmer Info -->
             <div class="bg-surface-hover rounded-xl p-4">
               <div class="flex items-center gap-4">
                 <div
                   class="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl"
                 >
-                  {{ product.farmerName.charAt(0) }}
+                  {{ productValue.farmerName.charAt(0) }}
                 </div>
                 <div class="flex-1">
-                  <h3 class="font-semibold text-text-primary">{{ product.farmerName }}</h3>
+                  <h3 class="font-semibold text-text-primary">{{ productValue.farmerName }}</h3>
                   <div class="flex items-center gap-3 text-sm text-text-secondary mt-1">
                     <span class="flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        ></path>
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        ></path>
-                      </svg>
-                      {{ product.farmerGovernorate }}، {{ product.farmerCity }}
+                      <i class="pi pi-map-marker text-base"></i>
+                      {{ productValue.farmerGovernorate }}، {{ productValue.farmerCity }}
                     </span>
                   </div>
                 </div>
-                <a
-                  [routerLink]="['/farmers', product.farmerId]"
-                  class="text-primary hover:text-primary-dark text-sm font-medium"
+                <button
+                  class="text-primary hover:text-primary-dark text-sm font-medium flex items-center gap-1"
                 >
-                </a>
+                  <i class="pi pi-comment text-base"></i>
+                  تواصل
+                </button>
               </div>
             </div>
           </div>
