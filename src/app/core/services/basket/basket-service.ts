@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BaseUrl } from '../../../shared/environments/base-url';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
 import { IBasket, IBasketItem, IBasketResponse } from '../../../shared/interfaces/ibasket';
 import { Auth } from '../auth/auth';
 
@@ -36,7 +36,15 @@ export class BasketService {
           if (res.isSuccess && res.data) {
             this.basket$.next(res.data);
             localStorage.setItem(this.basketKey, res.data.id);
+          } else {
+            this.basket$.next(null);
+            localStorage.removeItem(this.basketKey);
           }
+        }),
+        catchError(() => {
+          this.basket$.next(null);
+          localStorage.removeItem(this.basketKey);
+          return of(null as any);
         }),
       );
   }
@@ -96,11 +104,14 @@ export class BasketService {
     this.updateBasket({ ...currentBasket, items: updatedItems }).subscribe();
   }
 
-  deleteBasket(): Observable<any> {
+  deleteBasket(basketId?: string): Observable<any> {
     const userId = this.getUserId();
+    const params: any = {};
+    if (basketId) params.basketId = basketId;
+    else if (userId) params.userId = userId;
     return this.httpClient
       .delete(`${BaseUrl.url}api/Baskets`, {
-        params: userId ? { userId } : {},
+        params,
       })
       .pipe(
         tap(() => {

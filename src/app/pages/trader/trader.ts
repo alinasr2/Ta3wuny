@@ -34,6 +34,7 @@ export class Trader implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
+    console.log('Route ID:', id);
     if (id) {
       this.loadTrader(id);
       this.loadReviews(id);
@@ -61,7 +62,15 @@ export class Trader implements OnInit {
         if (res.isSuccess) this.reviews = res.data ?? [];
         this.isLoadingReviews = false;
       },
-      error: () => (this.isLoadingReviews = false),
+      error: (err) => {
+        if (err.status === 404) {
+          this.reviews = [];
+        } else {
+          this.errorReviews = 'حدث خطأ في تحميل التقييمات';
+        }
+
+        this.isLoadingReviews = false;
+      },
     });
   }
 
@@ -69,6 +78,19 @@ export class Trader implements OnInit {
     this.usersService.getUserRating(id).subscribe({
       next: (res) => {
         if (res.isSuccess) this.ratingSummary = res.data;
+      },
+      error: (err) => {
+        if (err.status === 404) {
+          this.ratingSummary = {
+            averageRating: 0,
+            totalReviews: 0,
+            fiveStars: 0,
+            fourStars: 0,
+            threeStars: 0,
+            twoStars: 0,
+            oneStar: 0,
+          };
+        }
       },
     });
   }

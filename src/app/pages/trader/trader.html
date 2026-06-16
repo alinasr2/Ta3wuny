@@ -27,7 +27,7 @@
       <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-8">
         <div class="h-48 bg-gradient-to-r from-primary/30 to-primary/10 relative">
           <div class="absolute -bottom-12 start-8">
-            @if (trader.profileImageUrl) {
+            @if (trader.profileImageUrl && trader.profileImageUrl !== 'https://t3awuny.runasp.net') {
               <img [src]="trader.profileImageUrl" [alt]="trader.name"
                 class="w-24 h-24 rounded-full border-4 border-surface object-cover" />
             } @else {

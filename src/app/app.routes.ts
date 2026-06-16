@@ -19,6 +19,9 @@ import { TraderProfile } from './shared/components/trader-profile/trader-profile
 import { guestGuard } from './core/guards/guest-guard';
 import { isLoginGuard } from './core/guards/is-login-guard';
 
+import { Checkout } from './pages/checkout/checkout';
+import { OrderConfirmation } from './pages/order-confirmation/order-confirmation';
+import { MyOrders } from './pages/my-orders/my-orders';
 
 export const routes: Routes = [
   // Public routes
@@ -30,8 +33,8 @@ export const routes: Routes = [
   { path: '', component: Home },
   { path: 'marketplace', component: Shop },
   { path: 'contact', component: Contact },
-  { path: 'auctions', component: Auctions, canActivate: [isLoginGuard] },
-  { path: 'auctions/:id', component: Auction, canActivate: [isLoginGuard] },
+  { path: 'auctions', component: Auctions},
+  { path: 'auctions/:id', component: Auction},
   { path: 'product', component: Product },
 
   // Auth pages
@@ -43,7 +46,7 @@ export const routes: Routes = [
   { path: 'chat', component: Chat, canActivate: [isLoginGuard] },
   { path: 'cart', component: Cart, canActivate: [isLoginGuard] },
   { path: 'profile', component: Profile, canActivate: [isLoginGuard] },
-
-
-  
+  { path: 'checkout', component: Checkout },
+  { path: 'order-confirmation/:id', component: OrderConfirmation },
+  // { path: 'my-orders', component: MyOrders },
 ];

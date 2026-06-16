@@ -6,21 +6,7 @@
     </div>
 
     @if (basket$ | async; as basket) {
-      @if (basket.items.length === 0) {
-        <div class="bg-surface rounded-2xl shadow-sm p-12 text-center">
-          <i class="pi pi-shopping-cart text-6xl text-text-secondary/30 mb-4 block"></i>
-          <h2 class="text-xl font-semibold text-text-primary mb-2">سلتك فارغة</h2>
-          <p class="text-text-secondary mb-6">أضف بعض المنتجات من المتجر</p>
-          <a
-            routerLink="/marketplace"
-            class="bg-primary text-text-on-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all duration-200 inline-block"
-          >
-            تصفح المتجر
-          </a>
-        </div>
-      }
-
-      @if (basket.items.length > 0) {
+      @if (basket && basket.items.length > 0) {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div class="lg:col-span-2">
             <div class="bg-surface rounded-2xl shadow-sm overflow-hidden">
@@ -35,11 +21,11 @@
                 @for (item of basket.items; track item.productId) {
                   <div class="p-6 flex flex-col sm:flex-row gap-6">
                     <div class="sm:w-32 h-32 bg-accent rounded-xl overflow-hidden flex-shrink-0">
-                      <img
+                      <!-- <img
                         [src]="item.pictureUrl"
                         [alt]="item.productName"
                         class="w-full h-full object-cover"
-                      />
+                      /> -->
                     </div>
 
                     <div class="flex-1">
@@ -147,6 +133,7 @@
                 </div>
 
                 <button
+                  routerLink="/checkout"
                   class="w-full bg-primary hover:bg-primary-dark text-text-on-primary py-3 rounded-xl font-semibold transition-all duration-200 mt-4"
                 >
                   متابعة إلى إتمام الشراء
@@ -155,7 +142,31 @@
             </div>
           </div>
         </div>
+      } @else {
+        <div class="bg-surface rounded-2xl shadow-sm p-12 text-center">
+          <i class="pi pi-shopping-cart text-6xl text-text-secondary/30 mb-4 block"></i>
+          <h2 class="text-xl font-semibold text-text-primary mb-2">سلتك فارغة</h2>
+          <p class="text-text-secondary mb-6">أضف بعض المنتجات من المتجر</p>
+          <a
+            routerLink="/marketplace"
+            class="bg-primary text-text-on-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all duration-200 inline-block"
+          >
+            تصفح المتجر
+          </a>
+        </div>
       }
+    } @else {
+      <div class="bg-surface rounded-2xl shadow-sm p-12 text-center">
+        <i class="pi pi-shopping-cart text-6xl text-text-secondary/30 mb-4 block"></i>
+        <h2 class="text-xl font-semibold text-text-primary mb-2">سلتك فارغة</h2>
+        <p class="text-text-secondary mb-6">أضف بعض المنتجات من المتجر</p>
+        <a
+          routerLink="/marketplace"
+          class="bg-primary text-text-on-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all duration-200 inline-block"
+        >
+          تصفح المتجر
+        </a>
+      </div>
     }
   </div>
 </div>

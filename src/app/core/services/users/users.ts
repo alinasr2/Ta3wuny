@@ -127,7 +127,7 @@ export class Users {
   }
 
   getTraderProfile(id: string): Observable<any> {
-    return this.http.get(`${BaseUrl.url}api/Traders/trader-profiles/${id}`);
+    return this.http.get(`${BaseUrl.url}api/Traders/trader-profile?id=${id}`);
   }
 
   getTraderAddress(userId: string): Observable<any> {

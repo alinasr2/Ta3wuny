@@ -1,0 +1,105 @@
+<div class="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-text-primary">طلباتي</h1>
+      <p class="text-text-secondary mt-1">تابع حالة طلباتك</p>
+    </div>
+
+    @if (isLoading) {
+      <div class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }
+
+    @if (!isLoading && error) {
+      <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <p class="text-red-600">{{ error }}</p>
+      </div>
+    }
+
+    @if (!isLoading && orders.length === 0) {
+      <div class="bg-surface rounded-2xl shadow-sm p-12 text-center">
+        <i class="pi pi-shopping-bag text-6xl text-text-secondary/30 mb-4 block"></i>
+        <h2 class="text-xl font-semibold text-text-primary mb-2">لا توجد طلبات</h2>
+        <p class="text-text-secondary mb-6">لم تقم بأي طلبات بعد</p>
+        <a routerLink="/marketplace"
+          class="bg-primary text-text-on-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all inline-block">
+          تسوق الآن
+        </a>
+      </div>
+    }
+
+    @if (!isLoading && orders.length > 0) {
+      <div class="space-y-6">
+        @for (order of orders; track order.id) {
+          <div class="bg-surface rounded-2xl shadow-sm overflow-hidden">
+
+            <!-- رأس الطلب -->
+            <div class="p-6 border-b border-gray-100">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <span class="text-text-secondary text-sm">رقم الطلب</span>
+                  <h3 class="font-bold text-text-primary text-lg">#{{ order.id }}</h3>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span class="px-3 py-1 rounded-full text-sm font-medium"
+                    [class]="getStatusInfo(order.status).color">
+                    {{ getStatusInfo(order.status).label }}
+                  </span>
+                  <span class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
+                    {{ order.paymentStatus }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- المنتجات -->
+            <div class="p-6">
+              <div class="space-y-3 mb-4">
+                @for (item of order.items; track item.productId) {
+                  <div class="flex items-center gap-4">
+                    <!-- <img [src]="item.mainImageUrl [alt]="item.productName"
+                      class="w-14 h-14 rounded-lg object-cover flex-shrink-0" /> -->
+                    <div class="flex-1">
+                      <p class="font-medium text-text-primary">{{ item.productName }}</p>
+                      <p class="text-sm text-text-secondary">
+                        {{ item.quantity }} {{ item.unit }} × {{ item.unitPriceAtOrder | currency:'EGP':'symbol':'1.2-2' }}
+                      </p>
+                    </div>
+                    <p class="font-semibold text-text-primary">
+                      {{ item.subtotal | currency:'EGP':'symbol':'1.2-2' }}
+                    </p>
+                  </div>
+                }
+              </div>
+
+              <!-- الإجمالي والأزرار -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-gray-100">
+                <div>
+                  <span class="text-text-secondary text-sm">الإجمالي</span>
+                  <p class="font-bold text-primary text-xl">
+                    {{ order.total | currency:'EGP':'symbol':'1.2-2' }}
+                  </p>
+                </div>
+                <div class="flex gap-3">
+                  <a [routerLink]="['/order-confirmation', order.id]"
+                    class="border-2 border-primary text-primary px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-light/10 transition-all">
+                    التفاصيل
+                  </a>
+                  @if (order.status === 'Pending') {
+                    <button (click)="cancelOrder(order.id)"
+                      class="border-2 border-error text-error px-4 py-2 rounded-xl text-sm font-medium hover:bg-error/10 transition-all">
+                      إلغاء
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>
