@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+.profile-hero {
+  background-color: transparent;
+}
+
+.tab-nav {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tab-content {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+::ng-deep .mat-mdc-paginator {
+  direction: rtl;
+  font-family: 'Cairo', sans-serif !important;
+}
+
+::ng-deep .mat-mdc-progress-spinner circle {
+  stroke: #40916c !important;
+}
+
+::ng-deep .snack-success {
+  --mdc-snackbar-container-color: #40916c;
+  --mdc-snackbar-supporting-text-color: #fff;
+  font-family: 'Cairo', sans-serif;
+}
+
+::ng-deep .snack-error {
+  --mdc-snackbar-container-color: #e63946;
+  --mdc-snackbar-supporting-text-color: #fff;
+  font-family: 'Cairo', sans-serif;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.bg-white:has(img) img {
+  transition: transform 0.3s ease;
+}
+.bg-white:has(img):hover img {
+  transform: scale(1.04);
+}
+
+.fixed.inset-0.bg-black\/50 {
+  backdrop-filter: blur(4px);
+}
+
+
+
+// Scrollable modal content
+.max-h-\[70vh\] {
+  max-height: 70vh;
+}

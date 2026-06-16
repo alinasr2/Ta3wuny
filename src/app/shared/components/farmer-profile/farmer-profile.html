@@ -1,0 +1,1060 @@
+<div class="profile-page min-h-screen bg-background" dir="rtl">
+
+  <!-- ════ PROFILE HEADER ════ -->
+  @if (profileLoading()) {
+    <div class="flex items-center justify-center py-20">
+      <mat-spinner [diameter]="48"></mat-spinner>
+    </div>
+  }
+
+  @if (!profileLoading() && profile(); as p) {
+    <div class="profile-hero mb-6 relative overflow-hidden">
+      <!-- Cover gradient -->
+      <div class="h-40 bg-gradient-to-l from-primary-dark via-primary to-primary-light relative">
+        <div class="absolute inset-0 opacity-10"
+          style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+      </div>
+
+      <!-- Profile card -->
+      <div class="container relative">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 -mt-12 p-6">
+          <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
+
+            <!-- Avatar -->
+            <div class="relative -mt-16 sm:-mt-20 flex-shrink-0">
+              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-accent flex items-center justify-center">
+                @if (p.profileImageUrl && p.profileImageUrl !== 'https://t3awuny.runasp.net') {
+                  <img [src]="p.profileImageUrl" [alt]="p.name" class="w-full h-full object-cover" />
+                } @else {
+                  <mat-icon class="!text-5xl text-primary">person</mat-icon>
+                }
+              </div>
+              <!-- Change image button -->
+              <label class="absolute -bottom-2 -left-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary-dark transition-all"
+               >
+                @if (profileImageLoading()) {
+                  <mat-spinner [diameter]="16" color="accent"></mat-spinner>
+                } @else {
+                  <mat-icon class="!text-sm text-white">photo_camera</mat-icon>
+                }
+                <input type="file" accept="image/*" class="hidden" (change)="onProfileImageChange($event)" />
+              </label>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0 pb-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold text-text-primary">{{ p.name }}</h1>
+                @if (p.isVerified) {
+                  <span class="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">
+                    <mat-icon class="!text-xs">verified</mat-icon> موثّق
+                  </span>
+                }
+              </div>
+              <p class="text-text-secondary text-sm mt-0.5 flex items-center gap-1">
+                <mat-icon class="!text-sm text-primary">agriculture</mat-icon>
+                {{ p.farmName || 'لم يُحدَّد اسم المزرعة' }}
+              </p>
+              @if (p.address) {
+                <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                  <mat-icon class="!text-xs">location_on</mat-icon>
+                  {{ p.address.city }}، {{ p.address.governorate }}، {{ p.address.country }}
+                </p>
+              }
+              @if (p.description) {
+                <p class="text-text-secondary text-sm mt-2 line-clamp-2">{{ p.description }}</p>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-shrink-0 pb-1">
+              <p class="text-xs text-gray-400 hidden sm:block">
+                انضم {{ formatDate(p.joinDate) }}
+              </p>
+              <button (click)="openEditModal()"
+                class="flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
+                <mat-icon class="!text-base">edit</mat-icon>
+                تعديل البروفايل
+              </button>
+            </div>
+          </div>
+
+        
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TABS ════ -->
+    <div class="container">
+      <!-- Tab Nav -->
+      <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto">
+        @for (tab of [
+          { id: 'overview', label: 'نظرة عامة', icon: 'dashboard' },
+          { id: 'products', label: 'منتجاتي', icon: 'inventory_2' },
+          { id: 'orders',   label: 'الطلبات',   icon: 'receipt_long' },
+          { id: 'auctions', label: 'مزاداتي',   icon: 'gavel' }
+        ]; track tab.id) {
+          <button
+            (click)="setTab($any(tab.id))"
+            [class.bg-primary]="activeTab() === tab.id"
+            [class.text-white]="activeTab() === tab.id"
+            [class.text-text-secondary]="activeTab() !== tab.id"
+            [class.hover:bg-green-50]="activeTab() !== tab.id"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex-1 justify-center ">
+            <mat-icon class="!text-base">{{ tab.icon }}</mat-icon>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- ── Overview Tab ── -->
+      @if (activeTab() === 'overview') {
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <!-- Profile Details Card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">person</mat-icon> بيانات الحساب
+            </h2>
+            <div class="space-y-3">
+              @for (row of [
+                { icon: 'badge', label: 'الاسم', value: p.name },
+                { icon: 'alternate_email', label: 'البريد الإلكتروني', value: p.email },
+                { icon: 'account_circle', label: 'اسم المستخدم', value: p.userName },
+                { icon: 'agriculture', label: 'اسم المزرعة', value: p.farmName }
+              ]; track row.label) {
+                <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                    <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
+                  </div>
+                  <div>
+                    <p class="text-xs text-text-secondary">{{ row.label }}</p>
+                    <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
+                  </div>
+                </div>
+              }
+              @if (p.description) {
+                <div class="pt-2">
+                  <p class="text-xs text-text-secondary mb-1 flex items-center gap-1">
+                    <mat-icon class="!text-xs">description</mat-icon> الوصف
+                  </p>
+                  <p class="text-sm text-text-primary leading-relaxed">{{ p.description }}</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Address Card -->
+          @if (p.address) {
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <mat-icon class="text-primary">location_on</mat-icon> العنوان
+              </h2>
+              <div class="space-y-3">
+                @for (row of [
+                  { icon: 'signpost', label: 'الشارع', value: p.address.street },
+                  { icon: 'location_city', label: 'المدينة', value: p.address.city },
+                  { icon: 'map', label: 'المحافظة', value: p.address.governorate },
+                  { icon: 'flag', label: 'الدولة', value: p.address.country },
+                  { icon: 'local_post_office', label: 'الرمز البريدي', value: p.address.postalCode }
+                ]; track row.label) {
+                  <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                      <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
+                    </div>
+                    <div>
+                      <p class="text-xs text-text-secondary">{{ row.label }}</p>
+                      <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Products Tab ── -->
+      @if (activeTab() === 'products') {
+        <div class="mt-6">
+
+          <!-- Toolbar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <div class="relative flex-1 max-w-xs">
+                <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 !text-base text-gray-400">search</mat-icon>
+                <input
+                  type="text"
+                  placeholder="ابحث عن منتج..."
+                  [ngModel]="productSearch()"
+                  (ngModelChange)="productSearch.set($event)"
+                  (keyup.enter)="onProductSearch()"
+                  class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white" />
+              </div>
+            </div>
+            <button (click)="openAddProduct()"
+              class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all">
+              <mat-icon class="!text-base">add</mat-icon>
+              إضافة منتج
+            </button>
+          </div>
+
+          @if (productsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!productsLoading() && products().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">inventory_2</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد منتجات</p>
+              <button (click)="openAddProduct()" class="text-primary text-sm font-bold hover:underline">أضف منتجك الأول</button>
+            </div>
+          }
+
+          <!-- Products Grid -->
+          @if (!productsLoading() && products().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+              @for (product of products(); track product.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
+                  <!-- Image -->
+                  <div class="relative h-40 bg-gray-50 overflow-hidden">
+                    <img [src]="product.mainImageUrl || 'https://placehold.co/400x300?text=لا+صورة'"
+                      [alt]="product.name"
+                      class="w-full h-full object-cover cursor-pointer"
+                      (click)="viewProductDetails(product.id)"
+                      onerror="this.src='https://placehold.co/400x300?text=لا+صورة'" />
+                    <!-- Status badge -->
+                    <div class="absolute top-2 right-2">
+                      @let pStatus = getProductStatus(product.status);
+                      <span class="text-xs font-bold px-2 py-0.5 rounded-full" [class]="pStatus.bgClass + ' ' + pStatus.textClass">
+                        {{ pStatus.label }}
+                      </span>
+                    </div>
+                    @if (product.hasActiveAcution) {
+                      <div class="absolute top-2 left-2">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-white flex items-center gap-0.5">
+                          <mat-icon class="!text-xs">gavel</mat-icon> مزاد
+                        </span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Content -->
+                  <div class="p-4 flex flex-col flex-1 gap-2">
+                    <h3 class="font-bold text-text-primary text-sm leading-tight cursor-pointer hover:text-primary transition-colors" (click)="viewProductDetails(product.id)">{{ product.name }}</h3>
+                    <p class="text-xs text-text-secondary">{{ product.categoryName }}</p>
+                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+                      <div>
+                        <p class="text-primary font-bold text-sm">{{ formatPrice(product.unitPrice) }}</p>
+                        <p class="text-xs text-gray-400">{{ product.quantity }} {{ product.unit }}</p>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <!-- View details -->
+                        <button (click)="viewProductDetails(product.id)"
+                          matTooltip="تفاصيل المنتج"
+                          class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                          <mat-icon class="!text-base">visibility</mat-icon>
+                        </button>
+                        <!-- Create auction -->
+                        <button (click)="openCreateAuctionModal(product.id)"
+                          matTooltip="إنشاء مزاد"
+                          class="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600 transition-all">
+                          <mat-icon class="!text-base">gavel</mat-icon>
+                        </button>
+                        <button (click)="openEditProduct(product)"
+                          matTooltip="تعديل"
+                          class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                          <mat-icon class="!text-base">edit</mat-icon>
+                        </button>
+                        <button (click)="confirmDeleteProduct(product.id)"
+                          matTooltip="حذف"
+                          class="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all">
+                          <mat-icon class="!text-base">delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Paginator -->
+            <div class="flex justify-center">
+              <mat-paginator
+                [length]="productsTotal()"
+                [pageSize]="productsPageSize()"
+                [pageIndex]="productsPageIndex()"
+                [pageSizeOptions]="[8, 16, 32]"
+                (page)="onProductsPage($event)"
+                showFirstLastButtons
+                class="rounded-2xl border border-gray-100 shadow-sm bg-white">
+              </mat-paginator>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Orders Tab ── -->
+      @if (activeTab() === 'orders') {
+        <div class="mt-6">
+          @if (ordersLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!ordersLoading() && orders().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">receipt_long</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد طلبات بعد</p>
+            </div>
+          }
+
+          @if (!ordersLoading() && orders().length > 0) {
+            <div class="flex flex-col gap-4">
+              @for (order of orders(); track order.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <!-- Order header -->
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50 flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center cursor-pointer hover:bg-green-100 transition-colors" (click)="viewOrderDetails(order.id)">
+                        <mat-icon class="!text-base text-primary">receipt_long</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm cursor-pointer hover:text-primary transition-colors" (click)="viewOrderDetails(order.id)">طلب #{{ order.id }}</p>
+                        <p class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">person</mat-icon>
+                          {{ order.buyerName }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      @let oStatus = getOrderStatus(order.status);
+                      <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                        [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                        <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                        {{ oStatus.label }}
+                      </span>
+                      <span class="text-base font-bold text-primary">{{ formatPrice(order.total) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Order items -->
+                  <div class="p-4 border-b border-gray-50">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      @for (item of order.items; track item.productId) {
+                        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
+                          <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'"
+                            [alt]="item.productName"
+                            class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                            onerror="this.src='https://placehold.co/60x60?text=صورة'" />
+                          <div class="min-w-0">
+                            <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
+                            <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}</p>
+                            <p class="text-xs text-primary font-bold">{{ formatPrice(item.subtotal) }}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="p-4 flex items-center gap-2 flex-wrap">
+                    @if (order.status === 'Pending') {
+                      <button (click)="confirmOrder(order.id)" [disabled]="orderActionLoading()"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all disabled:opacity-60">
+                        <mat-icon class="!text-base">check</mat-icon> قبول الطلب
+                      </button>
+                      <button (click)="openRejectModal(order.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">close</mat-icon> رفض الطلب
+                      </button>
+                      <button (click)="openCancelOrder(order.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">cancel</mat-icon> إلغاء الطلب
+                      </button>
+                    }
+                    @if (order.status === 'Confirmed') {
+                      <button (click)="changeOrderStatus(order.id, 2)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white rounded-xl text-sm font-bold hover:bg-purple-600 transition-all">
+                        <mat-icon class="!text-base">inventory</mat-icon> بدء التحضير
+                      </button>
+                    }
+                    @if (order.status === 'Preparing') {
+                      <button (click)="changeOrderStatus(order.id, 3)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-bold hover:bg-cyan-600 transition-all">
+                        <mat-icon class="!text-base">local_shipping</mat-icon> جاهز للشحن
+                      </button>
+                    }
+                    <button (click)="viewOrderDetails(order.id)"
+                      class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-text-secondary rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">
+                      <mat-icon class="!text-base">visibility</mat-icon> تفاصيل الدفع
+                    </button>
+                    <span class="mr-auto text-xs text-gray-400 flex items-center gap-1">
+                      <mat-icon class="!text-xs">payments</mat-icon> {{ order.paymentStatus }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Auctions Tab ── -->
+      @if (activeTab() === 'auctions') {
+        <div class="mt-6">
+          @if (auctionsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!auctionsLoading() && auctions().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">gavel</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد مزادات</p>
+            </div>
+          }
+
+          @if (!auctionsLoading() && auctions().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (auction of auctions(); track auction.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all flex flex-col gap-4">
+                  <!-- Header -->
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                        <mat-icon class="!text-xl text-primary">gavel</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm">{{ auction.productName }}</p>
+                        <p class="text-xs text-text-secondary">{{ auction.productQuantity }} {{ auction.productUnit }}</p>
+                      </div>
+                    </div>
+                    @let aStatus = getAuctionStatus(auction.status);
+                    <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                      [class]="aStatus.bgClass + ' ' + aStatus.textClass">
+                      <mat-icon class="!text-xs">{{ aStatus.icon }}</mat-icon>
+                      {{ aStatus.label }}
+                    </span>
+                  </div>
+
+                  <!-- Image -->
+                  @if (auction.mainImageUrl) {
+                    <div class="rounded-xl overflow-hidden h-32 bg-gray-100">
+                      <img [src]="auction.mainImageUrl" [alt]="auction.productName" class="w-full h-full object-cover" />
+                    </div>
+                  }
+
+                  <!-- Details -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-text-secondary text-xs">السعر الحالي</span>
+                      <span class="font-bold text-primary text-lg">{{ formatPrice(auction.currentPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">السعر الابتدائي</span>
+                      <span class="text-xs font-bold text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">عدد المزايدات</span>
+                      <span class="text-xs font-bold text-text-primary">{{ auction.totalBids }}</span>
+                    </div>
+                    @if (auction.winnerName) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary">الفائز</span>
+                        <span class="text-xs font-bold text-green-600">{{ auction.winnerName }}</span>
+                      </div>
+                    }
+                    @if (!auction.isEnded && auction.status === 'Active') {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">timer</mat-icon> الوقت المتبقي
+                        </span>
+                        <span class="text-xs font-bold text-primary">{{ auction.minutesRemaining }} دقيقة</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Dates -->
+                  <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">البداية</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.startDate) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">النهاية</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.endDate) }}</p>
+                    </div>
+                  </div>
+
+                  <a [href]="'/auctions/' + auction.id"
+                    class="flex items-center justify-center gap-2 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
+                    <mat-icon class="!text-base">visibility</mat-icon>
+                    عرض المزاد
+                  </a>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ════ MODALS ════ -->
+
+  <!-- Edit Profile Modal -->
+  @if (showEditModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">edit</mat-icon>
+            تعديل البروفايل
+          </h2>
+          <button (click)="showEditModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          @for (field of [
+            { key: 'name',        label: 'الاسم الكامل',   icon: 'badge',       type: 'text'     },
+            { key: 'farmName',    label: 'اسم المزرعة',    icon: 'agriculture', type: 'text'     },
+            { key: 'description', label: 'الوصف',          icon: 'description', type: 'textarea' }
+          ]; track field.key) {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">
+                {{ field.label }}
+              </label>
+              @if (field.type === 'textarea') {
+                <textarea
+                  [value]="$any(editForm())[field.key]"
+                  (input)="updateEditForm(field.key, $any($event.target).value)"
+                  rows="3"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 resize-none text-sm">
+                </textarea>
+              } @else {
+                <input
+                  [type]="field.type"
+                  [value]="$any(editForm())[field.key]"
+                  (input)="updateEditForm(field.key, $any($event.target).value)"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm" />
+              }
+            </div>
+          }
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProfile()" [disabled]="editLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (editLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            حفظ التغييرات
+          </button>
+          <button (click)="showEditModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Add/Edit Product Modal -->
+  @if (showProductModal()) {
+    <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mb-8">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">{{ productModalMode() === 'add' ? 'add_box' : 'edit' }}</mat-icon>
+            {{ productModalMode() === 'add' ? 'إضافة منتج جديد' : 'تعديل المنتج' }}
+          </h2>
+          <button (click)="showProductModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Name -->
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">اسم المنتج *</label>
+            <input type="text" [value]="productForm().name"
+              (input)="updateProductForm('name', $any($event.target).value)"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الوصف</label>
+            <textarea [value]="productForm().description"
+              (input)="updateProductForm('description', $any($event.target).value)"
+              rows="2"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm resize-none">
+            </textarea>
+          </div>
+
+          <!-- Category + Unit -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الفئة *</label>
+              <select [ngModel]="productForm().categoryId"
+                (ngModelChange)="updateProductForm('categoryId', $event)"
+                class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm">
+                <option [value]="null">اختر الفئة</option>
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.nameAr || cat.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الوحدة</label>
+              <input type="text" [value]="productForm().unit"
+                (input)="updateProductForm('unit', $any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+          </div>
+
+          <!-- Quantity + Price -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الكمية *</label>
+              <input type="number" [value]="productForm().quantity"
+                (input)="updateProductForm('quantity', +$any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">سعر الوحدة *</label>
+              <input type="number" [value]="productForm().unitPrice"
+                (input)="updateProductForm('unitPrice', +$any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">تاريخ الحصاد</label>
+              <input type="date" [value]="productForm().harvestDate"
+                (input)="updateProductForm('harvestDate', $any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">تاريخ الانتهاء</label>
+              <input type="date" [value]="productForm().expiryDate"
+                (input)="updateProductForm('expiryDate', $any($event.target).value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+            </div>
+          </div>
+
+          <!-- Images (add only) -->
+          @if (productModalMode() === 'add') {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">
+                الصور * ({{ productImages().length }} صورة مضافة)
+              </label>
+
+              <!-- Upload dropzone -->
+              <label class="flex flex-col items-center gap-2 border-2 border-dashed rounded-xl p-4 cursor-pointer transition-all"
+                [class.border-primary]="productImages().length > 0"
+                [class.border-gray-200]="productImages().length === 0"
+                [class.bg-green-50]="productImages().length > 0">
+                <mat-icon class="!text-3xl" 
+                  [class.text-primary]="productImages().length > 0" 
+                  [class.text-gray-400]="productImages().length === 0">
+                  cloud_upload
+                </mat-icon>
+                <span class="text-sm font-medium" 
+                  [class.text-primary]="productImages().length > 0" 
+                  [class.text-text-secondary]="productImages().length === 0">
+                  {{ productImages().length > 0 ? 'اضغط لإضافة المزيد' : 'اضغط لاختيار صور' }}
+                </span>
+                <span class="text-xs text-gray-400">PNG, JPG — يمكنك اختيار أكثر من صورة</span>
+                <input type="file" multiple accept="image/*" class="hidden" 
+                  (change)="onProductImagesChange($event)" />
+              </label>
+
+              <!-- Image Previews -->
+              @if (productImagePreviews().length > 0) {
+                <div class="grid grid-cols-3 gap-2 mt-3">
+                  @for (preview of productImagePreviews(); track $index) {
+                    <div class="relative group rounded-xl overflow-hidden aspect-square bg-gray-100">
+                      <img [src]="preview" alt="صورة المنتج"
+                        class="w-full h-full object-cover" />
+                      @if ($index === 0) {
+                        <div class="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                          رئيسية
+                        </div>
+                      }
+                      <button type="button"
+                        (click)="removeProductImage($index)"
+                        class="absolute top-1 left-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                        <mat-icon class="!text-xs">close</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+                <p class="text-xs text-text-secondary mt-1.5 flex items-center gap-1">
+                  <mat-icon class="!text-xs text-primary">info</mat-icon>
+                  الصورة الأولى ستكون الصورة الرئيسية للمنتج ({{ productImagePreviews().length }} صورة مضافة)
+                </p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProduct()" [disabled]="productLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (productLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            {{ productModalMode() === 'add' ? 'إضافة المنتج' : 'حفظ التعديلات' }}
+          </button>
+          <button (click)="showProductModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Product Details Modal -->
+  @if (showProductDetailsModal() && selectedProduct()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">inventory_2</mat-icon>
+            تفاصيل المنتج
+          </h2>
+          <button (click)="closeProductDetails()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        
+        @if (productDetailsLoading()) {
+          <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+        } @else {
+          @let product = selectedProduct();
+          <div class="p-5 space-y-4">
+            <!-- Images -->
+            @if (product && product?.imageUrls?.length > 0) {
+              <div class="grid grid-cols-4 gap-2">
+                @for (img of product?.imageUrls; track $index) {
+                  <div class="relative aspect-square rounded-xl overflow-hidden bg-gray-100 group">
+                    <img [src]="img" [alt]="product?.name" class="w-full h-full object-cover" />
+                    <!-- Delete button -->
+                    <button 
+                      (click)="deleteProductImage(product?.id, $index)" 
+                      [disabled]="deletingImageId() === $index"
+                      class="absolute top-1 left-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600 disabled:opacity-50"
+                      matTooltip="حذف الصورة">
+                      @if (deletingImageId() === $index) {
+                        <mat-spinner [diameter]="14" color="accent"></mat-spinner>
+                      } @else {
+                        <mat-icon class="!text-xs">close</mat-icon>
+                      }
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Add image button -->
+            <div class="mt-3">
+              <label class="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-primary rounded-xl cursor-pointer hover:bg-green-50 transition-all text-sm font-bold text-primary">
+                <mat-icon>add_photo_alternate</mat-icon>
+                إضافة صورة جديدة
+                <input type="file" accept="image/*" class="hidden" 
+                  (change)="onAddProductImage($event, product?.id)" />
+              </label>
+              @if (addingProductImage()) {
+                <div class="mt-2 flex items-center gap-2 text-sm text-text-secondary">
+                  <mat-spinner [diameter]="20"></mat-spinner>
+                  جاري رفع الصورة...
+                </div>
+              }
+            </div>
+            
+            <!-- Info -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs text-text-secondary">اسم المنتج</p>
+                <p class="font-bold text-text-primary">{{ product?.name }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">الفئة</p>
+                <p class="font-bold text-text-primary">{{ product?.categoryName }}</p>
+              </div>
+              @if(product?.unitPrice){
+              <div>
+                <p class="text-xs text-text-secondary">السعر</p>
+                <p class="font-bold text-primary">{{ formatPrice(product?.unitPrice) }}</p>
+              </div>
+              }
+              <div>
+                <p class="text-xs text-text-secondary">الكمية</p>
+                <p class="font-bold text-text-primary">{{ product?.quantity }} {{ product?.unit }}</p>
+              </div>
+              @if(product?.harvestDate){
+              <div>
+                <p class="text-xs text-text-secondary">تاريخ الحصاد</p>
+                <p class="font-bold text-text-primary">{{ formatDate(product?.harvestDate) }}</p>
+              </div>
+              }
+              @if(product?.expiryDate){
+              <div>
+                <p class="text-xs text-text-secondary">تاريخ الانتهاء</p>
+                <p class="font-bold text-text-primary">{{ formatDate(product?.expiryDate) }}</p>
+              </div>
+              }
+              <div class="col-span-2">
+                <p class="text-xs text-text-secondary">الوصف</p>
+                <p class="text-text-primary">{{ product?.description || 'لا يوجد وصف' }}</p>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex gap-2 pt-4 border-t border-gray-100">
+              <button (click)="openCreateAuctionModal(product?.id)"
+                class="flex-1 py-2.5 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-all flex items-center justify-center gap-2">
+                <mat-icon class="!text-base">gavel</mat-icon>
+                إنشاء مزاد
+              </button>
+              <button (click)="closeProductDetails()"
+                class="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+                إغلاق
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirm Modal -->
+  @if (deleteProductId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <mat-icon class="!text-3xl text-red-500">delete_forever</mat-icon>
+        </div>
+        <h2 class="text-lg font-bold text-text-primary mb-2">تأكيد الحذف</h2>
+        <p class="text-sm text-text-secondary mb-6">هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="flex gap-2">
+          <button (click)="deleteProduct()" [disabled]="deleteLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (deleteLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            نعم، احذف
+          </button>
+          <button (click)="deleteProductId.set(null)"
+            class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Reject Order Modal -->
+  @if (rejectOrderId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-red-500">block</mat-icon>
+            رفض الطلب
+          </h2>
+        </div>
+        <div class="p-5">
+          <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">سبب الرفض</label>
+          <textarea [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)"
+            rows="3" placeholder="اكتب سبب الرفض..."
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-400 outline-none bg-gray-50 text-sm resize-none">
+          </textarea>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="submitReject()" [disabled]="orderActionLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (orderActionLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            تأكيد الرفض
+          </button>
+          <button (click)="rejectOrderId.set(null)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Cancel Order Modal -->
+  @if (cancelOrderId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <mat-icon class="!text-3xl text-red-500">warning</mat-icon>
+        </div>
+        <h2 class="text-lg font-bold text-text-primary mb-2">تأكيد إلغاء الطلب</h2>
+        <p class="text-sm text-text-secondary mb-6">هل أنت متأكد من إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="flex gap-2">
+          <button (click)="confirmCancelOrder()" [disabled]="cancelOrderLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (cancelOrderLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            نعم، ألغِ الطلب
+          </button>
+          <button (click)="cancelOrderId.set(null)"
+            class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Order Details Modal -->
+  @if (showOrderDetailsModal() && selectedOrderId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">receipt_long</mat-icon>
+            تفاصيل الطلب #{{ selectedOrderId() }}
+          </h2>
+          <button (click)="closeOrderDetails()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        
+        @if (orderDetailsLoading()) {
+          <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+        } @else {
+          <div class="p-5 space-y-4">
+            <!-- Payments -->
+            @if (selectedOrderPayments().length > 0) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">payments</mat-icon>
+                  المدفوعات
+                </h3>
+                <div class="space-y-2">
+                  @for (payment of selectedOrderPayments(); track payment.id) {
+                    <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                      <div>
+                        <p class="text-sm font-bold text-text-primary">{{ formatPrice(payment.amount) }}</p>
+                        <p class="text-xs text-text-secondary">{{ formatDateTime(payment.paidAt) }}</p>
+                      </div>
+                      <span class="px-2 py-1 rounded-full text-xs font-bold"
+                        [class.bg-green-50]="payment.status === 2"
+                        [class.text-green-700]="payment.status === 2"
+                        [class.bg-yellow-50]="payment.status === 0"
+                        [class.text-yellow-700]="payment.status === 0"
+                        [class.bg-red-50]="payment.status === 1"
+                        [class.text-red-600]="payment.status === 1">
+                        {{ payment.status === 0 ? 'معلق' : payment.status === 1 ? 'فاشل' : 'ناجح' }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            
+            <!-- No payments -->
+            @if (selectedOrderPayments().length === 0) {
+              <div class="text-center py-8">
+                <mat-icon class="!text-4xl text-gray-300">payments</mat-icon>
+                <p class="text-text-secondary mt-2">لا توجد مدفوعات لهذا الطلب</p>
+              </div>
+            }
+            @if (deliveryMethod()) {
+              <div class="mt-4 p-4 bg-gray-50 rounded-xl">
+                <h3 class="font-bold text-text-primary mb-2 flex items-center gap-2">
+                  <mat-icon class="text-primary">local_shipping</mat-icon>
+                  طريقة التوصيل
+                </h3>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p class="text-xs text-text-secondary">الاسم</p>
+                    <p class="font-bold">{{ deliveryMethod()?.shortName }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-text-secondary">التكلفة</p>
+                    <p class="font-bold text-primary">{{ formatPrice(deliveryMethod()?.cost) }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="text-xs text-text-secondary">وقت التوصيل</p>
+                    <p class="font-bold">{{ deliveryMethod()?.deliveryTime || '—' }}</p>
+                  </div>
+                  @if (deliveryMethod()?.description) {
+                    <div class="col-span-2">
+                      <p class="text-xs text-text-secondary">الوصف</p>
+                      <p class="text-text-primary text-sm">{{ deliveryMethod()?.description }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <button (click)="closeOrderDetails()"
+              class="w-full py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+              إغلاق
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Create Auction Modal -->
+  @if (showCreateAuctionModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-purple-500">gavel</mat-icon>
+            إنشاء مزاد جديد
+          </h2>
+          <button (click)="showCreateAuctionModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">المنتج</label>
+            <p class="text-sm font-bold text-text-primary">{{ products().find(p => p.id === auctionForm().productId)?.name || 'منتج غير محدد' }}</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">سعر البداية *</label>
+            <input type="number" [value]="auctionForm().startingPrice"
+              (input)="updateAuctionForm('startingPrice', +$any($event.target).value)"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">سعر الاحتياطي</label>
+            <input type="number" [value]="auctionForm().reservePrice"
+              (input)="updateAuctionForm('reservePrice', +$any($event.target).value)"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">تاريخ البداية *</label>
+            <input type="datetime-local" [value]="auctionForm().startDate"
+              (input)="updateAuctionForm('startDate', $any($event.target).value)"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">تاريخ النهاية *</label>
+            <input type="datetime-local" [value]="auctionForm().endDate"
+              (input)="updateAuctionForm('endDate', $any($event.target).value)"
+              class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 text-sm" />
+          </div>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveAuction()" [disabled]="auctionLoading()"
+            class="flex-1 py-3 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (auctionLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            إنشاء المزاد
+          </button>
+          <button (click)="showCreateAuctionModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

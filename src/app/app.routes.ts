@@ -15,22 +15,35 @@ import { Auctions } from './pages/auctions/auctions';
 import { Trader } from './pages/trader/trader';
 import { Traders } from './pages/traders/traders';
 import { Auction } from './pages/auction/auction';
+import { TraderProfile } from './shared/components/trader-profile/trader-profile';
+import { guestGuard } from './core/guards/guest-guard';
+import { isLoginGuard } from './core/guards/is-login-guard';
+
 
 export const routes: Routes = [
-  { path: '', component: Home },
-  { path: 'marketplace', component: Shop },
-  { path: 'contact', component: Contact },
-  { path: 'register', component: Register },
-  { path: 'login', component: Login },
-  { path: 'product', component: Product },
-  { path: 'chat', component: Chat },
-  { path: 'cart', component: Cart },
-  { path: 'profile', component: Profile },
+  // Public routes
   { path: 'farmers', component: Farmers },
   { path: 'farmer/:id', component: Farmer },
   { path: 'traders', component: Traders },
   { path: 'trader/:id', component: Trader },
   { path: 'community', component: Community },
-  { path: 'auctions', component: Auctions },
-  { path: 'auctions/:id', component: Auction },
+  { path: '', component: Home },
+  { path: 'marketplace', component: Shop },
+  { path: 'contact', component: Contact },
+  { path: 'auctions', component: Auctions, canActivate: [isLoginGuard] },
+  { path: 'auctions/:id', component: Auction, canActivate: [isLoginGuard] },
+  { path: 'product', component: Product },
+
+  // Auth pages
+  { path: 'register', component: Register, canActivate: [guestGuard] },
+  { path: 'login', component: Login, canActivate: [guestGuard] },
+
+
+  // Protected routes 
+  { path: 'chat', component: Chat, canActivate: [isLoginGuard] },
+  { path: 'cart', component: Cart, canActivate: [isLoginGuard] },
+  { path: 'profile', component: Profile, canActivate: [isLoginGuard] },
+
+
+  
 ];

@@ -11,7 +11,7 @@ export class Auth {
 
   isLoggedIn = signal<boolean>(false);
 
-  setLoggedIn() {
+  setLoggedIn() :Observable<any>{
     return this.httpClient
       .get(`${BaseUrl.url}api/Auth/is-logined`, {
         withCredentials: true,
