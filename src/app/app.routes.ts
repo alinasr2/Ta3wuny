@@ -15,6 +15,9 @@ import { Auctions } from './pages/auctions/auctions';
 import { Trader } from './pages/trader/trader';
 import { Traders } from './pages/traders/traders';
 import { Auction } from './pages/auction/auction';
+import { Checkout } from './pages/checkout/checkout';
+import { OrderConfirmation } from './pages/order-confirmation/order-confirmation';
+import { MyOrders } from './pages/my-orders/my-orders';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -33,4 +36,7 @@ export const routes: Routes = [
   { path: 'community', component: Community },
   { path: 'auctions', component: Auctions },
   { path: 'auctions/:id', component: Auction },
+  { path: 'checkout', component: Checkout },
+  { path: 'order-confirmation/:id', component: OrderConfirmation },
+  { path: 'my-orders', component: MyOrders },
 ];

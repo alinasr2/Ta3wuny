@@ -31,7 +31,7 @@ export class Traders implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.isLoading = false; 
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
     });
