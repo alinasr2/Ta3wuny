@@ -352,4 +352,8 @@ export class Chat implements OnInit, OnDestroy {
     return senderId === this.currentUserIdSignal();
   }
 
+  closeChat(){
+    this.router.navigate(['/chat'])
+    this.selectedConversation.set(null);
+  }
 }

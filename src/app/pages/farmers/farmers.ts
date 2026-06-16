@@ -1,5 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { Users } from '../../core/services/users/users';
 import { FarmerCard } from "../../shared/components/farmer-card/farmer-card";
 import { IFarmer } from '../../shared/interfaces/ifarmer';
@@ -12,17 +11,15 @@ import { IFarmer } from '../../shared/interfaces/ifarmer';
 })
 export class Farmers implements OnInit {
   private readonly usersService = inject(Users);
-  farmers:IFarmer[] = [];
+  farmers = signal<IFarmer[] | null>(null);
 
   ngOnInit(): void {
     this.usersService.getAllFarmers().subscribe({
       next:(res)=>{
         console.log(res)
-        this.farmers = res.data;
+        this.farmers.set(res.data);
       },
       error:(err)=>{
-        console.log(err);
-        
       }
     })
   }

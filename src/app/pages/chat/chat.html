@@ -84,8 +84,7 @@
               </div>
               <button 
                 class="lg:hidden w-9 h-9 flex items-center justify-center rounded-full bg-surface border-green-600/20 border hover:bg-gray-100 transition"
-                (click)="selectedConversation.set(null)"
-                routerLink="/chat"
+                (click)="closeChat()"
               >
                 <span class="material-icons text-text-primary">
                   arrow_back

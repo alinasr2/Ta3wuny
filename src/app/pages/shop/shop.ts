@@ -3,25 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from "../../shared/components/product-card-component/product-card-component";
 import { ProductsService } from '../../core/services/products/products-service';
+import { MatFormField, MatLabel, MatSelect, MatOption } from "@angular/material/select";
 
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductCardComponent],
+  imports: [CommonModule, FormsModule, ProductCardComponent, MatFormField, MatLabel, MatSelect, MatOption],
   templateUrl: './shop.html',
   styleUrl: './shop.scss',
 })
 export class Shop implements OnInit {
   private productsService = inject(ProductsService);
-  
-  // حالة التحميل
   isLoading = signal(true);
   
-  // البيانات
   categories = signal<any[]>([]);
   products = signal<any[]>([]);
   
-  // بيانات الباجينيشين
   paginationInfo = signal({
     pageIndex: 1,
     pageSize: 12,
@@ -31,7 +28,6 @@ export class Shop implements OnInit {
     hasPreviousPage: false
   });
   
-  // الفلاتر
   filters = signal<any>({
     pageIndex: 1,
     pageSize: 12,
@@ -40,17 +36,10 @@ export class Shop implements OnInit {
     sortDescending: true
   });
   
-  // كلمة البحث
   searchQuery = signal('');
-  
-  // الفئات المختارة
   selectedCategories = signal<number[]>([]);
-  
-  // نطاق السعر
   priceRange = signal({ min: 0, max: 1000 });
   tempPriceRange = signal({ min: 0, max: 1000 });
-  
-  // خيارات الترتيب
   sortOptions = [
     { value: 'newest', label: 'الأحدث أولاً', sortBy: 'createdAt', descending: true },
     { value: 'price_asc', label: 'السعر: من الأقل إلى الأعلى', sortBy: 'unitPrice', descending: false },
@@ -59,14 +48,12 @@ export class Shop implements OnInit {
     { value: 'name_desc', label: 'الاسم: من ي إلى أ', sortBy: 'name', descending: true }
   ];
   
-  // القيم المحسوبة
   totalItems = computed(() => this.paginationInfo().totalCount);
   currentPage = computed(() => this.paginationInfo().pageIndex);
   totalPages = computed(() => this.paginationInfo().totalPages);
   hasNextPage = computed(() => this.paginationInfo().hasNextPage);
   hasPreviousPage = computed(() => this.paginationInfo().hasPreviousPage);
   
-  // الصفحات المرقمة للعرض
   pageNumbers = computed(() => {
     const total = this.totalPages();
     const current = this.currentPage();
@@ -91,9 +78,6 @@ export class Shop implements OnInit {
     this.loadProducts();
   }
   
-  /**
-   * جلب الفئات من الـ API
-   */
   loadCategories(): void {
     this.productsService.getAllCategories().subscribe({
       next: (response) => {
@@ -107,9 +91,6 @@ export class Shop implements OnInit {
     });
   }
   
-  /**
-   * جلب المنتجات مع تطبيق الفلاتر
-   */
   loadProducts(): void {
     this.isLoading.set(true);
     
@@ -145,9 +126,6 @@ export class Shop implements OnInit {
     });
   }
   
-  /**
-   * تطبيق فلتر الفئات
-   */
   toggleCategory(categoryId: number, event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     const currentSelected = this.selectedCategories();
@@ -160,10 +138,7 @@ export class Shop implements OnInit {
     
     this.resetPageAndReload();
   }
-  
-  /**
-   * تغيير الفلتر حسب الترتيب
-   */
+
   onSortChange(sortValue: string): void {
     const selectedSort = this.sortOptions.find(opt => opt.value === sortValue);
     if (selectedSort) {
@@ -177,17 +152,13 @@ export class Shop implements OnInit {
     }
   }
   
-  /**
-   * تغيير نطاق السعر
-   */
+
   onPriceRangeChange(): void {
     this.priceRange.set({ ...this.tempPriceRange() });
     this.resetPageAndReload();
   }
   
-  /**
-   * البحث عن المنتجات
-   */
+
   onSearch(): void {
     this.filters.update(f => ({
       ...f,
@@ -196,10 +167,7 @@ export class Shop implements OnInit {
     }));
     this.loadProducts();
   }
-  
-  /**
-   * إعادة تعيين جميع الفلاتر
-   */
+
   resetAllFilters(): void {
     this.searchQuery.set('');
     this.selectedCategories.set([]);
@@ -215,9 +183,7 @@ export class Shop implements OnInit {
     this.loadProducts();
   }
   
-  /**
-   * تغيير الصفحة
-   */
+
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages()) {
       this.filters.update(f => ({ ...f, pageIndex: page }));
@@ -226,36 +192,40 @@ export class Shop implements OnInit {
     }
   }
   
-  /**
-   * الصفحة التالية
-   */
+
   nextPage(): void {
     if (this.hasNextPage()) {
       this.goToPage(this.currentPage() + 1);
     }
   }
   
-  /**
-   * الصفحة السابقة
-   */
+
   previousPage(): void {
     if (this.hasPreviousPage()) {
       this.goToPage(this.currentPage() - 1);
     }
   }
-  
-  /**
-   * إعادة تعيين الصفحة وإعادة التحميل
-   */
+
   private resetPageAndReload(): void {
     this.filters.update(f => ({ ...f, pageIndex: 1 }));
     this.loadProducts();
   }
-  
-  /**
-   * الحصول على اسم الفئة بالعربية
-   */
+
   getCategoryName(category:any): string {
     return category.nameAr || category.name;
+  }
+
+  getSortValue(): string {
+    const f = this.filters();
+
+    if (f.sort === 'createdAt') return 'newest';
+
+    if (f.sort === 'unitPrice' && !f.sortDescending) return 'price_asc';
+
+    if (f.sort === 'unitPrice' && f.sortDescending) return 'price_desc';
+
+    if (f.sort === 'name' && !f.sortDescending) return 'name_asc';
+
+    return 'newest';
   }
 }

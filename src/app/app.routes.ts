@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
 import { Shop } from './pages/shop/shop';
-import { Contact } from './pages/contact/contact';
 import { Register } from './pages/register/register';
 import { Login } from './pages/login/login';
 import { Product } from './pages/product/product';
@@ -32,7 +31,6 @@ export const routes: Routes = [
   { path: 'community', component: Community },
   { path: '', component: Home },
   { path: 'marketplace', component: Shop },
-  { path: 'contact', component: Contact },
   { path: 'auctions', component: Auctions},
   { path: 'auctions/:id', component: Auction},
   { path: 'product', component: Product },

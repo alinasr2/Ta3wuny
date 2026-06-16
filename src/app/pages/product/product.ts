@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, ChangeDetectionStrategy, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BasketService } from '../../core/services/basket/basket-service';
 import { IBasketItem } from '../../shared/interfaces/ibasket';
@@ -12,6 +12,7 @@ import { Iproduct } from '../../shared/interfaces/iproduct';
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './product.html',
   styleUrl: './product.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Product implements OnInit {
   private basketService = inject(BasketService);
@@ -19,63 +20,98 @@ export class Product implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  product: Iproduct | null = null;
-  selectedImage: string = '';
-  quantity: number = 1;
-  added = false;
-  isLoading = true;
+  product = signal<Iproduct | null>(null);
+  selectedImage = signal<string>('');
+  quantity = signal<number>(1);
+  added = signal<boolean>(false);
+  isLoading = signal<boolean>(true);
+
+  isQuantityValid = computed(() => {
+    const currentProduct = this.product();
+    const currentQuantity = this.quantity();
+    return currentQuantity >= 1 && currentQuantity <= (currentProduct?.quantity ?? 1000);
+  });
 
   ngOnInit() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     const id = this.route.snapshot.queryParamMap.get('id');
+    
     if (!id) {
       this.router.navigate(['/marketplace']);
       return;
     }
+
     this.productService.getProductById(+id).subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          this.product = res.data;
-          this.selectedImage = res.data.mainImageUrl;
+          this.product.set(res.data);
+          this.selectedImage.set(res.data.mainImageUrl);
         }
-        this.isLoading = false;
+        this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error fetching product:', err);
-        this.isLoading = false;
+      error: () => {
+        this.isLoading.set(false);
         this.router.navigate(['/marketplace']);
       },
     });
   }
 
   selectImage(url: string) {
-    this.selectedImage = url;
+    this.selectedImage.set(url);
   }
 
   changeQuantity(delta: number) {
-    const newValue = this.quantity + delta;
-    if (newValue >= 1 && newValue <= (this.product?.quantity ?? 1000)) {
-      this.quantity = newValue;
+    const currentProduct = this.product();
+    if (!currentProduct) return;
+
+    const newValue = this.quantity() + delta;
+    if (newValue >= 1 && newValue <= (currentProduct.quantity ?? 1000)) {
+      this.quantity.set(newValue);
     }
   }
 
   addToCart() {
-    if (!this.product) return;
+    const currentProduct = this.product();
+    if (!currentProduct) return;
 
     const item: IBasketItem = {
       id: 0,
-      productId: this.product.id,
-      productName: this.product.name,
-      pictureUrl: this.product.mainImageUrl,
-      price: this.product.unitPrice,
-      quantity: this.quantity,
+      productId: currentProduct.id,
+      productName: currentProduct.name,
+      pictureUrl: currentProduct.mainImageUrl,
+      price: currentProduct.unitPrice,
+      quantity: this.quantity(),
     };
+
     this.basketService.addItemToBasket(item);
-    this.added = true;
-    setTimeout(() => (this.added = false), 2000);
+    this.added.set(true);
+    
+    setTimeout(() => {
+      this.added.set(false);
+    }, 2000);
   }
 
   goBack() {
     this.router.navigate(['/marketplace']);
+  }
+
+  get productValue() {
+    return this.product();
+  }
+
+  get selectedImageValue() {
+    return this.selectedImage();
+  }
+
+  get quantityValue() {
+    return this.quantity();
+  }
+
+  get addedValue() {
+    return this.added();
+  }
+
+  get isLoadingValue() {
+    return this.isLoading();
   }
 }

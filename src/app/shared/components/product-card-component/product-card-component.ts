@@ -11,32 +11,29 @@ import { RouterLink } from '@angular/router';
 })
 export class ProductCardComponent {
   @Input() product: any = {};
-  
-  /**
-   * تنسيق السعر مع العملة
-   */
+
+
+  ngOnChanges(changes: any): void {
+    //Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
+    //Add '${implements OnChanges}' to the class.
+    console.log(this.product);
+    
+  }
+
+
   get formattedPrice(): string {
     return `${this.product?.unitPrice || 0} جنيه`;
   }
-  
-  /**
-   * الحصول على اسم المزارع أو عرض "مزارع"
-   */
+
   get farmerDisplayName(): string {
     return this.product?.farmerName || 'مزارع';
   }
   
-  /**
-   * الحصول على التقييم الوهمي أو قيمة افتراضية
-   */
+
   get rating(): string {
-    // يمكن جلب التقييم من API آخر أو جعله وهمياً
     return (this.product?.rating || 4.5).toFixed(1);
   }
   
-  /**
-   * هل المنتج عليه عرض أو جديد؟
-   */
   get badgeText(): string {
     if (this.product?.hasActiveAuction) {
       return 'مزاد نشط';

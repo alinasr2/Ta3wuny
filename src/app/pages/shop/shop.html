@@ -57,11 +57,8 @@
           </div>
         </div>
 
-        <!-- استبدال جزء range السعر بهذا -->
         <div>
           <label class="block font-bold mb-2">نطاق السعر (جنيه مصري)</label>
-
-          <!-- الحد الأدنى -->
           <div class="mb-3">
             <div class="flex justify-between text-sm text-text-secondary mb-1">
               <span>الحد الأدنى</span>
@@ -78,7 +75,6 @@
             />
           </div>
 
-          <!-- الحد الأقصى -->
           <div>
             <div class="flex justify-between text-sm text-text-secondary mb-1">
               <span>الحد الأقصى</span>
@@ -119,37 +115,29 @@
           >
         </h2>
         <div class="flex items-center gap-2 text-sm">
-          <span class="text-text-secondary">ترتيب حسب:</span>
-          <select
-            [ngModel]="
-              filters().sort === 'newest'
-                ? 'newest'
-                : filters().sort === 'unitPrice' && !filters().sortDescending
-                  ? 'price_asc'
-                  : filters().sort === 'unitPrice' && filters().sortDescending
-                    ? 'price_desc'
-                    : filters().sort === 'name' && !filters().sortDescending
-                      ? 'name_asc'
-                      : 'newest'
-            "
-            (ngModelChange)="onSortChange($event)"
-            class="bg-transparent font-bold outline-none"
-          >
-            @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>ترتيب حسب</mat-label>
+
+            <mat-select
+              [value]="getSortValue()"
+              (selectionChange)="onSortChange($event.value)"
+            >
+              @for (option of sortOptions; track option.value) {
+                <mat-option [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
       </div>
 
-      <!-- حالة التحميل -->
       @if (isLoading()) {
         <div class="flex justify-center items-center py-20">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       }
 
-      <!-- عرض المنتجات -->
       @else if (products().length > 0) {
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (product of products(); track product.id) {
@@ -158,7 +146,6 @@
         </div>
       }
 
-      <!-- لا توجد نتائج -->
       @else {
         <div class="text-center py-20 bg-surface rounded-2xl">
           <i class="pi pi-search text-6xl text-text-secondary/50 mb-4"></i>
@@ -169,7 +156,6 @@
         </div>
       }
 
-      <!-- الباجينيشين -->
       @if (totalPages() > 1) {
         <div class="flex justify-end mt-12 gap-2">
           <button
