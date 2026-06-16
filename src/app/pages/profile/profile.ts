@@ -1,422 +1,436 @@
-import { Component, OnInit, inject, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
-import { ProfileService, Auction } from '../../core/services/profileSerivce/profile-service';
-import { Product } from '../product/product';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatTabsModule } from '@angular/material/tabs';
+import { Auction, Product, ProfileService } from '../../core/services/profileSerivce/profile-service';
+
+type ActiveTab = 'overview' | 'products' | 'orders' | 'auctions';
+
+const ORDER_STATUS_MAP: Record<string, { label: string; bgClass: string; textClass: string; icon: string }> = {
+  Pending:        { label: 'في الانتظار',   bgClass: 'bg-yellow-50', textClass: 'text-yellow-700', icon: 'hourglass_empty' },
+  Confirmed:      { label: 'مؤكد',          bgClass: 'bg-blue-50',   textClass: 'text-blue-700',   icon: 'check'          },
+  Preparing:      { label: 'قيد التحضير',   bgClass: 'bg-purple-50', textClass: 'text-purple-700', icon: 'inventory'      },
+  ReadyForPickup: { label: 'جاهز للاستلام', bgClass: 'bg-cyan-50',   textClass: 'text-cyan-700',   icon: 'local_shipping' },
+  Delivered:      { label: 'تم التوصيل',    bgClass: 'bg-green-50',  textClass: 'text-green-700',  icon: 'done_all'       },
+  Cancelled:      { label: 'ملغي',          bgClass: 'bg-gray-100',  textClass: 'text-gray-500',   icon: 'cancel'         },
+  Rejected:       { label: 'مرفوض',         bgClass: 'bg-red-50',    textClass: 'text-red-600',    icon: 'block'          },
+};
+
+const AUCTION_STATUS_MAP: Record<string, { label: string; bgClass: string; textClass: string; icon: string }> = {
+  Active:   { label: 'جارٍ',  bgClass: 'bg-green-50', textClass: 'text-green-700', icon: 'play_circle' },
+  Upcoming: { label: 'قادم',  bgClass: 'bg-blue-50',  textClass: 'text-blue-700',  icon: 'schedule'    },
+  Ended:    { label: 'منتهي', bgClass: 'bg-red-50',   textClass: 'text-red-600',   icon: 'check_circle'},
+  Canceled: { label: 'ملغي',  bgClass: 'bg-gray-100', textClass: 'text-gray-500',  icon: 'cancel'      },
+};
+
+const PRODUCT_STATUS_MAP: Record<number, { label: string; bgClass: string; textClass: string }> = {
+  0: { label: 'مسودة',   bgClass: 'bg-gray-100',   textClass: 'text-gray-500'   },
+  1: { label: 'نشط',     bgClass: 'bg-green-50',   textClass: 'text-green-700'  },
+  3: { label: 'مؤرشف',   bgClass: 'bg-yellow-50',  textClass: 'text-yellow-700' },
+  4: { label: 'محذوف',   bgClass: 'bg-red-50',     textClass: 'text-red-600'    },
+};
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    MatTabsModule,
-    MatCardModule,
-    MatButtonModule,
+    FormsModule,
     MatIconModule,
-    MatDialogModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatChipsModule,
     MatTooltipModule,
-    MatMenuModule,
+    MatSnackBarModule,
+    MatPaginatorModule,
+    MatTabsModule,
   ],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Profile implements OnInit, AfterViewInit {
+export class Profile implements OnInit {
   private profileService = inject(ProfileService);
-  private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
-  private cdr = inject(ChangeDetectorRef);
 
-  // Data
-  products: any[] = [];
-  auctions: Auction[] = [];
-  
-  // Loading states
-  loadingProducts = true;
-  loadingAuctions = true;
-  submittingProduct = false;
-  submittingEdit = false;
-  
-  // Pagination
-  currentPage = 0;
-  pageSize = 10;
-  totalPages = 0;
-  totalProducts = 0;
-  
-  // Add Product Dialog State
-  showAddProductDialog = false;
-  productForm!: FormGroup;
-  selectedImages: File[] = [];
-  imagePreviews: string[] = [];
+  // ── Active Tab ──────────────────────────────────────────
+  activeTab = signal<ActiveTab>('overview');
 
-  // Edit Product Dialog State
-  showEditProductDialog = false;
-  editProductForm!: FormGroup;
-  selectedProductForEdit: any = null;
-  existingImages: string[] = [];
+  // ── Profile ─────────────────────────────────────────────
+  profile = signal<any>(null);
+  profileLoading = signal(false);
+  profileError = signal<string | null>(null);
+
+  // Edit profile modal
+  showEditModal = signal(false);
+  editForm = signal<Record<string, string>>({
+  name: '',
+  farmName: '',
+  description: ''
+});
+  editLoading = signal(false);
+
+  // Profile image
+  profileImageLoading = signal(false);
+
+  // ── Products ─────────────────────────────────────────────
+  products = signal<Product[]>([]);
+  productsLoading = signal(false);
+  productsTotal = signal(0);
+  productsPageIndex = signal(0);
+  productsPageSize = signal(8);
+  productSearch = signal('');
+  productStatusFilter = signal<number | null>(null);
+
+  // Add/Edit product modal
+  showProductModal = signal(false);
+  productModalMode = signal<'add' | 'edit'>('add');
+  productForm = signal<any>({
+    id: null, name: '', description: '', categoryId: null,
+    quantity: null, unit: 'كيلو', unitPrice: null,
+    harvestDate: '', expiryDate: '',
+  });
+  productImages = signal<File[]>([]);
+  productLoading = signal(false);
+  categories = signal<any[]>([]);
+
+  // Delete product confirm
+  deleteProductId = signal<number | null>(null);
+  deleteLoading = signal(false);
+
+  // ── Orders ───────────────────────────────────────────────
+  orders = signal<any[]>([]);
+  ordersLoading = signal(false);
+  rejectOrderId = signal<number | null>(null);
+  rejectReason = signal('');
+  orderActionLoading = signal(false);
+
+  // ── Auctions ─────────────────────────────────────────────
+  auctions = signal<Auction[]>([]);
+  auctionsLoading = signal(false);
+
+  // ── Computed ─────────────────────────────────────────────
+  totalProducts = computed(() => this.profile()?.totalProducts ?? this.productsTotal());
+  activeAuctions = computed(() => this.auctions().filter(a => a.status === 'Active').length);
+  pendingOrders = computed(() => this.orders().filter(o => o.status === 'Pending').length);
 
   ngOnInit(): void {
-    this.initProductForm();
-    this.initEditProductForm();
-    // Load data with setTimeout to avoid ExpressionChangedAfterItHasBeenChecked
-    setTimeout(() => {
-      this.loadMyProducts();
-      this.loadMyAuctions();
+    this.loadProfile();
+    this.loadCategories();
+  }
+
+  // ── Tab Navigation ───────────────────────────────────────
+  setTab(tab: ActiveTab): void {
+    this.activeTab.set(tab);
+    if (tab === 'products' && this.products().length === 0) this.loadProducts();
+    if (tab === 'orders' && this.orders().length === 0) this.loadOrders();
+    if (tab === 'auctions' && this.auctions().length === 0) this.loadAuctions();
+  }
+
+  // ── Profile ─────────────────────────────────────────────
+  loadProfile(): void {
+    this.profileLoading.set(true);
+    this.profileService.getMyProfileFarmer().subscribe({
+      next: (res) => {
+        if (res?.isSuccess) this.profile.set(res.data);
+        else this.profileError.set(res?.message ?? 'خطأ في تحميل البروفايل');
+        this.profileLoading.set(false);
+      },
+      error: (err) => { 
+        console.log(err);
+        
+        this.profileError.set('تعذّر الاتصال بالخادم'); this.profileLoading.set(false); 
+      },
     });
   }
 
-  ngAfterViewInit(): void {
-    this.cdr.detectChanges();
+  openEditModal(): void {
+    const p = this.profile();
+    this.editForm.set({ name: p?.name ?? '', farmName: p?.farmName ?? '', description: p?.description ?? '' });
+    this.showEditModal.set(true);
   }
 
-  initProductForm(): void {
-    this.productForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.required],
-      categoryId: ['', [Validators.required, Validators.min(1)]],
-      quantity: ['', [Validators.required, Validators.min(0.1)]],
-      unit: ['kg', Validators.required],
-      unitPrice: ['', [Validators.required, Validators.min(0.1)]],
-      harvestDate: ['', Validators.required],
-      expiryDate: ['', Validators.required],
-      publishImmediately: [true],
-    });
-  }
+  saveProfile(): void {
+    this.editLoading.set(true);
+    const form = this.editForm();
+    const isNew = !this.profile()?.farmerId;
+    const req = isNew
+      ? this.profileService.addMyProfileFarmer({ farmName: form['farmName'], description: form['description'] })
+      : this.profileService.editMyProfileFarmer(form);
 
-  initEditProductForm(): void {
-    this.editProductForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.required],
-      categoryId: ['', [Validators.required, Validators.min(1)]],
-      quantity: ['', [Validators.required, Validators.min(0.1)]],
-      unit: ['kg', Validators.required],
-      unitPrice: ['', [Validators.required, Validators.min(0.1)]],
-      harvestDate: [''],
-      expiryDate: ['']
-    });
-  }
-
-  loadMyProducts(): void {
-    this.loadingProducts = true;
-    this.profileService.getMyProducts().subscribe({
-      next: (response) => {
-        if (response.isSuccess && response.data) {
-          this.products = response.data.data || [];
-          this.totalPages = response.data.totalPages || 0;
-          this.totalProducts = response.data.count || 0;
-          this.currentPage = response.data.pageIndex || 0;
+    req.subscribe({
+      next: (res) => {
+        if (res?.isSuccess) {
+          this.profile.set(res.data);
+          this.showEditModal.set(false);
+          this.notify('✅ تم حفظ البروفايل بنجاح');
         } else {
-          console.error('Failed to load products:', response.message);
-          this.products = [];
+          this.notify(res?.message ?? 'حدث خطأ', true);
         }
-        this.loadingProducts = false;
-        this.cdr.detectChanges();
+        this.editLoading.set(false);
       },
-      error: (error) => {
-        console.error('Error loading products:', error);
-        console.log(error.message || 'Error loading products');
-        this.products = [];
-        this.loadingProducts = false;
-        this.cdr.detectChanges();
-      },
+      error: () => { this.notify('تعذّر الحفظ', true); this.editLoading.set(false); },
     });
   }
 
-  loadMyAuctions(): void {
-    this.loadingAuctions = true;
-    this.profileService.getMyAuctions().subscribe({
-      next: (response) => {
-        if (response.isSuccess && response.data) {
-          this.auctions = response.data || [];
-        } else {
-          console.error('Failed to load auctions:', response.message);
-          this.auctions = [];
-        }
-        this.loadingAuctions = false;
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error loading auctions:', error);
-        if (error.status !== 404) {
-          console.log(error.message || 'Error loading auctions');
-        }
-        this.auctions = [];
-        this.loadingAuctions = false;
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  // Add Product Methods
-  openAddProductDialog(): void {
-    this.showAddProductDialog = true;
-    this.productForm.reset({
-      unit: 'kg',
-      publishImmediately: true,
-    });
-    this.selectedImages = [];
-    this.imagePreviews = [];
-    this.cdr.detectChanges();
-  }
-
-  closeAddProductDialog(): void {
-    this.showAddProductDialog = false;
-    this.productForm.reset();
-    this.selectedImages = [];
-    this.imagePreviews = [];
-    this.cdr.detectChanges();
-  }
-
-  onImagesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      const files = Array.from(input.files);
-      this.selectedImages.push(...files);
-      
-      // Create previews
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.imagePreviews.push(e.target?.result as string);
-          this.cdr.detectChanges();
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  }
-
-  removeImage(index: number): void {
-    this.selectedImages.splice(index, 1);
-    this.imagePreviews.splice(index, 1);
-    this.cdr.detectChanges();
-  }
-
-  submitProduct(): void {
-    if (this.productForm.invalid) {
-      Object.keys(this.productForm.controls).forEach(key => {
-        this.productForm.get(key)?.markAsTouched();
-      });
-      console.log('Please fill all required fields correctly');
-      return;
-    }
-
-    if (this.selectedImages.length === 0) {
-      console.log('Please select at least one product image');
-      return;
-    }
-
-    this.submittingProduct = true;
-    this.cdr.detectChanges();
-    
+  onProfileImageChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.profileImageLoading.set(true);
     const formData = new FormData();
-    
-    // Add form fields
-    const formValue = this.productForm.value;
-    Object.keys(formValue).forEach(key => {
-      if (formValue[key] !== null && formValue[key] !== undefined && formValue[key] !== '') {
-        formData.append(key, formValue[key].toString());
+    formData.append('Image', file);
+    this.profileService.editProfileImage(formData).subscribe({
+      next: (res) => {
+        if (res?.isSuccess) { this.loadProfile(); this.notify('✅ تم تحديث الصورة'); }
+        else this.notify(res?.message ?? 'فشل رفع الصورة', true);
+        this.profileImageLoading.set(false);
+      },
+      error: () => { this.notify('فشل رفع الصورة', true); this.profileImageLoading.set(false); },
+    });
+  }
+
+  // ── Products ─────────────────────────────────────────────
+  loadProducts(): void {
+    this.productsLoading.set(true);
+    this.profileService.getMyProducts({
+      pageIndex: this.productsPageIndex(),
+      pageSize: this.productsPageSize(),
+      search: this.productSearch() || undefined,
+      status: this.productStatusFilter() ?? undefined,
+    }).subscribe({
+      next: (res) => {
+        console.log(res);
+        if (res?.isSuccess) {
+          
+          this.products.set(res.data.data);
+          this.productsTotal.set(res.data.count);
+        }
+        this.productsLoading.set(false);
+      },
+      error: (err) => {
+        console.log(err);
+        
+        this.productsLoading.set(false)
       }
     });
-    
-    // Add images
-    this.selectedImages.forEach((image) => {
-      formData.append('Images', image);
-    });
+  }
 
-    this.profileService.addProduct(formData).subscribe({
-      next: (response) => {
-        this.submittingProduct = false;
-        if (response.isSuccess) {
-          console.log('Product added successfully!');
-          this.closeAddProductDialog();
-          this.loadMyProducts();
-        } else {
-          const errorMsg = response.errors?.join(', ') || response.message || 'Failed to add product';
-          console.log(errorMsg);
-        }
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        this.submittingProduct = false;
-        console.error('Add product error:', error);
-        const errorMsg = error.error?.errors?.join(', ') || error.message || 'Error adding product';
-        console.log(errorMsg);
-        this.cdr.detectChanges();
-      },
+  loadCategories(): void {
+    this.profileService.getCategories().subscribe({
+      next: (res) => { if (res?.isSuccess) this.categories.set(res.data); },
     });
   }
 
-  // Edit Product Methods
-  openEditProductDialog(product: any): void {
-    this.selectedProductForEdit = product;
-    this.showEditProductDialog = true;
-    
-    // Fill form with product data
-    this.editProductForm.patchValue({
+  onProductsPage(event: PageEvent): void {
+    this.productsPageIndex.set(event.pageIndex);
+    this.productsPageSize.set(event.pageSize);
+    this.loadProducts();
+  }
+
+  onProductSearch(): void {
+    this.productsPageIndex.set(0);
+    this.loadProducts();
+  }
+
+  openAddProduct(): void {
+    this.productForm.set({ id: null, name: '', description: '', categoryId: null, quantity: null, unit: 'كيلو', unitPrice: null, harvestDate: '', expiryDate: '' });
+    this.productImages.set([]);
+    this.productModalMode.set('add');
+    this.showProductModal.set(true);
+  }
+
+  openEditProduct(product: Product): void {
+    this.productForm.set({
+      id: product.id,
       name: product.name,
-      description: product.description,
+      description: product.description ?? '',
       categoryId: product.categoryId,
       quantity: product.quantity,
       unit: product.unit,
       unitPrice: product.unitPrice,
-      harvestDate: product.harvestDate || '',
-      expiryDate: product.expiryDate || ''
+      harvestDate: product.harvestDate ? product.harvestDate.split('T')[0] : '',
+      expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
     });
-    
-    this.existingImages = product.imageUrls || [];
-    this.cdr.detectChanges();
+    this.productModalMode.set('edit');
+    this.showProductModal.set(true);
   }
 
-  closeEditProductDialog(): void {
-    this.showEditProductDialog = false;
-    this.selectedProductForEdit = null;
-    this.existingImages = [];
-    this.editProductForm.reset({
-      unit: 'kg'
-    });
-    this.cdr.detectChanges();
+  onProductImagesChange(event: Event): void {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    this.productImages.set(files);
   }
 
-  submitEditProduct(): void {
-    if (this.editProductForm.invalid) {
-      Object.keys(this.editProductForm.controls).forEach(key => {
-        this.editProductForm.get(key)?.markAsTouched();
+  saveProduct(): void {
+    this.productLoading.set(true);
+    const form = this.productForm();
+    const isEdit = this.productModalMode() === 'edit';
+
+    if (isEdit) {
+      this.profileService.editProduct({ ...form }).subscribe({
+        next: (res) => {
+          if (res?.isSuccess) { this.loadProducts(); this.showProductModal.set(false); this.notify('✅ تم تعديل المنتج'); }
+          else this.notify(res?.message ?? 'فشل التعديل', true);
+          this.productLoading.set(false);
+        },
+        error: () => { this.notify('فشل التعديل', true); this.productLoading.set(false); },
       });
-      console.log('يرجى ملء جميع الحقول المطلوبة بشكل صحيح');
-      return;
-    }
-
-    this.submittingEdit = true;
-    this.cdr.detectChanges();
-    
-    const formValue = this.editProductForm.value;
-    const editData = {
-      id: this.selectedProductForEdit.id,
-      name: formValue.name,
-      description: formValue.description,
-      categoryId: formValue.categoryId,
-      quantity: formValue.quantity,
-      unit: formValue.unit,
-      unitPrice: formValue.unitPrice,
-      harvestDate: formValue.harvestDate,
-      expiryDate: formValue.expiryDate
-    };
-
-    this.profileService.editProduct(editData).subscribe({
-      next: (response) => {
-        this.submittingEdit = false;
-        if (response.isSuccess) {
-          console.log('تم تحديث المنتج بنجاح!');
-          this.closeEditProductDialog();
-          this.loadMyProducts(); // Refresh products list
-        } else {
-          const errorMsg = response.errors?.join(', ') || response.message || 'فشل تحديث المنتج';
-          console.log(errorMsg);
-        }
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        this.submittingEdit = false;
-        console.error('Edit product error:', error);
-        const errorMsg = error.error?.errors?.join(', ') || error.message || 'خطأ في تحديث المنتج';
-        console.log(errorMsg);
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  deleteProduct(productId: number, productName: string): void {
-    if (confirm(`Are you sure you want to delete "${productName}"?`)) {
-      this.profileService.deleteProduct(productId).subscribe({
-        next: (response) => {
-          if (response.isSuccess) {
-            console.log('Product deleted successfully');
-            this.loadMyProducts();
-          } else {
-            console.log(response.message || 'Failed to delete product');
-          }
+    } else {
+      const formData = new FormData();
+      formData.append('Name', form.name);
+      formData.append('Description', form.description);
+      formData.append('CategoryId', form.categoryId);
+      formData.append('Quantity', form.quantity);
+      formData.append('Unit', form.unit);
+      formData.append('UnitPrice', form.unitPrice);
+      if (form.harvestDate) formData.append('HarvestDate', new Date(form.harvestDate).toISOString());
+      if (form.expiryDate) formData.append('ExpiryDate', new Date(form.expiryDate).toISOString());
+      formData.append('PublishImmediately', 'true');
+      this.productImages().forEach(f => formData.append('Images', f));
+      this.profileService.addProduct(formData).subscribe({
+        next: (res) => {
+          if (res?.isSuccess) { this.loadProducts(); this.showProductModal.set(false); this.notify('✅ تم إضافة المنتج'); }
+          else this.notify(res?.message ?? 'فشل الإضافة', true);
+          this.productLoading.set(false);
         },
-        error: (error) => {
-          console.error('Delete error:', error);
-          console.log(error.message || 'Error deleting product');
-        },
+        error: () => { this.notify('فشل الإضافة', true); this.productLoading.set(false); },
       });
     }
   }
 
-  getProductStatusBadge(status: number): string {
-    const statusMap: Record<number, string> = {
-      0: 'Pending',
-      1: 'Active',
-      2: 'Sold',
-      3: 'Expired',
-    };
-    return statusMap[status] || 'Unknown';
+  confirmDeleteProduct(id: number): void { this.deleteProductId.set(id); }
+
+  deleteProduct(): void {
+    const id = this.deleteProductId();
+    if (!id) return;
+    this.deleteLoading.set(true);
+    this.profileService.deleteProduct(id).subscribe({
+      next: (res) => {
+        if (res?.isSuccess) { this.loadProducts(); this.notify('✅ تم حذف المنتج'); }
+        else this.notify(res?.message ?? 'فشل الحذف', true);
+        this.deleteProductId.set(null);
+        this.deleteLoading.set(false);
+      },
+      error: () => { this.notify('فشل الحذف', true); this.deleteLoading.set(false); },
+    });
   }
 
-  getProductStatusColor(status: number): string {
-    const colorMap: Record<number, string> = {
-      0: 'bg-yellow-100 text-yellow-800',
-      1: 'bg-green-100 text-green-800',
-      2: 'bg-blue-100 text-blue-800',
-      3: 'bg-gray-100 text-gray-800',
-    };
-    return colorMap[status] || 'bg-gray-100 text-gray-800';
+  changeProductStatus(product: Product, status: number): void {
+    this.profileService.changeProductStatus({ productId: product.id, productStatus: status }).subscribe({
+      next: (res) => {
+        if (res?.isSuccess) { this.loadProducts(); this.notify('✅ تم تغيير الحالة'); }
+        else this.notify(res?.message ?? 'فشل', true);
+      },
+    });
   }
 
-  getAuctionStatusColor(status: string): string {
-    const colorMap: Record<string, string> = {
-      'Active': 'bg-green-100 text-green-800',
-      'Ended': 'bg-red-100 text-red-800',
-      'Pending': 'bg-yellow-100 text-yellow-800',
-    };
-    return colorMap[status] || 'bg-gray-100 text-gray-800';
+  // ── Orders ───────────────────────────────────────────────
+  loadOrders(): void {
+    this.ordersLoading.set(true);
+    this.profileService.getMyOrdersFarmer().subscribe({
+      next: (res) => {
+        if (res?.isSuccess) this.orders.set(res.data);
+        this.ordersLoading.set(false);
+      },
+      error: () => this.ordersLoading.set(false),
+    });
+  }
+
+  confirmOrder(id: number): void {
+    this.orderActionLoading.set(true);
+    this.profileService.confirmOrder(id).subscribe({
+      next: (res) => {
+        if (res?.isSuccess) { this.loadOrders(); this.notify('✅ تم قبول الطلب'); }
+        else this.notify(res?.message ?? 'فشل', true);
+        this.orderActionLoading.set(false);
+      },
+      error: () => { this.notify('فشل', true); this.orderActionLoading.set(false); },
+    });
+  }
+
+  openRejectModal(id: number): void { this.rejectOrderId.set(id); this.rejectReason.set(''); }
+
+  submitReject(): void {
+    const id = this.rejectOrderId();
+    if (!id) return;
+    this.orderActionLoading.set(true);
+    this.profileService.rejectOrder(id, this.rejectReason()).subscribe({
+      next: (res) => {
+        if (res?.isSuccess) { this.loadOrders(); this.notify('تم رفض الطلب'); }
+        else this.notify(res?.message ?? 'فشل', true);
+        this.rejectOrderId.set(null);
+        this.orderActionLoading.set(false);
+      },
+      error: () => { this.notify('فشل', true); this.orderActionLoading.set(false); },
+    });
+  }
+
+  changeOrderStatus(orderId: number, status: number): void {
+    this.profileService.changeStatus(orderId, status).subscribe({
+      next: (res) => {
+        if (res?.isSuccess) { this.loadOrders(); this.notify('✅ تم تحديث الحالة'); }
+        else this.notify(res?.message ?? 'فشل', true);
+      },
+    });
+  }
+
+  // ── Auctions ─────────────────────────────────────────────
+  loadAuctions(): void {
+    this.auctionsLoading.set(true);
+    this.profileService.getMyAuctions().subscribe({
+      next: (res) => {
+        if (res?.isSuccess) this.auctions.set(res.data);
+        this.auctionsLoading.set(false);
+      },
+      error: () => this.auctionsLoading.set(false),
+    });
+  }
+
+  // ── Helpers ──────────────────────────────────────────────
+  getOrderStatus(status: string) {
+    return ORDER_STATUS_MAP[status] ?? { label: status, bgClass: 'bg-gray-100', textClass: 'text-gray-500', icon: 'info' };
+  }
+
+  getAuctionStatus(status: string) {
+    return AUCTION_STATUS_MAP[status] ?? { label: status, bgClass: 'bg-gray-100', textClass: 'text-gray-500', icon: 'info' };
+  }
+
+  getProductStatus(status: number) {
+    return PRODUCT_STATUS_MAP[status] ?? { label: 'غير معروف', bgClass: 'bg-gray-100', textClass: 'text-gray-500' };
   }
 
   formatPrice(price: number): string {
-    return new Intl.NumberFormat('eg-EG', {
-      style: 'currency',
-      currency: 'EGP',
-    }).format(price || 0);
+    return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(price);
   }
 
   formatDate(date: string): string {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month:'long',
-      day: 'numeric',
-    });
+    if (!date) return '—';
+    return new Date(date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
+  private notify(msg: string, isError = false): void {
+    this.snackBar.open(msg, 'إغلاق', {
       duration: 3000,
+      panelClass: isError ? ['snack-error'] : ['snack-success'],
       horizontalPosition: 'center',
       verticalPosition: 'top',
-      panelClass: ['success-snackbar'],
     });
   }
 
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      horizontalPosition: 'center',
-      verticalPosition: 'top',
-      panelClass: ['error-snackbar'],
-    });
+  updateEditForm(field: string, value: string): void {
+    this.editForm.update(f => ({ ...f, [field]: value }));
+  }
+
+  updateProductForm(field: string, value: any): void {
+    this.productForm.update(f => ({ ...f, [field]: value }));
   }
 }

@@ -1,135 +1,31 @@
-.farmer-profile {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
+// profile.scss
+
+:host {
+  display: block;
 }
 
-.profile-header {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  color: white;
+// Hero cover pattern
+.profile-hero {
+  background-color: transparent;
 }
 
-.custom-tabs {
-  ::ng-deep {
-    .mat-mdc-tab-header {
-      background: white;
-      border-radius: 1rem;
-      padding: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .mat-mdc-tab {
-      border-radius: 0.75rem;
-      transition: all 0.2s ease;
-    }
-
-    .mat-mdc-tab.mdc-tab--active {
-      background-color: #059669;
-      
-      .mdc-tab__text-label {
-        color: white !important;
-      }
-    }
-
-    .mdc-tab__text-label {
-      font-weight: 500;
-      color: #4b5563;
-    }
-
-    .mat-mdc-tab-body-wrapper {
-      margin-top: 1.5rem;
-    }
-  }
+// Tabs scroll behavior
+.tab-nav {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
-.product-card, .auction-card {
-  transition: all 0.3s ease;
-  border-radius: 1rem;
-  overflow: hidden;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  }
-}
-
-.auction-card {
-  &:hover {
-    transform: translateX(4px);
-  }
-}
-
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-}
-
-.dialog-container {
-  background: white;
-  border-radius: 1rem;
-  width: 90%;
-  max-width: 800px;
-  max-height: 90vh;
-  overflow: auto;
-  animation: slideUp 0.3s ease;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.dialog-content {
-  padding: 1.5rem;
-}
-
-.dialog-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+// Smooth tab content transitions
+.tab-content {
+  animation: fadeIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
+// Line clamp
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -137,54 +33,43 @@
   overflow: hidden;
 }
 
-::ng-deep {
-  .success-snackbar {
-    background: #10b981;
-    color: white;
-    .mdc-snackbar__surface {
-      background: #10b981;
-    }
-  }
-
-  .error-snackbar {
-    background: #ef4444;
-    color: white;
-    .mdc-snackbar__surface {
-      background: #ef4444;
-    }
-  }
+// Paginator RTL
+::ng-deep .mat-mdc-paginator {
+  direction: rtl;
+  font-family: 'Cairo', sans-serif !important;
 }
 
-
-// ... الكود الموجود ...
-
-// Profile Component Styles
-.farmer-profile {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
+// Spinner override
+::ng-deep .mat-mdc-progress-spinner circle {
+  stroke: #40916c !important;
 }
 
-// Custom Scrollbar
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+// Snackbar styles
+::ng-deep .snack-success {
+  --mdc-snackbar-container-color: #40916c;
+  --mdc-snackbar-supporting-text-color: #fff;
+  font-family: 'Cairo', sans-serif;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+::ng-deep .snack-error {
+  --mdc-snackbar-container-color: #e63946;
+  --mdc-snackbar-supporting-text-color: #fff;
+  font-family: 'Cairo', sans-serif;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 10px;
-  
-  &:hover {
-    background: #a8a8a8;
-  }
+// Remove number input arrows
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
 }
 
-// Loading Spinner Override
-.mat-mdc-progress-spinner {
-  --mdc-circular-progress-active-indicator-color: #059669;
+// Product card hover image zoom
+.bg-white:has(img) img {
+  transition: transform 0.3s ease;
+}
+.bg-white:has(img):hover img {
+  transform: scale(1.04);
 }
