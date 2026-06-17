@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -19,6 +19,7 @@ export class Checkout implements OnInit, OnDestroy {
   private basketService = inject(BasketService);
   private router = inject(Router);
   private sub = new Subscription();
+  private cdr = inject(ChangeDetectorRef);
 
   currentStep = 1;
 
@@ -37,8 +38,6 @@ export class Checkout implements OnInit, OnDestroy {
 
   paymentMethods = [
     { value: PaymentMethod.CashOnDelivery, label: 'الدفع عند الاستلام', icon: 'pi-money-bill' },
-    { value: PaymentMethod.BankTransfer, label: 'تحويل بنكي', icon: 'pi-building-columns' },
-    { value: PaymentMethod.Wallet, label: 'محفظة إلكترونية', icon: 'pi-wallet' },
     { value: PaymentMethod.Card, label: 'بطاقة ائتمان', icon: 'pi-credit-card' },
   ];
 
@@ -46,8 +45,7 @@ export class Checkout implements OnInit, OnDestroy {
   elements: any;
   cardElement: any;
   cardMounted = false;
-  cardPaymentDone = false;
-  private isProcessingPayment = false;
+  cardReady = false;
 
   ngOnInit() {
     this.sub.add(
@@ -57,6 +55,7 @@ export class Checkout implements OnInit, OnDestroy {
           return;
         }
         this.basket = basket;
+        this.cdr.detectChanges();
       }),
     );
 
@@ -64,6 +63,9 @@ export class Checkout implements OnInit, OnDestroy {
       'pk_test_51TTOQIAwqAKNfyvHpfohQfRnUBex6FMPssqonwNXRKLt2ow2FKLmrNWjxyW2R412sVwN3xBzFJfiE5lGnpC0rMaZ00p7eL2QrQ',
     ).then((stripe) => {
       this.stripe = stripe;
+      if (this.selectedPaymentMethod === PaymentMethod.Card) {
+        setTimeout(() => this.initializeCardElement(), 0);
+      }
     });
   }
 
@@ -79,14 +81,25 @@ export class Checkout implements OnInit, OnDestroy {
     return this.getSubtotal() + this.getShippingCost();
   }
 
-  async nextStep() {
-    if (this.currentStep === 1 && !this.selectedDeliveryMethod) return;
+  getPaymentLabel(): string {
+    return (
+      this.paymentMethods.find((method) => method.value === this.selectedPaymentMethod)?.label ??
+      'غير محدد'
+    );
+  }
 
+  nextStep() {
+    if (this.currentStep === 1 && !this.selectedDeliveryMethod) return;
     if (this.currentStep === 2 && this.selectedPaymentMethod === PaymentMethod.Card) {
-      await this.processCardPaymentBeforeNextStep();
-      return;
+      this.initializeCardElement();
+
+      if (!this.cardReady) {
+        this.errorMessage = 'بيانات البطاقة لسه بتجهز. انتظر لحظة وحاول مرة أخرى.';
+        return;
+      }
     }
 
+    this.errorMessage = null;
     this.currentStep++;
   }
 
@@ -96,26 +109,27 @@ export class Checkout implements OnInit, OnDestroy {
 
   selectPaymentMethod(method: PaymentMethod) {
     this.selectedPaymentMethod = method;
+    this.errorMessage = null;
 
     if (method === PaymentMethod.Card) {
       setTimeout(() => this.initializeCardElement(), 0);
-    } else {
-      this.destroyCardElement();
     }
   }
 
   initializeCardElement() {
-    if (!this.stripe) return;
-
-    if (this.cardElement) {
-      this.cardElement.unmount();
-      this.cardElement.destroy();
-      this.cardElement = null;
-      this.cardMounted = false;
-    }
+    if (!this.stripe || this.cardMounted) return;
+    if (!document.getElementById('card-element')) return;
 
     this.elements = this.stripe.elements();
     this.cardElement = this.elements.create('card');
+    this.cardElement.on('ready', () => {
+      this.cardReady = true;
+      this.cdr.detectChanges();
+    });
+    this.cardElement.on('change', (event: any) => {
+      this.errorMessage = event.error?.message ?? null;
+      this.cdr.detectChanges();
+    });
     this.cardElement.mount('#card-element');
     this.cardMounted = true;
   }
@@ -126,130 +140,156 @@ export class Checkout implements OnInit, OnDestroy {
       this.cardElement.destroy();
       this.cardElement = null;
       this.cardMounted = false;
+      this.cardReady = false;
     }
   }
 
   async confirmCardPayment(clientSecret: string): Promise<boolean> {
-    const result = await this.stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card: this.cardElement },
-    });
-
-    if (result.error) {
-      this.errorMessage = result.error.message ?? 'فشل الدفع';
+    if (!this.stripe || !this.cardElement || !this.cardMounted || !this.cardReady) {
+      this.errorMessage = 'بيانات البطاقة غير جاهزة. ارجع لخطوة الدفع وحاول مرة أخرى.';
       return false;
     }
 
-    return result.paymentIntent?.status === 'succeeded';
+    try {
+      const result = await this.stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: this.cardElement },
+      });
+
+      if (result.error) {
+        this.errorMessage = result.error.message ?? 'فشل الدفع';
+        return false;
+      }
+
+      return result.paymentIntent?.status === 'succeeded';
+    } catch (error: any) {
+      this.errorMessage = error?.message ?? 'فشل الدفع';
+      return false;
+    }
   }
 
-  async processCardPaymentBeforeNextStep() {
-    if (!this.basket || !this.selectedDeliveryMethod) return;
+  placeOrder() {
+    if (!this.basket || !this.selectedDeliveryMethod || this.isSubmitting) return;
 
-    // امنع الـ double call
-    if (this.isProcessingPayment) return;
-    this.isProcessingPayment = true;
-
+    const basketId = this.basket.id;
     this.isSubmitting = true;
     this.errorMessage = null;
 
-    const basketId = this.basket.id;
     const updatedBasket = { ...this.basket, deliveryMethodId: this.selectedDeliveryMethod.id };
 
     this.basketService.updateBasket(updatedBasket).subscribe({
       next: () => {
-        this.ordersService.createPaymentIntent(basketId).subscribe({
-          next: async (payRes) => {
-            if (!payRes.isSuccess) {
-              this.errorMessage = payRes.message;
-              this.isSubmitting = false;
-              this.isProcessingPayment = false;
-              return;
-            }
+        if (this.selectedPaymentMethod === PaymentMethod.Card) {
+          this.placeCardOrder(basketId);
+          return;
+        }
 
-            const clientSecret = payRes.data.clientSecret;
-
-            const paymentSucceeded = await this.confirmCardPayment(clientSecret);
-
-            if (!paymentSucceeded) {
-              this.isSubmitting = false;
-              this.isProcessingPayment = false;
-              return;
-            }
-
-            this.cardPaymentDone = true;
-            this.isSubmitting = false;
-            this.isProcessingPayment = false;
-            this.currentStep++;
-          },
-          error: () => {
-            this.errorMessage = 'حدث خطأ في Payment Intent';
-            this.isSubmitting = false;
-            this.isProcessingPayment = false;
-          },
-        });
+        this.placeCashOrder(basketId);
       },
       error: () => {
         this.errorMessage = 'حدث خطأ في تحديث السلة';
         this.isSubmitting = false;
-        this.isProcessingPayment = false;
       },
     });
   }
 
-  placeOrder() {
-    if (!this.basket || !this.selectedDeliveryMethod) return;
+  private placeCardOrder(basketId: string) {
+    if (!this.cardMounted) {
+      this.initializeCardElement();
+    }
 
-    const basketId = this.basket.id;
-    this.isSubmitting = true;
-    this.errorMessage = null;
+    if (!this.stripe || !this.cardElement || !this.cardMounted || !this.cardReady) {
+      this.errorMessage = 'بيانات البطاقة غير جاهزة. ارجع لخطوة الدفع وحاول مرة أخرى.';
+      this.isSubmitting = false;
+      return;
+    }
 
-    if (this.selectedPaymentMethod === PaymentMethod.Card && this.cardPaymentDone) {
-      this.createOrderAndNavigate(basketId);
-    } else {
-      const updatedBasket = { ...this.basket, deliveryMethodId: this.selectedDeliveryMethod.id };
+    this.ordersService.createPaymentIntent(basketId).subscribe({
+      next: (payRes) => {
+        if (!payRes.isSuccess) {
+          this.errorMessage = payRes.message;
+          this.isSubmitting = false;
+          return;
+        }
 
-      this.basketService.updateBasket(updatedBasket).subscribe({
-        next: () => {
-          this.ordersService.createPaymentIntent(basketId).subscribe({
-            next: () => {
-              this.createOrderAndNavigate(basketId);
+        const clientSecret = payRes.data.clientSecret;
+
+        this.ordersService
+          .createOrder({
+            notes: this.notes,
+            paymentMethod: this.selectedPaymentMethod,
+            basketId,
+          })
+          .subscribe({
+            next: async (orderRes) => {
+              if (!orderRes.isSuccess) {
+                this.errorMessage = orderRes.message;
+                this.isSubmitting = false;
+                return;
+              }
+
+              const paymentSucceeded = await this.confirmCardPayment(clientSecret);
+              if (!paymentSucceeded) {
+                this.isSubmitting = false;
+                return;
+              }
+
+              this.finishOrder(basketId, orderRes.data.id);
             },
             error: () => {
-              this.errorMessage = 'حدث خطأ في Payment Intent';
+              this.errorMessage = 'حدث خطأ في إنشاء الطلب';
               this.isSubmitting = false;
             },
           });
-        },
-        error: () => {
-          this.errorMessage = 'حدث خطأ في تحديث السلة';
-          this.isSubmitting = false;
-        },
-      });
-    }
+      },
+      error: () => {
+        this.errorMessage = 'حدث خطأ في Payment Intent';
+        this.isSubmitting = false;
+      },
+    });
   }
 
-  private createOrderAndNavigate(basketId: string) {
-    this.ordersService
-      .createOrder({
-        notes: this.notes,
-        paymentMethod: this.selectedPaymentMethod,
-        basketId,
-      })
-      .subscribe({
-        next: (res) => {
-          if (res.isSuccess) {
-            this.basketService.deleteBasket(basketId).subscribe();
-            this.router.navigate(['/order-confirmation', res.data.id]);
-          } else {
-            this.errorMessage = res.message;
-          }
+  private placeCashOrder(basketId: string) {
+    this.ordersService.createPaymentIntent(basketId).subscribe({
+      next: (payRes) => {
+        if (!payRes.isSuccess) {
+          this.errorMessage = payRes.message;
           this.isSubmitting = false;
-        },
-        error: () => {
-          this.errorMessage = 'حدث خطأ في إنشاء الطلب';
-          this.isSubmitting = false;
-        },
-      });
+          return;
+        }
+
+        this.ordersService
+          .createOrder({
+            notes: this.notes,
+            paymentMethod: this.selectedPaymentMethod,
+            basketId,
+          })
+          .subscribe({
+            next: (orderRes) => {
+              if (!orderRes.isSuccess) {
+                this.errorMessage = orderRes.message;
+                this.isSubmitting = false;
+                return;
+              }
+
+              this.finishOrder(basketId, orderRes.data.id);
+            },
+            error: () => {
+              this.errorMessage = 'حدث خطأ في إنشاء الطلب';
+              this.isSubmitting = false;
+            },
+          });
+      },
+      error: () => {
+        this.errorMessage = 'حدث خطأ في Payment Intent';
+        this.isSubmitting = false;
+      },
+    });
+  }
+
+  private finishOrder(basketId: string, orderId: number) {
+    this.basketService.deleteBasket(basketId).subscribe();
+    this.router.navigate(['/order-confirmation', orderId]);
+    this.isSubmitting = false;
   }
 
   ngOnDestroy() {

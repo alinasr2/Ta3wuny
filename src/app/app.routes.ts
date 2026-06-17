@@ -46,5 +46,5 @@ export const routes: Routes = [
   { path: 'profile', component: Profile, canActivate: [isLoginGuard] },
   { path: 'checkout', component: Checkout },
   { path: 'order-confirmation/:id', component: OrderConfirmation },
-  // { path: 'my-orders', component: MyOrders },
+  { path: 'my-orders', component: MyOrders, canActivate: [isLoginGuard] },
 ];
