@@ -7,7 +7,10 @@
   @else if (role() == "Trader") {
     <app-trader-profile></app-trader-profile>
   }
-  @else{
+  @else if (role() == "Farmer"){
     <app-farmer-profile></app-farmer-profile>
+  }
+  @else {
+    <app-admin-profile></app-admin-profile>
   }
 </div>

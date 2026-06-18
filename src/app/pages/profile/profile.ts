@@ -3,11 +3,12 @@ import { Auth } from '../../core/services/auth/auth';
 import { TraderProfile } from "../../shared/components/trader-profile/trader-profile";
 import { FarmerProfile } from "../../shared/components/farmer-profile/farmer-profile";
 import { MatProgressSpinner } from "@angular/material/progress-spinner";
+import { AdminProfile } from "../../shared/components/admin-profile/admin-profile";
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [TraderProfile, FarmerProfile, MatProgressSpinner],
+  imports: [TraderProfile, FarmerProfile, MatProgressSpinner, AdminProfile],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss'],
 })
@@ -19,7 +20,6 @@ export class Profile implements OnInit{
     this.authService.setLoggedIn().subscribe({
       next:(res)=>{
         this.role.set(res.value);
-        console.log(res);
       },
       error(err) {
         console.log(err);
