@@ -12,15 +12,6 @@ import { RouterLink } from '@angular/router';
 export class ProductCardComponent {
   @Input() product: any = {};
 
-
-  ngOnChanges(changes: any): void {
-    //Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
-    //Add '${implements OnChanges}' to the class.
-    console.log(this.product);
-    
-  }
-
-
   get formattedPrice(): string {
     return `${this.product?.unitPrice || 0} جنيه`;
   }

@@ -16,7 +16,6 @@ export class Farmers implements OnInit {
   ngOnInit(): void {
     this.usersService.getAllFarmers().subscribe({
       next:(res)=>{
-        console.log(res)
         this.farmers.set(res.data);
       },
       error:(err)=>{

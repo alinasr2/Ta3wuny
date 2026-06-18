@@ -464,7 +464,7 @@ Admin only endpoint to retrieve a paginated list of all users on the platform, w
 
   deleteAuction(auctionId:any):Observable<any>
   {
-    return this.httpClient.delete(`${BaseUrl.url}/api/Auctions/${auctionId}`);
+    return this.httpClient.delete(`${BaseUrl.url}api/Auctions/${auctionId}`);
   }
 
   addRole(form:object):Observable<any>

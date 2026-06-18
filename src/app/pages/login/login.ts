@@ -13,8 +13,7 @@ import { Router, RouterLink } from '@angular/router';
 export class Login {
   private readonly authService = inject(Auth);
   private readonly router = inject(Router);
-  errorMsg:string=''
-  loading:boolean = false;
+  loading = signal(false);
   form: FormGroup = new FormGroup({
     email: new FormControl(null,[Validators.required,Validators.email]),
     password: new FormControl(null,[Validators.required]),
@@ -22,16 +21,14 @@ export class Login {
 
   Login() {
     if (this.form.valid) {
-      this.loading = true;
+      this.loading.set(true);
       this.authService.Login(this.form.value).subscribe({
       next:(res)=>{
         this.router.navigate(['/'])
-        this.loading = false;
+        this.loading.set(false);
       },
       error:(err)=>{
-        this.loading = false;
-        this.errorMsg = err.error.message;
-        console.log(err);
+        this.loading.set(false);
         
       }
     })

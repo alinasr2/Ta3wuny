@@ -38,8 +38,6 @@ export class ProductsService {
 
     if (params.status != null) httpParams.Status = params.status;
 
-    console.log(params);
-
     return this.httpClient.get(`${BaseUrl.url}api/Products`, { params: httpParams });
   }
   getProductById(id: number): Observable<any> {

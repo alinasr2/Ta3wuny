@@ -30,12 +30,6 @@
         onerror="this.src='https://placehold.co/1200x400?text=لا+توجد+صورة'" />
       <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
 
-      <!-- Back button -->
-      <a routerLink="/auctions"
-        class="absolute top-5 right-5 flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/30 transition-all">
-        <mat-icon class="!text-base">arrow_forward</mat-icon>
-        العودة للمزادات
-      </a>
 
       <!-- Live indicator -->
       @if (a.status === 'Active') {
@@ -217,19 +211,28 @@
               <mat-icon class="text-primary">agriculture</mat-icon>
               المزارع
             </h2>
-            <div class="flex items-center gap-4">
-              <div class="w-16 h-16 rounded-2xl overflow-hidden bg-accent flex items-center justify-center flex-shrink-0">
-                @if (getAvatarUrl(a.farmerImage)) {
-                  <img [src]="a.farmerImage" [alt]="a.farmerName" class="w-full h-full object-cover" />
-                } @else {
-                  <mat-icon class="!text-3xl text-primary">person</mat-icon>
-                }
+            <div class="flex flex-wrap justify-between items-center gap-4">
+              <div class="flex gap-2">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden bg-accent flex items-center justify-center flex-shrink-0">
+                  @if (getAvatarUrl(a.farmerImage)) {
+                    <img [src]="a.farmerImage" [alt]="a.farmerName" class="w-full h-full object-cover" />
+                  } @else {
+                    <mat-icon class="!text-3xl text-primary">person</mat-icon>
+                  }
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary">اسم المزارع</p>
+                  <p class="text-xl font-bold text-text-primary">{{ a.farmerName }}</p>
+                  <p class="text-xs text-text-secondary mt-1 font-mono opacity-60">{{ a.farmerId.slice(0,8) }}...</p>
+                </div>
               </div>
-              <div>
-                <p class="text-xs text-text-secondary">اسم المزارع</p>
-                <p class="text-xl font-bold text-text-primary">{{ a.farmerName }}</p>
-                <p class="text-xs text-text-secondary mt-1 font-mono opacity-60">{{ a.farmerId.slice(0,8) }}...</p>
-              </div>
+              <button
+                routerLink="/chat" [queryParams]="{ id: a.farmerId }"
+                class=" flex items-center justify-center gap-2 bg-surface border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary-light/10 transition-all duration-200"
+              >
+                <i class="pi pi-comment text-lg"></i>
+                تواصل مع المزارع
+              </button>
             </div>
           </div>
 

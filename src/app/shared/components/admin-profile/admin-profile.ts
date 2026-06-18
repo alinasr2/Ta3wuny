@@ -405,6 +405,8 @@ export class AdminProfile {
     this.adminService.getUsers(params).subscribe({
       next: (res) => {
         if (res?.isSuccess) {
+          console.log(res);
+          
           this.users.set(res.data.data);
           this.usersTotal.set(res.data.count);
         }
