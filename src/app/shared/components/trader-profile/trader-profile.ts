@@ -14,6 +14,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TraderProfileService } from '../../../core/services/trader-profile/trader-profile-service';
+import { ReviewService } from '../../../core/services/Reviews/review-service';
+import { ProductsService } from '../../../core/services/products/products-service';
 
 type ActiveTab = 'overview' | 'orders' | 'auctions';
 
@@ -60,6 +62,8 @@ const BUSINESS_TYPES: Record<number, string> = {
 export class TraderProfile implements OnInit {
   private traderService = inject(TraderProfileService);
   private snackBar = inject(MatSnackBar);
+  private reviewService = inject(ReviewService);
+  private productService = inject(ProductsService);
 
   // ── Active Tab ──────────────────────────────────────────
   activeTab = signal<ActiveTab>('overview');
@@ -98,6 +102,16 @@ export class TraderProfile implements OnInit {
   // ── Auctions ─────────────────────────────────────────────
   auctions = signal<any[]>([]);
   auctionsLoading = signal(false);
+
+  // ── Reviews (from my-orders behavior) ─────────────────────
+  showReviewModal = signal(false);
+  selectedOrderForReview = signal<any>(null);
+  reviewRating = signal<number>(5);
+  reviewComment = signal<string>('');
+  isSubmittingReview = signal<boolean>(false);
+  reviewError = signal<string | null>(null);
+  reviewSuccess = signal<boolean>(false);
+  private reviewedOrderIds = new Set<number>();
 
   // ── Computed ─────────────────────────────────────────────
   totalOrders = computed(() => this.orders().length);
@@ -202,10 +216,133 @@ export class TraderProfile implements OnInit {
     this.traderService.getMyOrders().subscribe({
       next: (res) => {
         if (res?.isSuccess) this.orders.set(res.data);
+        this.syncReviewedOrders();
         this.ordersLoading.set(false);
       },
       error: () => this.ordersLoading.set(false),
     });
+  }
+
+  // ── Review helpers (adapted from MyOrders) ───────────────
+  openReviewModal(order: any): void {
+    if (!this.canReviewOrder(order)) return;
+    this.selectedOrderForReview.set(order);
+    this.reviewRating.set(5);
+    this.reviewComment.set('');
+    this.reviewError.set(null);
+    this.reviewSuccess.set(false);
+    this.showReviewModal.set(true);
+  }
+
+  closeReviewModal(): void {
+    this.showReviewModal.set(false);
+    this.selectedOrderForReview.set(null);
+  }
+
+  submitReview(): void {
+    const selected = this.selectedOrderForReview();
+    if (!selected) return;
+    this.isSubmittingReview.set(true);
+    this.reviewError.set(null);
+
+    const productId = selected.items?.[0]?.productId;
+    if (!productId) {
+      this.reviewError.set('حدث خطأ في جلب بيانات المنتج');
+      this.isSubmittingReview.set(false);
+      return;
+    }
+
+    this.productService.getProductById(productId).subscribe({
+      next: (productRes) => {
+        if (!productRes.isSuccess) {
+          this.reviewError.set('حدث خطأ في جلب بيانات المنتج');
+          this.isSubmittingReview.set(false);
+          return;
+        }
+        const farmerId = productRes.data.farmerId;
+        this.reviewService
+          .createReview({
+            orderId: selected.id,
+            targetUserId: farmerId,
+            rating: this.reviewRating(),
+            comment: this.reviewComment(),
+          })
+          .subscribe({
+            next: (res) => {
+              if (res.isSuccess) {
+                this.markOrderAsReviewed(selected.id);
+                this.reviewSuccess.set(true);
+                setTimeout(() => this.closeReviewModal(), 1200);
+              } else {
+                this.reviewError.set(res.message);
+                this.handleAlreadyReviewedResponse(res.message);
+              }
+              this.isSubmittingReview.set(false);
+            },
+            error: (error) => {
+              const message = error?.error?.message || 'حدث خطأ في إرسال التقييم';
+              this.reviewError.set(message);
+              this.handleAlreadyReviewedResponse(message);
+              this.isSubmittingReview.set(false);
+            },
+          });
+      },
+      error: () => {
+        this.reviewError.set('حدث خطأ في جلب بيانات المنتج');
+        this.isSubmittingReview.set(false);
+      },
+    });
+  }
+
+  setRating(r: number): void { this.reviewRating.set(r); }
+
+  canReviewOrder(order: any): boolean {
+    return order.status === 'Delivered' && !this.isOrderReviewed(order);
+  }
+
+  isOrderReviewed(order: any): boolean {
+    return (
+      this.reviewedOrderIds.has(order.id) ||
+      order['isReviewed'] === true ||
+      order['hasReview'] === true ||
+      order['hasReviewed'] === true ||
+      order['reviewed'] === true
+    );
+  }
+
+  private syncReviewedOrders(): void {
+    // load persisted ids from localStorage
+    try {
+      const raw = localStorage.getItem('reviewedOrderIds');
+      if (raw) {
+        const arr = JSON.parse(raw) as number[];
+        arr.forEach(id => this.reviewedOrderIds.add(id));
+      }
+    } catch {
+      // ignore
+    }
+    this.orders().forEach((order) => {
+      if (this.isOrderReviewed(order)) this.reviewedOrderIds.add(order.id);
+    });
+  }
+
+  private markOrderAsReviewed(orderId: number): void {
+    this.reviewedOrderIds.add(orderId);
+    const order = this.orders().find((o) => o.id === orderId);
+    if (order) order['isReviewed'] = true;
+    // persist
+    try {
+      const arr = Array.from(this.reviewedOrderIds.values());
+      localStorage.setItem('reviewedOrderIds', JSON.stringify(arr));
+    } catch {
+      // ignore
+    }
+  }
+
+  private handleAlreadyReviewedResponse(message: string | null | undefined): void {
+    if (!message?.includes('بالفعل')) return;
+    const sel = this.selectedOrderForReview();
+    if (sel) this.markOrderAsReviewed(sel.id);
   }
 
   cancelOrder(id: number): void {
