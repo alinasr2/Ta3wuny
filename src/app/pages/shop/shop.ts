@@ -42,8 +42,8 @@ export class Shop implements OnInit {
   tempPriceRange = signal({ min: 0, max: 1000 });
   sortOptions = [
     { value: 'newest', label: 'الأحدث أولاً', sortBy: 'createdAt', descending: true },
-    { value: 'price_asc', label: 'السعر: من الأقل إلى الأعلى', sortBy: 'unitPrice', descending: false },
-    { value: 'price_desc', label: 'السعر: من الأعلى إلى الأقل', sortBy: 'unitPrice', descending: true },
+    { value: 'price_asc', label: 'السعر: من الأقل إلى الأعلى', sortBy: 'price', descending: false },
+    { value: 'price_desc', label: 'السعر: من الأعلى إلى الأقل', sortBy: 'price', descending: true },
     { value: 'name_asc', label: 'الاسم: من أ إلى ي', sortBy: 'name', descending: false },
     { value: 'name_desc', label: 'الاسم: من ي إلى أ', sortBy: 'name', descending: true }
   ];
@@ -220,9 +220,9 @@ export class Shop implements OnInit {
 
     if (f.sort === 'createdAt') return 'newest';
 
-    if (f.sort === 'unitPrice' && !f.sortDescending) return 'price_asc';
+    if (f.sort === 'price' && !f.sortDescending) return 'price_asc';
 
-    if (f.sort === 'unitPrice' && f.sortDescending) return 'price_desc';
+    if (f.sort === 'price' && f.sortDescending) return 'price_desc';
 
     if (f.sort === 'name' && !f.sortDescending) return 'name_asc';
 

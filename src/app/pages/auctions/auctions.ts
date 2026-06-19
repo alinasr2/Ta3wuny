@@ -87,10 +87,10 @@ export class Auctions implements OnInit {
   // Computed
   statusOptions = computed(() => ([
     { value: undefined, label: 'الكل', icon: 'list', color: 'text-gray-600' },
-    { value: 1, label: 'قادمة', icon: 'schedule', color: 'text-blue-600' },
-    { value: 2, label: 'جارية', icon: 'play_circle', color: 'text-green-600' },
-    { value: 3, label: 'منتهية', icon: 'check_circle', color: 'text-red-500' },
-    { value: 4, label: 'ملغاة', icon: 'cancel', color: 'text-yellow-600' },
+    { value: 0, label: 'قادمة', icon: 'schedule', color: 'text-blue-600' },
+    { value: 1, label: 'جارية', icon: 'play_circle', color: 'text-green-600' },
+    { value: 2, label: 'منتهية', icon: 'check_circle', color: 'text-red-500' },
+    { value: 3, label: 'ملغاة', icon: 'cancel', color: 'text-yellow-600' },
   ]));
 
   hasAuctions = computed(() => this.auctions().length > 0);
@@ -112,7 +112,6 @@ export class Auctions implements OnInit {
       })
       .subscribe({
         next: (res) => {
-          console.log(res)
           if (res?.isSuccess) {
             this.auctions.set(res.data.data);
             this.totalCount.set(res.data.count);
@@ -123,11 +122,9 @@ export class Auctions implements OnInit {
           this.loading.set(false);
         },
         error: (err) => {
-          console.log(err);
           this.auctions.set([]);
           this.totalCount.set(0);
           this.totalPages.set(1);
-          // this.error.set('تعذّر الاتصال بالخادم، يرجى المحاولة لاحقاً');
           this.loading.set(false);
         },
       });

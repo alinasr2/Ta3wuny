@@ -15,10 +15,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       console.log(error);
 
-      if (error.status === 401 || error.status === 403) {
-        authService.isLoggedIn.set(false)
-        router.navigate(['/']);
-      }
+      // if (error.status === 401 || error.status === 403) {
+      //   authService.isLoggedIn.set(false)
+      //   router.navigate(['/']);
+      // }
 
       return throwError(() => error);
     })

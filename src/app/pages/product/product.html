@@ -153,6 +153,7 @@
                   </div>
                 </div>
                 <button
+                  routerLink="/chat" [queryParams]="{ id: product()?.farmerId }"
                   class="text-primary hover:text-primary-dark text-sm font-medium flex items-center gap-1"
                 >
                   <i class="pi pi-comment text-base"></i>

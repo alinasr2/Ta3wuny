@@ -1,0 +1,1579 @@
+<div class="profile-page min-h-screen bg-background" dir="rtl">
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- 🏠 PROFILE HEADER -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+
+  @if (profileLoading()) {
+    <div class="flex items-center justify-center py-20">
+      <mat-spinner [diameter]="48"></mat-spinner>
+    </div>
+  }
+
+  @if (!profileLoading() && profile(); as p) {
+    <div class="profile-hero mb-6 relative overflow-hidden">
+      <!-- Cover gradient -->
+      <div class="h-40 bg-gradient-to-l from-primary-dark via-primary to-primary-light relative">
+        <div class="absolute inset-0 opacity-10"
+          style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+      </div>
+
+      <!-- Profile card -->
+      <div class="container relative">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 -mt-12 p-6">
+          <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
+
+            <!-- Avatar -->
+            <div class="relative -mt-16 sm:-mt-20 flex-shrink-0">
+              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-accent flex items-center justify-center">
+                @if (p.profileImageUrl) {
+                  <img [src]="p.profileImageUrl" [alt]="p.name" class="w-full h-full object-cover" />
+                } @else {
+                  <mat-icon class="!text-5xl text-primary">admin_panel_settings</mat-icon>
+                }
+              </div>
+              <!-- Change image button -->
+              <label class="absolute -bottom-2 -left-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary-dark transition-all">
+                @if (profileImageLoading()) {
+                  <mat-spinner [diameter]="16" color="accent"></mat-spinner>
+                } @else {
+                  <mat-icon class="!text-sm text-white">photo_camera</mat-icon>
+                }
+                <input type="file" accept="image/*" class="hidden" (change)="onProfileImageChange($event)" />
+              </label>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0 pb-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold text-text-primary">{{ p.name }}</h1>
+                <span class="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">
+                  <mat-icon class="!text-xs">verified</mat-icon> أدمن
+                </span>
+              </div>
+              <p class="text-text-secondary text-sm mt-0.5 flex items-center gap-1">
+                <mat-icon class="!text-sm text-primary">email</mat-icon>
+                {{ p.email }}
+              </p>
+              <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                <mat-icon class="!text-xs">person</mat-icon>
+                @ {{ p.userName }}
+              </p>
+              <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                <mat-icon class="!text-xs">calendar_today</mat-icon>
+                انضم {{ formatDate(p.joinDate) }}
+              </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-shrink-0 pb-1">
+              <button (click)="openEditModal()"
+                class="flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
+                <mat-icon class="!text-base">edit</mat-icon>
+                تعديل البروفايل
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- 📌 TABS -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+
+    <div class="container">
+      <!-- Tab Nav -->
+      <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto flex-wrap">
+        @for (tab of [
+          { id: 'overview',   label: 'لوحة التحكم', icon: 'dashboard' },
+          { id: 'users',      label: 'المستخدمين',  icon: 'people' },
+          { id: 'products',   label: 'المنتجات',    icon: 'inventory_2' },
+          { id: 'orders',     label: 'الطلبات',     icon: 'receipt_long' },
+          { id: 'auctions',   label: 'المزادات',    icon: 'gavel' },
+          { id: 'payments',   label: 'المدفوعات',   icon: 'payments' },
+          { id: 'categories', label: 'الفئات',      icon: 'category' },
+          { id: 'delivery',   label: 'التوصيل',     icon: 'local_shipping' },
+          { id: 'reviews',    label: 'المراجعات',   icon: 'star' },
+        ]; track tab.id) {
+          <button
+            (click)="setTab($any(tab.id))"
+            [class.bg-primary]="activeTab() === tab.id"
+            [class.text-white]="activeTab() === tab.id"
+            [class.text-text-secondary]="activeTab() !== tab.id"
+            [class.hover:bg-green-50]="activeTab() !== tab.id"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex-1 justify-center">
+            <mat-icon class="!text-base">{{ tab.icon }}</mat-icon>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── OVERVIEW TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'overview') {
+        <div class="mt-6">
+          @if (dashboardLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!dashboardLoading() && dashboard(); as d) {
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              @for (stat of [
+                { label: 'إجمالي المستخدمين', value: d.totalUsers, icon: 'people', color: 'primary' },
+                { label: 'مزارعون', value: d.totalFarmers, icon: 'agriculture', color: 'green' },
+                { label: 'تجار', value: d.totalTraders, icon: 'storefront', color: 'purple' },
+                { label: 'بانتظار التوثيق', value: d.pendingVerifications, icon: 'pending', color: 'orange' },
+                { label: 'محظورين', value: d.bannedUsers, icon: 'block', color: 'red' },
+                { label: 'مراجعات بانتظار', value: d.pendingReviews, icon: 'star', color: 'amber' },
+                { label: 'إجمالي المنتجات', value: d.totalProducts, icon: 'inventory_2', color: 'indigo' },
+                { label: 'منتجات نشطة', value: d.activeProducts, icon: 'check_circle', color: 'green' },
+                { label: 'تحت المراجعة', value: d.underReviewProducts, icon: 'review', color: 'orange' },
+                { label: 'إجمالي الطلبات', value: d.totalOrders, icon: 'receipt_long', color: 'cyan' },
+                { label: 'طلبات معلقة', value: d.pendingOrders, icon: 'hourglass_empty', color: 'yellow' },
+                { label: 'طلبات مكتملة', value: d.deliveredOrders, icon: 'done_all', color: 'green' },
+                { label: 'إجمالي المزادات', value: d.totalAuctions, icon: 'gavel', color: 'purple' },
+                { label: 'مزادات نشطة', value: d.activeAuctions, icon: 'play_circle', color: 'green' },
+                { label: 'مزادات منتهية', value: d.endedAuctions, icon: 'check_circle', color: 'gray' },
+              ]; track stat.label) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center hover:shadow-md transition-all">
+                  <div class="w-10 h-10 mx-auto rounded-xl bg-{{ stat.color }}-50 flex items-center justify-center">
+                    <mat-icon class="!text-xl text-{{ stat.color }}-600">{{ stat.icon }}</mat-icon>
+                  </div>
+                  <p class="text-2xl font-bold text-text-primary mt-2">{{ stat.value }}</p>
+                  <p class="text-xs text-text-secondary">{{ stat.label }}</p>
+                </div>
+              }
+            </div>
+
+            <!-- Monthly Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+                <p class="text-xs text-text-secondary">جدد هذا الشهر</p>
+                <p class="text-2xl font-bold text-primary">{{ d.newUsersThisMonth }}</p>
+                <p class="text-xs text-text-secondary">مستخدمين جدد</p>
+              </div>
+              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+                <p class="text-xs text-text-secondary">جدد هذا الشهر</p>
+                <p class="text-2xl font-bold text-green-600">{{ d.newOrdersThisMonth }}</p>
+                <p class="text-xs text-text-secondary">طلبات جديدة</p>
+              </div>
+              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+                <p class="text-xs text-text-secondary">جدد هذا الشهر</p>
+                <p class="text-2xl font-bold text-primary">{{ d.newProductsThisMonth }}</p>
+                <p class="text-xs text-text-secondary">منتجات جديدة</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── USERS TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'users') {
+        <div class="mt-6">
+          <!-- Filters -->
+          <div class="flex flex-wrap items-center gap-3 mb-5">
+            <div class="relative flex-1 min-w-[200px]">
+              <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 !text-base text-gray-400">search</mat-icon>
+              <input
+                type="text"
+                placeholder="ابحث عن مستخدم..."
+                [ngModel]="userSearch()"
+                (ngModelChange)="userSearch.set($event)"
+                (keyup.enter)="onUserSearch()"
+                class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white" />
+            </div>
+            <select [ngModel]="userRoleFilter()" (ngModelChange)="userRoleFilter.set($event); onUserSearch()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option value="All">جميع الأدوار</option>
+              <option value="Farmer">مزارع</option>
+              <option value="Trader">تاجر</option>
+              <option value="Admin">أدمن</option>
+              <option value="Buyer">مشتري</option>
+            </select>
+            <select [ngModel]="userStatusFilter()" (ngModelChange)="userStatusFilter.set($event); onUserSearch()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option value="All">جميع الحالات</option>
+              <option value="Active">نشط</option>
+              <option value="Banned">محظور</option>
+            </select>
+            <select [ngModel]="userVerifiedFilter()" (ngModelChange)="userVerifiedFilter.set($event); onUserSearch()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option value="All">جميع</option>
+              <option value="Verified">موثق</option>
+              <option value="Unverified">غير موثق</option>
+            </select>
+          </div>
+
+          <!-- Pending & Banned quick view -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <h3 class="text-sm font-bold text-text-primary flex items-center gap-2">
+                <mat-icon class="text-orange-500">pending</mat-icon>
+                مزارعون بانتظار التوثيق ({{ pendingFarmers().length }})
+              </h3>
+              <div class="mt-2 max-h-40 overflow-y-auto space-y-1">
+                @for (f of pendingFarmers(); track f.farmerId) {
+                  <div class="flex items-center justify-between text-sm py-1 border-b border-gray-50">
+                    <span>{{ f.name }}</span>
+                    <button (click)="verifyFarmer(f.farmerId)" class="text-xs text-green-600 hover:underline">توثيق</button>
+                  </div>
+                }
+                @if (pendingFarmers().length === 0) {
+                  <p class="text-xs text-text-secondary">لا يوجد مزارعون بانتظار التوثيق</p>
+                }
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <h3 class="text-sm font-bold text-text-primary flex items-center gap-2">
+                <mat-icon class="text-orange-500">pending</mat-icon>
+                تجار بانتظار التوثيق ({{ pendingTraders().length }})
+              </h3>
+              <div class="mt-2 max-h-40 overflow-y-auto space-y-1">
+                @for (t of pendingTraders(); track t.traderId) {
+                  <div class="flex items-center justify-between text-sm py-1 border-b border-gray-50">
+                    <span>{{ t.name }}</span>
+                    <button (click)="verifyTrader(t.traderId)" class="text-xs text-green-600 hover:underline">توثيق</button>
+                  </div>
+                }
+                @if (pendingTraders().length === 0) {
+                  <p class="text-xs text-text-secondary">لا يوجد تجار بانتظار التوثيق</p>
+                }
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <h3 class="text-sm font-bold text-text-primary flex items-center gap-2">
+                <mat-icon class="text-red-500">block</mat-icon>
+                مستخدمين محظورين ({{ bannedUsers().length }})
+              </h3>
+              <div class="mt-2 max-h-40 overflow-y-auto space-y-1">
+                @for (u of bannedUsers(); track u.farmerId || u.traderId || u.id) {
+                  <div class="flex items-center justify-between text-sm py-1 border-b border-gray-50">
+                    <span>{{ u.name || u.userName }}</span>
+                    <button (click)="toggleUserStatus(u.farmerId || u.traderId || u.id)" class="text-xs text-green-600 hover:underline">إلغاء الحظر</button>
+                  </div>
+                }
+                @if (bannedUsers().length === 0) {
+                  <p class="text-xs text-text-secondary">لا يوجد مستخدمين محظورين</p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Users Table -->
+          @if (usersLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!usersLoading() && users().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">people</mat-icon>
+              <p class="text-text-secondary font-bold">لا يوجد مستخدمين</p>
+            </div>
+          }
+
+          @if (!usersLoading() && users().length > 0) {
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">المستخدم</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">البريد</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الدور</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الحالة</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">التوثيق</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of users(); track user.id) {
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-accent overflow-hidden flex-shrink-0">
+                              @if (user.profileImageUrl) {
+                                <img [src]="user.profileImageUrl" [alt]="user.name" class="w-full h-full object-cover" />
+                              } @else {
+                                <mat-icon class="!text-xl text-primary">person</mat-icon>
+                              }
+                            </div>
+                            <div>
+                              <p class="font-bold text-text-primary">{{ user.name }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-text-secondary">{{ user.email }}</td>
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded-full text-xs font-bold"
+                            [class.bg-primary/10]="user.role === 'Admin'"
+                            [class.text-primary]="user.role === 'Admin'"
+                            [class.bg-green-50]="user.role === 'Farmer'"
+                            [class.text-green-700]="user.role === 'Farmer'"
+                            [class.bg-purple-50]="user.role === 'Trader'"
+                            [class.text-purple-700]="user.role === 'Trader'"
+                            [class.bg-gray-50]="user.role === 'Buyer'"
+                            [class.text-gray-700]="user.role === 'Buyer'">
+                            @if(user.role == 'Admin'){
+                                ادمن
+                            }
+                            @else if(user.role == 'Farmer'){
+                                فلاح كلح
+                            }
+                            @else{
+                                تاجر لئيم
+                            }
+                          </span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="flex items-center w-fit gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            [class.bg-green-50]="user.isActive"
+                            [class.text-green-700]="user.isActive"
+                            [class.bg-red-50]="!user.isActive"
+                            [class.text-red-600]="!user.isActive">
+                            <mat-icon class="!text-xs">{{ user.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                            {{ user.isActive ? 'نشط' : 'محظور' }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="flex items-center w-fit gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            [class.bg-green-50]="user.isVerified"
+                            [class.text-green-700]="user.isVerified"
+                            [class.bg-yellow-50]="!user.isVerified"
+                            [class.text-yellow-700]="!user.isVerified">
+                            <mat-icon class="!text-xs">{{ user.isVerified ? 'verified' : 'pending' }}</mat-icon>
+                            {{ user.isVerified ? 'موثق' : 'غير موثق' }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-1">
+                            <button (click)="toggleUserStatus(user.id)"
+                              class="p-1.5 rounded-lg hover:bg-{{ user.isActive ? 'red' : 'green' }}-50 text-{{ user.isActive ? 'red' : 'green' }}-500 transition-all">
+                              <mat-icon class="!text-base">{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                            </button>
+                            @if (user.role === 'Farmer' && !user.isVerified) {
+                              <button (click)="verifyFarmer(user.id)"
+                                matTooltip="توثيق المزارع"
+                                class="p-1.5 rounded-lg hover:bg-green-50 text-green-500 transition-all">
+                                <mat-icon class="!text-base">verified</mat-icon>
+                              </button>
+                            }
+                            @if (user.role === 'Trader' && !user.isVerified) {
+                              <button (click)="verifyTrader(user.id)"
+                                matTooltip="توثيق التاجر"
+                                class="p-1.5 rounded-lg hover:bg-green-50 text-green-500 transition-all">
+                                <mat-icon class="!text-base">verified</mat-icon>
+                              </button>
+                            }
+                            <button (click)="openRoleModal(user.id)"
+                              matTooltip="إضافة دور"
+                              class="p-1.5 rounded-lg hover:bg-purple-50 text-purple-500 transition-all">
+                              <mat-icon class="!text-base">add_moderator</mat-icon>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <!-- Paginator -->
+              <div class="flex justify-center p-4 border-t border-gray-100">
+                <mat-paginator
+                  [length]="usersTotal()"
+                  [pageSize]="usersPageSize()"
+                  [pageIndex]="usersPageIndex()"
+                  [pageSizeOptions]="[10, 20, 50]"
+                  (page)="onUsersPage($event)"
+                  showFirstLastButtons
+                  class="rounded-xl border border-gray-100 shadow-sm bg-white">
+                </mat-paginator>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── PRODUCTS TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'products') {
+        <div class="mt-6">
+          <!-- Toolbar -->
+          <div class="flex flex-wrap items-center gap-3 mb-5">
+            <div class="relative flex-1 min-w-[200px]">
+              <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 !text-base text-gray-400">search</mat-icon>
+              <input
+                type="text"
+                placeholder="ابحث عن منتج..."
+                [ngModel]="productSearch()"
+                (ngModelChange)="productSearch.set($event)"
+                (keyup.enter)="onProductSearch()"
+                class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white" />
+            </div>
+            <select [ngModel]="productCategoryFilter()" (ngModelChange)="productCategoryFilter.set($event); onProductSearch()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option [value]="null">جميع الفئات</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.nameAr || cat.name }}</option>
+              }
+            </select>
+            <select [ngModel]="productStatusFilter()" (ngModelChange)="productStatusFilter.set($event); onProductSearch()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option [value]="-1">جميع الحالات</option>
+              <option [value]="1">نشط</option>
+              <option [value]="0">مسودة</option>
+              <option [value]="2">نفد</option>
+              <option [value]="3">مؤرشف</option>
+              <option [value]="5">تحت المراجعة</option>
+            </select>
+          </div>
+
+          @if (productsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!productsLoading() && products().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">inventory_2</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد منتجات</p>
+            </div>
+          }
+
+          @if (!productsLoading() && products().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+              @for (product of products(); track product.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
+                  <!-- Image -->
+                  <div class="relative h-40 bg-gray-50 overflow-hidden">
+                    <img [src]="product.mainImageUrl || 'https://placehold.co/400x300?text=لا+صورة'"
+                      [alt]="product.name"
+                      class="w-full h-full object-cover"
+                      onerror="this.src='https://placehold.co/400x300?text=لا+صورة'" />
+                    @let pStatus = getProductStatus(product.status);
+                    <div class="absolute top-2 right-2">
+                      <span class="text-xs font-bold px-2 py-0.5 rounded-full" [class]="pStatus.bgClass + ' ' + pStatus.textClass">
+                        {{ pStatus.label }}
+                      </span>
+                    </div>
+                    @if (product.hasActiveAcution) {
+                      <div class="absolute top-2 left-2">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-primary text-white flex items-center gap-0.5">
+                          <mat-icon class="!text-xs">gavel</mat-icon> مزاد
+                        </span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Content -->
+                  <div class="p-4 flex flex-col flex-1 gap-2">
+                    <h3 class="font-bold text-text-primary text-sm">{{ product.name }}</h3>
+                    <p class="text-xs text-text-secondary">{{ product.categoryName }}</p>
+                    <p class="text-xs text-text-secondary">المزارع: {{ product.farmerName }}</p>
+                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+                      <div>
+                        <p class="text-primary font-bold text-sm">{{ formatPrice(product.unitPrice) }}</p>
+                        <p class="text-xs text-gray-400">{{ product.quantity }} {{ product.unit }}</p>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <button (click)="openProductStatusModal(product)"
+                          matTooltip="تغيير الحالة"
+                          class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                          <mat-icon class="!text-base">swap_horiz</mat-icon>
+                        </button>
+                        <button (click)="confirmDeleteProduct(product.id)"
+                          matTooltip="حذف"
+                          class="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all">
+                          <mat-icon class="!text-base">delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Paginator -->
+            <div class="flex justify-center">
+              <mat-paginator
+                [length]="productsTotal()"
+                [pageSize]="productsPageSize()"
+                [pageIndex]="productsPageIndex()"
+                [pageSizeOptions]="[8, 16, 32]"
+                (page)="onProductsPage($event)"
+                showFirstLastButtons
+                class="rounded-2xl border border-gray-100 shadow-sm bg-white">
+              </mat-paginator>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── ORDERS TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'orders') {
+        <div class="mt-6">
+          <!-- Filters -->
+          <div class="flex flex-wrap items-center gap-3 mb-5">
+            <select [ngModel]="orderStatusFilter()" (ngModelChange)="orderStatusFilter.set($event); loadOrders()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option value="All">جميع الحالات</option>
+              <option value="Pending">في الانتظار</option>
+              <option value="Confirmed">مؤكد</option>
+              <option value="Preparing">قيد التحضير</option>
+              <option value="ReadyForPickup">جاهز للاستلام</option>
+              <option value="InDelivery">قيد التوصيل</option>
+              <option value="Delivered">تم التوصيل</option>
+              <option value="Cancelled">ملغي</option>
+              <option value="Rejected">مرفوض</option>
+            </select>
+            <select [ngModel]="orderPaymentFilter()" (ngModelChange)="orderPaymentFilter.set($event); loadOrders()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option value="All">جميع المدفوعات</option>
+              <option value="Unpaid">غير مدفوع</option>
+              <option value="Paid">مدفوع</option>
+              <option value="Refunded">مسترد</option>
+              <option value="Failed">فاشل</option>
+            </select>
+          </div>
+
+          @if (ordersLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!ordersLoading() && orders().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">receipt_long</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد طلبات</p>
+            </div>
+          }
+
+          @if (!ordersLoading() && orders().length > 0) {
+            <div class="flex flex-col gap-4">
+              @for (order of orders(); track order.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <!-- Order header -->
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50 flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center cursor-pointer" (click)="viewOrderDetails(order.id)">
+                        <mat-icon class="!text-base text-primary">receipt_long</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm cursor-pointer hover:text-primary transition-colors" (click)="viewOrderDetails(order.id)">طلب #{{ order.id }}</p>
+                        <p class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">person</mat-icon>
+                          {{ order.buyerName }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      @let oStatus = getOrderStatus(order.status);
+                      <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                        [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                        <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                        {{ oStatus.label }}
+                      </span>
+                      <span class="text-base font-bold text-primary">{{ formatPrice(order.total) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Order items -->
+                  <div class="p-4 border-b border-gray-50">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      @for (item of order.items; track item.productId) {
+                        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
+                          <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'"
+                            [alt]="item.productName"
+                            class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                            onerror="this.src='https://placehold.co/60x60?text=صورة'" />
+                          <div class="min-w-0">
+                            <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
+                            <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}</p>
+                            <p class="text-xs text-primary font-bold">{{ formatPrice(item.subtotal) }}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="p-4 flex items-center gap-2 flex-wrap">
+                    @if (order.status === 'Pending') {
+                      <button (click)="changeOrderStatus(order.id, 1)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all">
+                        <mat-icon class="!text-base">check</mat-icon> قبول
+                      </button>
+                      <button (click)="changeOrderStatus(order.id, 7)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">close</mat-icon> رفض
+                      </button>
+                    }
+                    @if (order.status === 'Confirmed') {
+                      <button (click)="changeOrderStatus(order.id, 2)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white rounded-xl text-sm font-bold hover:bg-purple-600 transition-all">
+                        <mat-icon class="!text-base">inventory</mat-icon> تحضير
+                      </button>
+                    }
+                    @if (order.status === 'Preparing') {
+                      <button (click)="changeOrderStatus(order.id, 3)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-bold hover:bg-cyan-600 transition-all">
+                        <mat-icon class="!text-base">local_shipping</mat-icon> جاهز للشحن
+                      </button>
+                    }
+                    @if (order.status === 'ReadyForPickup') {
+                      <button (click)="changeLogisticsStatus(order.id, 2)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm font-bold hover:bg-indigo-600 transition-all">
+                        <mat-icon class="!text-base">inventory</mat-icon> تم الاستلام
+                      </button>
+                    }
+                    @if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Rejected') {
+                      <button (click)="openCancelOrder(order.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">cancel</mat-icon> إلغاء
+                      </button>
+                    }
+                    <button (click)="viewOrderDetails(order.id)"
+                      class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-text-secondary rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">
+                      <mat-icon class="!text-base">visibility</mat-icon> تفاصيل
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Paginator -->
+            <div class="flex justify-center mt-6">
+              <mat-paginator
+                [length]="ordersTotal()"
+                [pageSize]="ordersPageSize()"
+                [pageIndex]="ordersPageIndex()"
+                [pageSizeOptions]="[10, 20, 50]"
+                (page)="onOrdersPage($event)"
+                showFirstLastButtons
+                class="rounded-2xl border border-gray-100 shadow-sm bg-white">
+              </mat-paginator>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── AUCTIONS TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'auctions') {
+        <div class="mt-6">
+          <div class="flex flex-wrap items-center gap-3 mb-5">
+            <select [ngModel]="auctionStatusFilter()" (ngModelChange)="auctionStatusFilter.set($event); loadAuctions()"
+              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
+              <option value="All">جميع الحالات</option>
+              <option value="Active">جارٍ</option>
+              <option value="Upcoming">قادم</option>
+              <option value="Ended">منتهي</option>
+              <option value="Canceled">ملغي</option>
+            </select>
+          </div>
+
+          @if (auctionsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!auctionsLoading() && auctions().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">gavel</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد مزادات</p>
+            </div>
+          }
+
+          @if (!auctionsLoading() && auctions().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (auction of auctions(); track auction.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all flex flex-col gap-4">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                        <mat-icon class="!text-xl text-primary">gavel</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm">{{ auction.productName }}</p>
+                        <p class="text-xs text-text-secondary">{{ auction.productQuantity }} {{ auction.productUnit }}</p>
+                      </div>
+                    </div>
+                    @let aStatus = getAuctionStatus(auction.status);
+                    <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                      [class]="aStatus.bgClass + ' ' + aStatus.textClass">
+                      <mat-icon class="!text-xs">{{ aStatus.icon }}</mat-icon>
+                      {{ aStatus.label }}
+                    </span>
+                  </div>
+
+                  @if (auction.mainImageUrl) {
+                    <div class="rounded-xl overflow-hidden h-32 bg-gray-100">
+                      <img [src]="auction.mainImageUrl" [alt]="auction.productName" class="w-full h-full object-cover" />
+                    </div>
+                  }
+
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-text-secondary text-xs">السعر الحالي</span>
+                      <span class="font-bold text-primary text-lg">{{ formatPrice(auction.currentPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">السعر الابتدائي</span>
+                      <span class="text-xs font-bold text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">المزايدات</span>
+                      <span class="text-xs font-bold text-text-primary">{{ auction.totalBids }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">المزارع</span>
+                      <span class="text-xs font-bold text-text-primary">{{ auction.farmerName }}</span>
+                    </div>
+                    @if (auction.winnerName) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary">الفائز</span>
+                        <span class="text-xs font-bold text-green-600">{{ auction.winnerName }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">البداية</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.startDate) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">النهاية</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.endDate) }}</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <a [href]="'/auctions/' + auction.id"
+                      class="flex-1 flex items-center justify-center gap-2 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
+                      <mat-icon class="!text-base">visibility</mat-icon>
+                      عرض
+                    </a>
+                    <button (click)="confirmDeleteAuction(auction.id)"
+                      class="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-all flex-shrink-0">
+                      <mat-icon class="!text-base">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Paginator -->
+            <div class="flex justify-center mt-6">
+              <mat-paginator
+                [length]="auctionsTotal()"
+                [pageSize]="auctionsPageSize()"
+                [pageIndex]="auctionsPageIndex()"
+                [pageSizeOptions]="[8, 16, 32]"
+                (page)="onAuctionsPage($event)"
+                showFirstLastButtons
+                class="rounded-2xl border border-gray-100 shadow-sm bg-white">
+              </mat-paginator>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── PAYMENTS TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'payments') {
+        <div class="mt-6">
+          @if (paymentsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!paymentsLoading() && payments().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">payments</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد مدفوعات</p>
+            </div>
+          }
+
+          @if (!paymentsLoading() && payments().length > 0) {
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الطلب</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الدافع</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">المبلغ</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">طريقة الدفع</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الحالة</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">التاريخ</th>
+                      <th class="px-4 py-3 text-right font-bold text-text-secondary text-xs">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (payment of payments(); track payment.id) {
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <td class="px-4 py-3 font-bold text-text-primary">#{{ payment.orderId }}</td>
+                        <td class="px-4 py-3 text-text-secondary">{{ payment.payerName || payment.payer?.name }}</td>
+                        <td class="px-4 py-3 font-bold text-primary">{{ formatPrice(payment.amount) }}</td>
+                        <td class="px-4 py-3 text-text-secondary">{{ payment.method === 0 ? 'بطاقة' : 'محفظة' }}</td>
+                        <td class="px-4 py-3">
+                          @let pStatus = getPaymentStatus(payment.status);
+                          <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="pStatus.bgClass + ' ' + pStatus.textClass">
+                            {{ pStatus.label }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-text-secondary">{{ formatDateTime(payment.paidAt || payment.createdAt) }}</td>
+                        <td class="px-4 py-3">
+                          <button (click)="openPaymentStatusModal(payment.orderId)"
+                            matTooltip="تغيير حالة الدفع"
+                            class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                            <mat-icon class="!text-base">swap_horiz</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── CATEGORIES TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'categories') {
+        <div class="mt-6">
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+              <mat-icon class="text-primary">category</mat-icon>
+              إدارة الفئات
+            </h2>
+            <button (click)="openAddCategory()"
+              class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all">
+              <mat-icon class="!text-base">add</mat-icon>
+              إضافة فئة
+            </button>
+          </div>
+
+          @if (categories().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">category</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد فئات</p>
+            </div>
+          }
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (cat of categories(); track cat.id) {
+              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-all flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  @if (cat.iconUrl) {
+                    <img [src]="cat.iconUrl" [alt]="cat.nameAr" class="w-10 h-10 rounded-xl object-cover" />
+                  } @else {
+                    <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+                      <mat-icon class="text-primary">category</mat-icon>
+                    </div>
+                  }
+                  <div>
+                    <p class="font-bold text-text-primary">{{ cat.nameAr || cat.name }}</p>
+                    <p class="text-xs text-text-secondary">{{ cat.name }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button (click)="openEditCategory(cat)" class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                    <mat-icon class="!text-base">edit</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── DELIVERY TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'delivery') {
+        <div class="mt-6">
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+              <mat-icon class="text-primary">local_shipping</mat-icon>
+              طرق التوصيل
+            </h2>
+            <button (click)="openAddDelivery()"
+              class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-all">
+              <mat-icon class="!text-base">add</mat-icon>
+              إضافة طريقة
+            </button>
+          </div>
+
+          @if (deliveryLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!deliveryLoading() && deliveryMethods().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">local_shipping</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد طرق توصيل</p>
+            </div>
+          }
+
+          @if (!deliveryLoading() && deliveryMethods().length > 0) {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (method of deliveryMethods(); track method.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all">
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+                        <mat-icon class="text-primary">local_shipping</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary">{{ method.shortName }}</p>
+                        <p class="text-xs text-text-secondary">{{ method.deliveryTime }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <button (click)="openEditDelivery(method)" class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-all">
+                        <mat-icon class="!text-base">edit</mat-icon>
+                      </button>
+                      <button (click)="confirmDeleteDelivery(method.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all">
+                        <mat-icon class="!text-base">delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="mt-3 pt-3 border-t border-gray-100">
+                    <p class="text-sm text-text-secondary">{{ method.description }}</p>
+                    <p class="text-lg font-bold text-primary mt-1">{{ formatPrice(method.cost) }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ── REVIEWS TAB ── -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+
+      @if (activeTab() === 'reviews') {
+        <div class="mt-6">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2 mb-5">
+            <mat-icon class="text-amber-500">star</mat-icon>
+            المراجعات بانتظار الموافقة ({{ pendingReviews().length }})
+          </h2>
+
+          @if (reviewsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!reviewsLoading() && pendingReviews().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">star</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد مراجعات بانتظار الموافقة</p>
+            </div>
+          }
+
+          @if (!reviewsLoading() && pendingReviews().length > 0) {
+            <div class="flex flex-col gap-4">
+              @for (review of pendingReviews(); track review.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-start gap-4 flex-1">
+                      <!-- Reviewer -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
+                          @if (review.reviewerImageUrl) {
+                            <img [src]="review.reviewerImageUrl" [alt]="review.reviewerName" class="w-full h-full object-cover" />
+                          } @else {
+                            <mat-icon class="!text-2xl text-gray-400">person</mat-icon>
+                          }
+                        </div>
+                        <div>
+                          <p class="text-sm font-bold text-text-primary">{{ review.reviewerName }}</p>
+                          <p class="text-xs text-text-secondary">مراجع</p>
+                        </div>
+                      </div>
+
+                      <!-- Arrow -->
+                      <mat-icon class="text-gray-300">arrow_forward</mat-icon>
+
+                      <!-- Target -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
+                          @if (review.targetImageUrl) {
+                            <img [src]="review.targetImageUrl" [alt]="review.targetName" class="w-full h-full object-cover" />
+                          } @else {
+                            <mat-icon class="!text-2xl text-gray-400">person</mat-icon>
+                          }
+                        </div>
+                        <div>
+                          <p class="text-sm font-bold text-text-primary">{{ review.targetName }}</p>
+                          <p class="text-xs text-text-secondary">المستهدف</p>
+                        </div>
+                      </div>
+
+                      <!-- Rating -->
+                      <div class="flex items-center gap-1 text-amber-500">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <mat-icon class="!text-base">{{ star <= review.rating ? 'star' : 'star_border' }}</mat-icon>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <button (click)="approveReview(review.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 transition-all">
+                        <mat-icon class="!text-base">check</mat-icon> قبول
+                      </button>
+                      <button (click)="deleteReview(review.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">delete</mat-icon> حذف
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Comment -->
+                  @if (review.comment) {
+                    <div class="mt-3 p-3 bg-gray-50 rounded-xl">
+                      <p class="text-sm text-text-primary">{{ review.comment }}</p>
+                    </div>
+                  }
+                  <p class="text-xs text-text-secondary mt-2">{{ formatDateTime(review.createdAt) }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- 🪟 MODALS -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+
+  <!-- ── Edit Profile Modal ── -->
+  @if (showEditModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">edit</mat-icon>
+            تعديل البروفايل
+          </h2>
+          <button (click)="showEditModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          @for (field of [
+            { key: 'name', label: 'الاسم', icon: 'badge' },
+            { key: 'email', label: 'البريد الإلكتروني', icon: 'email' },
+            { key: 'userName', label: 'اسم المستخدم', icon: 'person' },
+          ]; track field.key) {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">
+                {{ field.label }}
+              </label>
+              <input
+                [type]="field.key === 'email' ? 'email' : 'text'"
+                [value]="$any(editForm())[field.key]"
+                (input)="updateEditForm(field.key, $any($event.target).value)"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm" />
+            </div>
+          }
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProfile()" [disabled]="editLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (editLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            حفظ التغييرات
+          </button>
+          <button (click)="showEditModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── User Role Modal ── -->
+  @if (showUserRoleModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-purple-600">add_moderator</mat-icon>
+            إضافة دور
+          </h2>
+          <button (click)="showUserRoleModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الدور</label>
+            <select [ngModel]="userRoleForm().role" (ngModelChange)="userRoleForm.update(f => ({ ...f, role: $event }))"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 text-sm">
+              <option value="Farmer">مزارع</option>
+              <option value="Trader">تاجر</option>
+              <option value="Admin">أدمن</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveRole()" [disabled]="userRoleLoading()"
+            class="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (userRoleLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            إضافة
+          </button>
+          <button (click)="showUserRoleModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Product Status Modal ── -->
+  @if (showProductStatusModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-blue-600">swap_horiz</mat-icon>
+            تغيير حالة المنتج
+          </h2>
+          <button (click)="showProductStatusModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5">
+          <p class="text-sm text-text-secondary mb-3">المنتج: <span class="font-bold text-text-primary">{{ selectedProductForStatus()?.name }}</span></p>
+          <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الحالة الجديدة</label>
+          <select [ngModel]="productStatusForm().productStatus" (ngModelChange)="productStatusForm.update(f => ({ ...f, productStatus: +$event }))"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-sm">
+            <option [value]="0">مسودة</option>
+            <option [value]="1">نشط</option>
+            <option [value]="2">نفد</option>
+            <option [value]="3">مؤرشف</option>
+            <option [value]="5">تحت المراجعة</option>
+          </select>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProductStatus()" [disabled]="productStatusLoading()"
+            class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (productStatusLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            حفظ
+          </button>
+          <button (click)="showProductStatusModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Delete Product Modal ── -->
+  @if (deleteProductId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <mat-icon class="!text-3xl text-red-500">delete_forever</mat-icon>
+        </div>
+        <h2 class="text-lg font-bold text-text-primary mb-2">تأكيد الحذف</h2>
+        <p class="text-sm text-text-secondary mb-6">هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="flex gap-2">
+          <button (click)="deleteProduct()" [disabled]="deleteLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (deleteLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            نعم، احذف
+          </button>
+          <button (click)="deleteProductId.set(null)"
+            class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Order Details Modal ── -->
+  @if (showOrderDetailsModal() && selectedOrderDetails()) {
+    <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">receipt_long</mat-icon>
+            تفاصيل الطلب #{{ selectedOrderId() }}
+          </h2>
+          <button (click)="closeOrderDetails()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        @if (orderDetailsLoading()) {
+          <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+        } @else {
+          @let order = selectedOrderDetails();
+          <div class="p-5 space-y-4">
+            <!-- Order Info -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <p class="text-xs text-text-secondary">المشتري</p>
+                <p class="font-bold text-text-primary">{{ order.buyerName }}</p>
+                <p class="text-xs text-text-secondary">{{ order.buyerEmail }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">الحالة</p>
+                @let oStatus = getOrderStatus(order.status);
+                <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                  <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                  {{ oStatus.label }}
+                </span>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">الإجمالي</p>
+                <p class="font-bold text-primary text-lg">{{ formatPrice(order.total) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">تاريخ الطلب</p>
+                <p class="font-bold text-text-primary text-sm">{{ formatDateTime(order.orderDate) }}</p>
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div>
+              <h3 class="font-bold text-text-primary mb-3">المنتجات</h3>
+              <div class="space-y-2">
+                @for (item of order.items; track item.productId) {
+                  <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+                    <div class="flex items-center gap-3">
+                      <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'"
+                        [alt]="item.productName"
+                        class="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      <div>
+                        <p class="font-bold text-text-primary">{{ item.productName }}</p>
+                        <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}</p>
+                      </div>
+                    </div>
+                    <p class="font-bold text-primary">{{ formatPrice(item.subtotal) }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Delivery Method -->
+            @if (order.deliveryMethod) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-cyan-600">local_shipping</mat-icon>
+                  طريقة التوصيل
+                </h3>
+                <div class="bg-cyan-50 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <p class="font-bold text-text-primary">{{ order.deliveryMethod.shortName }}</p>
+                    <p class="text-xs text-text-secondary">{{ order.deliveryMethod.deliveryTime }}</p>
+                    <p class="text-xs text-text-secondary">{{ order.deliveryMethod.description }}</p>
+                  </div>
+                  <p class="font-bold text-primary">{{ formatPrice(order.deliveryMethod.cost) }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- Logistics -->
+            @if (order.logistics) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-purple-600">inventory</mat-icon>
+                  اللوجستكس
+                </h3>
+                <div class="bg-purple-50 rounded-xl p-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-text-secondary">الحالة</span>
+                    @let lStatus = getLogisticsStatus(order.logistics.status);
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="lStatus.bgClass + ' ' + lStatus.textClass">
+                      {{ lStatus.label }}
+                    </span>
+                  </div>
+                  @if (order.logistics.driverName) {
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">السائق</span>
+                      <span class="text-sm font-bold text-text-primary">{{ order.logistics.driverName }} ({{ order.logistics.driverPhone }})</span>
+                    </div>
+                  }
+                  @if (order.logistics.estimatedDelivery) {
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">التوصيل المتوقع</span>
+                      <span class="text-sm font-bold text-text-primary">{{ formatDateTime(order.logistics.estimatedDelivery) }}</span>
+                    </div>
+                  }
+                  @if (order.logistics.notes) {
+                    <p class="text-xs text-text-secondary mt-1">{{ order.logistics.notes }}</p>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Payments -->
+            @if (selectedOrderPayments().length > 0) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-green-600">payments</mat-icon>
+                  المدفوعات
+                </h3>
+                <div class="space-y-2">
+                  @for (payment of selectedOrderPayments(); track payment.id) {
+                    <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                      <div>
+                        <p class="font-bold text-text-primary">{{ formatPrice(payment.amount) }}</p>
+                        <p class="text-xs text-text-secondary">{{ formatDateTime(payment.paidAt || payment.createdAt) }}</p>
+                      </div>
+                      @let pStatus = getPaymentStatus(payment.status);
+                      <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="pStatus.bgClass + ' ' + pStatus.textClass">
+                        {{ pStatus.label }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="flex gap-2 pt-4 border-t border-gray-100">
+              @if (order.status === 'Pending') {
+                <button (click)="changeOrderStatus(order.id, 1)" class="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all">
+                  قبول الطلب
+                </button>
+                <button (click)="changeOrderStatus(order.id, 7)" class="flex-1 py-2.5 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-all">
+                  رفض
+                </button>
+              }
+              @if (order.status === 'Confirmed') {
+                <button (click)="changeOrderStatus(order.id, 2)" class="flex-1 py-2.5 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-all">
+                  بدء التحضير
+                </button>
+              }
+              @if (order.status === 'Preparing') {
+                <button (click)="changeOrderStatus(order.id, 3)" class="flex-1 py-2.5 bg-cyan-500 text-white rounded-xl font-bold hover:bg-cyan-600 transition-all">
+                  جاهز للشحن
+                </button>
+              }
+              @if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Rejected') {
+                <button (click)="openCancelOrder(order.id)" class="flex-1 py-2.5 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-all">
+                  إلغاء الطلب
+                </button>
+              }
+              <button (click)="closeOrderDetails()" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+                إغلاق
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Cancel Order Modal ── -->
+  @if (cancelOrderId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <mat-icon class="!text-3xl text-red-500">warning</mat-icon>
+        </div>
+        <h2 class="text-lg font-bold text-text-primary mb-2">تأكيد إلغاء الطلب</h2>
+        <p class="text-sm text-text-secondary mb-6">هل أنت متأكد من إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="flex gap-2">
+          <button (click)="confirmCancelOrder()" [disabled]="cancelOrderLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (cancelOrderLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            نعم، ألغِ
+          </button>
+          <button (click)="cancelOrderId.set(null)"
+            class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Payment Status Modal ── -->
+  @if (showPaymentStatusModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-green-600">payments</mat-icon>
+            تغيير حالة الدفع
+          </h2>
+          <button (click)="showPaymentStatusModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5">
+          <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الحالة الجديدة</label>
+          <select [ngModel]="paymentStatusForm().status" (ngModelChange)="paymentStatusForm.update(f => ({ ...f, status: +$event }))"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 text-sm">
+            <option [value]="0">غير مدفوع</option>
+            <option [value]="1">مدفوع</option>
+            <option [value]="2">مسترد</option>
+            <option [value]="3">فاشل</option>
+          </select>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="savePaymentStatus()" [disabled]="paymentStatusLoading()"
+            class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (paymentStatusLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            حفظ
+          </button>
+          <button (click)="showPaymentStatusModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Delete Auction Modal ── -->
+  @if (deleteAuctionId()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <mat-icon class="!text-3xl text-red-500">delete_forever</mat-icon>
+        </div>
+        <h2 class="text-lg font-bold text-text-primary mb-2">تأكيد حذف المزاد</h2>
+        <p class="text-sm text-text-secondary mb-6">هل أنت متأكد من حذف هذا المزاد؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        <div class="flex gap-2">
+          <button (click)="deleteAuction()" [disabled]="deleteAuctionLoading()"
+            class="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (deleteAuctionLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            نعم، احذف
+          </button>
+          <button (click)="deleteAuctionId.set(null)"
+            class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Category Modal ── -->
+  @if (showCategoryModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">{{ categoryModalMode() === 'add' ? 'add' : 'edit' }}</mat-icon>
+            {{ categoryModalMode() === 'add' ? 'إضافة فئة' : 'تعديل الفئة' }}
+          </h2>
+          <button (click)="showCategoryModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الاسم (عربي) *</label>
+            <input type="text" [value]="categoryForm().nameAr"
+              (input)="categoryForm.update(f => ({ ...f, nameAr: $any($event.target).value }))"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الاسم (إنجليزي) *</label>
+            <input type="text" [value]="categoryForm().name"
+              (input)="categoryForm.update(f => ({ ...f, name: $any($event.target).value }))"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveCategory()" [disabled]="categoryLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (categoryLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            {{ categoryModalMode() === 'add' ? 'إضافة' : 'حفظ' }}
+          </button>
+          <button (click)="showCategoryModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Delivery Method Modal ── -->
+  @if (showDeliveryModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">{{ deliveryModalMode() === 'add' ? 'add' : 'edit' }}</mat-icon>
+            {{ deliveryModalMode() === 'add' ? 'إضافة طريقة توصيل' : 'تعديل طريقة التوصيل' }}
+          </h2>
+          <button (click)="showDeliveryModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الاسم المختصر *</label>
+            <input type="text" [value]="deliveryForm().shortName"
+              (input)="deliveryForm.update(f => ({ ...f, shortName: $any($event.target).value }))"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الوصف</label>
+            <input type="text" [value]="deliveryForm().description"
+              (input)="deliveryForm.update(f => ({ ...f, description: $any($event.target).value }))"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">وقت التوصيل *</label>
+            <input type="text" [value]="deliveryForm().deliveryTime"
+              (input)="deliveryForm.update(f => ({ ...f, deliveryTime: $any($event.target).value }))"
+              placeholder="مثال: 2-3 أيام"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">التكلفة *</label>
+            <input type="number" [value]="deliveryForm().cost"
+              (input)="deliveryForm.update(f => ({ ...f, cost: +$any($event.target).value }))"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm" />
+          </div>
+        </div>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveDelivery()" [disabled]="deliverySubmitLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (deliverySubmitLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            {{ deliveryModalMode() === 'add' ? 'إضافة' : 'حفظ' }}
+          </button>
+          <button (click)="showDeliveryModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

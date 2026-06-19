@@ -67,7 +67,6 @@ export class Register implements OnDestroy {
   }
 
   onSubmit(form: NgForm): void {
-    // مسح رسائل الخطأ السابقة
     this.errorMessage = '';
     this.locationError = '';
     
