@@ -754,8 +754,8 @@ export class FarmerProfileService {
     return this.http.patch<ApiResponse<string>>(`${BaseUrl.url}api/Products/${productId}/images/${imageId}/set-main`, {})
   }
 
-  deleteImage(productId: number, imageId: number): Observable<ApiResponse<string>> {
-    return this.http.delete<ApiResponse<string>>(`${BaseUrl.url}api/Products/${productId}/images/${imageId}`)
+  deleteImage(productId: number, image: string): Observable<ApiResponse<string>> {
+    return this.http.delete<ApiResponse<string>>(`${BaseUrl.url}api/Products/${productId}/images/${image}`)
   }
 
   editProfileImage(form:any):Observable<any>
@@ -763,5 +763,61 @@ export class FarmerProfileService {
     // request body
     // Image 
     return this.http.put(`${BaseUrl.url}api/Users/profiles/images`,form)
+  }
+
+
+  getOrderDetails(orderId:any):Observable<any>
+  {
+
+    /**
+     * {
+  "isSuccess": true,
+  "message": "string",
+  "data": {
+    "id": 0,
+    "buyerName": "string",
+    "buyerId": "string",
+    "buyerEmail": "string",
+    "orderDate": "2026-06-19T14:14:53.106Z",
+    "total": 0,
+    "status": "string",
+    "notes": "string",
+    "deliveryMethod": {
+      "id": 0,
+      "shortName": "string",
+      "description": "string",
+      "cost": 0,
+      "deliveryTime": "string"
+    },
+    "items": [
+      {
+        "productId": 0,
+        "productName": "string",
+        "mainImageUrl": "string",
+        "quantity": 0,
+        "unit": "string",
+        "unitPriceAtOrder": 0,
+        "subtotal": 0
+      }
+    ],
+    "logistics": {
+      "logisticsId": 0,
+      "logisticsStatus": "string",
+      "estimatedDelivery": "2026-06-19T14:14:53.106Z",
+      "notes": "string"
+    },
+    "payment": {
+      "id": 0,
+      "paymentStatus": "string",
+      "paymentMethod": "string",
+      "paymentIntentId": "string"
+    }
+  },
+  "errors": [
+    "string"
+  ]
+}
+     */
+    return this.http.get(`${BaseUrl.url}api/Orders/${orderId}`)
   }
 }

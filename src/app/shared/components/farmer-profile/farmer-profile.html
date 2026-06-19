@@ -1,4 +1,4 @@
-<div class="profile-page min-h-screen bg-background" dir="rtl">
+<div class="profile-page min-h-screen bg-background mb-6" dir="rtl">
 
   <!-- ════ PROFILE HEADER ════ -->
   @if (profileLoading()) {
@@ -23,7 +23,7 @@
             <!-- Avatar -->
             <div class="relative -mt-16 sm:-mt-20 flex-shrink-0">
               <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-accent flex items-center justify-center">
-                @if (p.profileImageUrl && p.profileImageUrl !== 'https://t3awuny.runasp.net') {
+                @if (p.profileImageUrl && p.profileImageUrl) {
                   <img [src]="p.profileImageUrl" [alt]="p.name" class="w-full h-full object-cover" />
                 } @else {
                   <mat-icon class="!text-5xl text-primary">person</mat-icon>
@@ -287,7 +287,8 @@
                 [pageSizeOptions]="[8, 16, 32]"
                 (page)="onProductsPage($event)"
                 showFirstLastButtons
-                class="rounded-2xl border border-gray-100 shadow-sm bg-white">
+                dir="ltr"
+                class="rounded-2xl border">
               </mat-paginator>
             </div>
           }
@@ -377,19 +378,27 @@
                         class="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white rounded-xl text-sm font-bold hover:bg-purple-600 transition-all">
                         <mat-icon class="!text-base">inventory</mat-icon> بدء التحضير
                       </button>
+                      <button (click)="openCancelOrder(order.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">cancel</mat-icon> إلغاء الطلب
+                      </button>
                     }
                     @if (order.status === 'Preparing') {
                       <button (click)="changeOrderStatus(order.id, 3)"
                         class="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-bold hover:bg-cyan-600 transition-all">
                         <mat-icon class="!text-base">local_shipping</mat-icon> جاهز للشحن
                       </button>
+                      <button (click)="openCancelOrder(order.id)"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all">
+                        <mat-icon class="!text-base">cancel</mat-icon> إلغاء الطلب
+                      </button>
                     }
                     <button (click)="viewOrderDetails(order.id)"
                       class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-text-secondary rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">
-                      <mat-icon class="!text-base">visibility</mat-icon> تفاصيل الدفع
+                      <mat-icon class="!text-base">visibility</mat-icon> تفاصيل الطلب
                     </button>
                     <span class="mr-auto text-xs text-gray-400 flex items-center gap-1">
-                      <mat-icon class="!text-xs">payments</mat-icon> {{ order.paymentStatus }}
+                      <mat-icon class="!text-xs">payments</mat-icon> {{ getPaymentStatus(order.paymentStatus) }}
                     </span>
                   </div>
                 </div>
@@ -593,14 +602,16 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الفئة *</label>
-              <select [ngModel]="productForm().categoryId"
-                (ngModelChange)="updateProductForm('categoryId', $event)"
-                class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm">
-                <option [value]="null">اختر الفئة</option>
+              <mat-select
+                [value]="productForm().categoryId"
+                (valueChange)="updateProductForm('categoryId', $event)"
+                class="w-full rounded-xl border border-gray-200 p-2 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm"
+                placeholder="اختر الفئة">
+                <mat-option [value]="null">اختر الفئة</mat-option>
                 @for (cat of categories(); track cat.id) {
-                  <option [value]="cat.id">{{ cat.nameAr || cat.name }}</option>
+                  <mat-option [value]="cat.id">{{ cat.nameAr || cat.name }}</mat-option>
                 }
-              </select>
+              </mat-select>
             </div>
             <div>
               <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الوحدة</label>
@@ -740,11 +751,11 @@
                     <img [src]="img" [alt]="product?.name" class="w-full h-full object-cover" />
                     <!-- Delete button -->
                     <button 
-                      (click)="deleteProductImage(product?.id, $index)" 
-                      [disabled]="deletingImageId() === $index"
+                      (click)="deleteProductImage(product?.id, img)" 
+                      [disabled]="deletingImageId() === img"
                       class="absolute top-1 left-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600 disabled:opacity-50"
                       matTooltip="حذف الصورة">
-                      @if (deletingImageId() === $index) {
+                      @if (deletingImageId() === img) {
                         <mat-spinner [diameter]="14" color="accent"></mat-spinner>
                       } @else {
                         <mat-icon class="!text-xs">close</mat-icon>
@@ -911,6 +922,8 @@
   @if (showOrderDetailsModal() && selectedOrderId()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        
+        <!-- Header -->
         <div class="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
             <mat-icon class="text-primary">receipt_long</mat-icon>
@@ -922,83 +935,187 @@
         </div>
         
         @if (orderDetailsLoading()) {
-          <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          <div class="flex justify-center py-16">
+            <mat-spinner [diameter]="40"></mat-spinner>
+          </div>
         } @else {
           <div class="p-5 space-y-4">
-            <!-- Payments -->
-            @if (selectedOrderPayments().length > 0) {
+            
+            <!-- ===== معلومات الطلب الأساسية ===== -->
+            @if (selectedOrder()) {
+              <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
+                <div>
+                  <p class="text-xs text-text-secondary">رقم الطلب</p>
+                  <p class="font-bold text-text-primary">#{{ selectedOrder()?.id }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary">حالة الطلب</p>
+                  @let status = getOrderStatus(selectedOrder()?.status);
+                  <span class="flex items-center w-fit gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                    [class]="status.bgClass + ' ' + status.textClass">
+                    <mat-icon class="!text-xs">{{ status.icon }}</mat-icon>
+                    {{ status.label }}
+                  </span>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary">المشتري</p>
+                  <p class="font-bold text-text-primary">{{ selectedOrder()?.buyerName }}</p>
+                  <p class="text-xs text-text-secondary">{{ selectedOrder()?.buyerEmail }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary">تاريخ الطلب</p>
+                  <p class="font-bold text-text-primary">{{ formatDateTime(selectedOrder()?.orderDate) }}</p>
+                </div>
+                <div class="col-span-2">
+                  <p class="text-xs text-text-secondary">الإجمالي</p>
+                  <p class="font-bold text-primary text-lg">{{ formatPrice(selectedOrder()?.total) }}</p>
+                </div>
+                @if (selectedOrder()?.notes) {
+                  <div class="col-span-2">
+                    <p class="text-xs text-text-secondary">ملاحظات</p>
+                    <p class="text-text-primary text-sm">{{ selectedOrder()?.notes }}</p>
+                  </div>
+                }
+              </div>
+            }
+            
+            <!-- ===== عناصر الطلب (Items) ===== -->
+            @if (selectedOrder()?.items && selectedOrder().items.length > 0) {
               <div>
                 <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
-                  <mat-icon class="text-primary">payments</mat-icon>
-                  المدفوعات
+                  <mat-icon class="text-primary">shopping_bag</mat-icon>
+                  المنتجات ({{ selectedOrder().items.length }})
                 </h3>
                 <div class="space-y-2">
-                  @for (payment of selectedOrderPayments(); track payment.id) {
-                    <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-bold text-text-primary">{{ formatPrice(payment.amount) }}</p>
-                        <p class="text-xs text-text-secondary">{{ formatDateTime(payment.paidAt) }}</p>
+                  @for (item of selectedOrder().items; track item.productId) {
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition-colors">
+                      <img 
+                        [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'" 
+                        [alt]="item.productName"
+                        class="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                        onerror="this.src='https://placehold.co/60x60?text=صورة'" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-text-primary">{{ item.productName }}</p>
+                        <p class="text-xs text-text-secondary">
+                          {{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}
+                        </p>
                       </div>
-                      <span class="px-2 py-1 rounded-full text-xs font-bold"
-                        [class.bg-green-50]="payment.status === 2"
-                        [class.text-green-700]="payment.status === 2"
-                        [class.bg-yellow-50]="payment.status === 0"
-                        [class.text-yellow-700]="payment.status === 0"
-                        [class.bg-red-50]="payment.status === 1"
-                        [class.text-red-600]="payment.status === 1">
-                        {{ payment.status === 0 ? 'معلق' : payment.status === 1 ? 'فاشل' : 'ناجح' }}
-                      </span>
+                      <div class="text-left">
+                        <p class="text-sm font-bold text-primary">{{ formatPrice(item.subtotal) }}</p>
+                      </div>
                     </div>
                   }
                 </div>
               </div>
             }
             
-            <!-- No payments -->
-            @if (selectedOrderPayments().length === 0) {
-              <div class="text-center py-8">
-                <mat-icon class="!text-4xl text-gray-300">payments</mat-icon>
-                <p class="text-text-secondary mt-2">لا توجد مدفوعات لهذا الطلب</p>
-              </div>
-            }
-            @if (deliveryMethod()) {
-              <div class="mt-4 p-4 bg-gray-50 rounded-xl">
-                <h3 class="font-bold text-text-primary mb-2 flex items-center gap-2">
-                  <mat-icon class="text-primary">local_shipping</mat-icon>
-                  طريقة التوصيل
+            <!-- ===== المدفوعات (Payment) ===== -->
+            @if (selectedOrder()?.payment) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">payments</mat-icon>
+                  معلومات الدفع
                 </h3>
-                <div class="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <p class="text-xs text-text-secondary">الاسم</p>
-                    <p class="font-bold">{{ deliveryMethod()?.shortName }}</p>
-                  </div>
-                  <div>
-                    <p class="text-xs text-text-secondary">التكلفة</p>
-                    <p class="font-bold text-primary">{{ formatPrice(deliveryMethod()?.cost) }}</p>
-                  </div>
-                  <div class="col-span-2">
-                    <p class="text-xs text-text-secondary">وقت التوصيل</p>
-                    <p class="font-bold">{{ deliveryMethod()?.deliveryTime || '—' }}</p>
-                  </div>
-                  @if (deliveryMethod()?.description) {
-                    <div class="col-span-2">
-                      <p class="text-xs text-text-secondary">الوصف</p>
-                      <p class="text-text-primary text-sm">{{ deliveryMethod()?.description }}</p>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-text-secondary">حالة الدفع</p>
+                      <p class="font-bold" 
+                        [class.text-green-600]="selectedOrder().payment.paymentStatus === 1"
+                        [class.text-yellow-600]="selectedOrder().payment.paymentStatus === 0"
+                        [class.text-red-600]="selectedOrder().payment.paymentStatus === 3">
+                        {{ getPaymentStatus(selectedOrder().payment.paymentStatus) }}
+                      </p>
                     </div>
-                  }
+                    <div>
+                      <p class="text-xs text-text-secondary">طريقة الدفع</p>
+                      <p class="font-bold text-text-primary">{{ getPaymentMethod(selectedOrder().payment.paymentMethod) }}</p>
+                    </div>
+                    @if (selectedOrder().payment.paymentIntentId) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">رقم المعاملة</p>
+                        <p class="font-bold text-text-primary text-sm">{{ selectedOrder().payment.paymentIntentId }}</p>
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             }
+            
+            <!-- ===== الشحن واللوجستيات (Logistics) ===== -->
+            @if (selectedOrder()?.logistics) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">local_shipping</mat-icon>
+                  معلومات الشحن
+                </h3>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-text-secondary">حالة الشحن</p>
+                      <p class="font-bold text-text-primary">{{ getLogisticsStatus(selectedOrder().logistics.logisticsStatus) }}</p>
+                    </div>
+                    @if (selectedOrder().logistics.estimatedDelivery) {
+                      <div>
+                        <p class="text-xs text-text-secondary">تاريخ التسليم المتوقع</p>
+                        <p class="font-bold text-text-primary">{{ formatDateTime(selectedOrder().logistics.estimatedDelivery) }}</p>
+                      </div>
+                    }
+                    @if (selectedOrder().logistics.notes) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">ملاحظات الشحن</p>
+                        <p class="text-text-primary text-sm">{{ selectedOrder().logistics.notes }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+            
+            <!-- ===== طريقة التوصيل (Delivery Method) ===== -->
+            @if (selectedOrder()?.deliveryMethod) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">delivery_dining</mat-icon>
+                  طريقة التوصيل
+                </h3>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-text-secondary">الاسم</p>
+                      <p class="font-bold text-text-primary">{{ selectedOrder().deliveryMethod.shortName || selectedOrder().deliveryMethod.name }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-text-secondary">التكلفة</p>
+                      <p class="font-bold text-primary">{{ formatPrice(selectedOrder().deliveryMethod.cost) }}</p>
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-xs text-text-secondary">وقت التوصيل</p>
+                      <p class="font-bold text-text-primary">{{ selectedOrder().deliveryMethod.deliveryTime || '—' }}</p>
+                    </div>
+                    @if (selectedOrder().deliveryMethod.description) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">الوصف</p>
+                        <p class="text-text-primary text-sm">{{ selectedOrder().deliveryMethod.description }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+            
+            <!-- ===== زر الإغلاق ===== -->
             <button (click)="closeOrderDetails()"
               class="w-full py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
               إغلاق
             </button>
+            
           </div>
         }
+        
       </div>
     </div>
   }
-
   <!-- Create Auction Modal -->
   @if (showCreateAuctionModal()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">

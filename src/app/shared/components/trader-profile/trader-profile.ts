@@ -1,4 +1,3 @@
-// trader-profile.ts
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSelectModule } from '@angular/material/select';
+import { ToastrService } from 'ngx-toastr';
 import { TraderProfileService } from '../../../core/services/trader-profile/trader-profile-service';
 
 type ActiveTab = 'overview' | 'orders' | 'auctions';
@@ -22,16 +22,21 @@ const ORDER_STATUS_MAP: Record<string, { label: string; bgClass: string; textCla
   Confirmed:      { label: 'مؤكد',          bgClass: 'bg-blue-50',   textClass: 'text-blue-700',   icon: 'check'          },
   Preparing:      { label: 'قيد التحضير',   bgClass: 'bg-purple-50', textClass: 'text-purple-700', icon: 'inventory'      },
   ReadyForPickup: { label: 'جاهز للاستلام', bgClass: 'bg-cyan-50',   textClass: 'text-cyan-700',   icon: 'local_shipping' },
+  InDelivery:     { label: 'قيد التوصيل',   bgClass: 'bg-orange-50', textClass: 'text-orange-700', icon: 'local_shipping' },
   Delivered:      { label: 'تم التوصيل',    bgClass: 'bg-green-50',  textClass: 'text-green-700',  icon: 'done_all'       },
   Cancelled:      { label: 'ملغي',          bgClass: 'bg-gray-100',  textClass: 'text-gray-500',   icon: 'cancel'         },
   Rejected:       { label: 'مرفوض',         bgClass: 'bg-red-50',    textClass: 'text-red-600',    icon: 'block'          },
 };
 
 const PAYMENT_STATUS_MAP: Record<string, { label: string; bgClass: string; textClass: string }> = {
-  Pending:   { label: 'قيد الانتظار', bgClass: 'bg-yellow-50', textClass: 'text-yellow-700' },
-  Paid:      { label: 'مدفوع',        bgClass: 'bg-green-50',  textClass: 'text-green-700'  },
-  Failed:    { label: 'فشل',          bgClass: 'bg-red-50',    textClass: 'text-red-600'    },
-  Refunded:  { label: 'مسترد',        bgClass: 'bg-gray-100',  textClass: 'text-gray-500'   },
+  'Pending':   { label: 'قيد الانتظار', bgClass: 'bg-yellow-50', textClass: 'text-yellow-700' },
+  'Paid':      { label: 'مدفوع',        bgClass: 'bg-green-50',  textClass: 'text-green-700'  },
+  'Failed':    { label: 'فشل',          bgClass: 'bg-red-50',    textClass: 'text-red-600'    },
+  'Refunded':  { label: 'مسترد',        bgClass: 'bg-gray-100',  textClass: 'text-gray-500'   },
+  '0':         { label: 'قيد الانتظار', bgClass: 'bg-yellow-50', textClass: 'text-yellow-700' },
+  '1':         { label: 'مدفوع',        bgClass: 'bg-green-50',  textClass: 'text-green-700'  },
+  '2':         { label: 'مسترد',        bgClass: 'bg-gray-100',  textClass: 'text-gray-500'   },
+  '3':         { label: 'فشل',          bgClass: 'bg-red-50',    textClass: 'text-red-600'    },
 };
 
 const BUSINESS_TYPES: Record<number, string> = {
@@ -51,7 +56,7 @@ const BUSINESS_TYPES: Record<number, string> = {
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatSnackBarModule,
+    MatSelectModule,
   ],
   templateUrl: './trader-profile.html',
   styleUrls: ['./trader-profile.scss'],
@@ -59,7 +64,7 @@ const BUSINESS_TYPES: Record<number, string> = {
 })
 export class TraderProfile implements OnInit {
   private traderService = inject(TraderProfileService);
-  private snackBar = inject(MatSnackBar);
+  private toastr = inject(ToastrService);
 
   // ── Active Tab ──────────────────────────────────────────
   activeTab = signal<ActiveTab>('overview');
@@ -111,8 +116,12 @@ export class TraderProfile implements OnInit {
   // ── Tab Navigation ───────────────────────────────────────
   setTab(tab: ActiveTab): void {
     this.activeTab.set(tab);
-    if (tab === 'orders' && this.orders().length === 0) this.loadOrders();
-    if (tab === 'auctions' && this.auctions().length === 0) this.loadAuctions();
+    if (tab === 'orders' && this.orders().length === 0 && !this.ordersLoading()) {
+      this.loadOrders();
+    }
+    if (tab === 'auctions' && this.auctions().length === 0 && !this.auctionsLoading()) {
+      this.loadAuctions();
+    }
   }
 
   // ── Profile ─────────────────────────────────────────────
@@ -132,11 +141,13 @@ export class TraderProfile implements OnInit {
           });
         } else {
           this.profileError.set(res?.message ?? 'خطأ في تحميل البروفايل');
+          this.toastr.error(res?.message ?? 'خطأ في تحميل البروفايل', 'خطأ');
         }
         this.profileLoading.set(false);
       },
       error: () => {
         this.profileError.set('تعذّر الاتصال بالخادم');
+        this.toastr.error('تعذّر الاتصال بالخادم', 'خطأ');
         this.profileLoading.set(false);
       },
     });
@@ -165,18 +176,23 @@ export class TraderProfile implements OnInit {
       description: form['description'],
     };
 
+    console.log(payload);
     this.traderService.updateMyTraderProfile(payload).subscribe({
+      
       next: (res) => {
         if (res?.isSuccess) {
           this.profile.set(res.data);
           this.showEditModal.set(false);
-          this.notify('✅ تم حفظ البروفايل بنجاح');
+          this.toastr.success('تم حفظ البروفايل بنجاح', 'نجاح');
         } else {
-          this.notify(res?.message ?? 'حدث خطأ', true);
+          this.toastr.error(res?.message ?? 'حدث خطأ', 'خطأ');
         }
         this.editLoading.set(false);
       },
-      error: () => { this.notify('تعذّر الحفظ', true); this.editLoading.set(false); },
+      error: () => { 
+        this.toastr.error('تعذّر الحفظ', 'خطأ'); 
+        this.editLoading.set(false); 
+      },
     });
   }
 
@@ -188,12 +204,23 @@ export class TraderProfile implements OnInit {
     formData.append('Image', file);
     this.traderService.updateProfileImage(formData).subscribe({
       next: (res) => {
-        if (res?.isSuccess) { this.loadProfile(); this.notify('✅ تم تحديث الصورة'); }
-        else this.notify(res?.message ?? 'فشل رفع الصورة', true);
+        if (res?.isSuccess) { 
+          this.loadProfile(); 
+          this.toastr.success('تم تحديث الصورة', 'نجاح'); 
+        } else {
+          this.toastr.error(res?.message ?? 'فشل رفع الصورة', 'خطأ');
+        }
         this.profileImageLoading.set(false);
       },
-      error: () => { this.notify('فشل رفع الصورة', true); this.profileImageLoading.set(false); },
+      error: () => { 
+        this.toastr.error('فشل رفع الصورة', 'خطأ'); 
+        this.profileImageLoading.set(false); 
+      },
     });
+  }
+
+  updateEditForm(field: string, value: any): void {
+    this.editForm.update(f => ({ ...f, [field]: value }));
   }
 
   // ── Orders ───────────────────────────────────────────────
@@ -201,23 +228,38 @@ export class TraderProfile implements OnInit {
     this.ordersLoading.set(true);
     this.traderService.getMyOrders().subscribe({
       next: (res) => {
-        if (res?.isSuccess) this.orders.set(res.data);
+        if (res?.isSuccess) {
+          console.log(res);
+          
+          this.orders.set(res.data);
+        } else {
+          this.toastr.error(res?.message ?? 'فشل تحميل الطلبات', 'خطأ');
+        }
         this.ordersLoading.set(false);
       },
-      error: () => this.ordersLoading.set(false),
+      error: () => {
+        this.toastr.error('فشل تحميل الطلبات', 'خطأ');
+        this.ordersLoading.set(false);
+      },
     });
   }
 
   cancelOrder(id: number): void {
-    if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) return;
     this.orderActionLoading.set(true);
     this.traderService.cancelOrder(id).subscribe({
       next: (res) => {
-        if (res?.isSuccess) { this.loadOrders(); this.notify('✅ تم إلغاء الطلب'); }
-        else this.notify(res?.message ?? 'فشل الإلغاء', true);
+        if (res?.isSuccess) { 
+          this.loadOrders(); 
+          this.toastr.success('تم إلغاء الطلب', 'نجاح'); 
+        } else {
+          this.toastr.error(res?.message ?? 'فشل الإلغاء', 'خطأ');
+        }
         this.orderActionLoading.set(false);
       },
-      error: () => { this.notify('فشل الإلغاء', true); this.orderActionLoading.set(false); },
+      error: () => { 
+        this.toastr.error('فشل الإلغاء', 'خطأ'); 
+        this.orderActionLoading.set(false); 
+      },
     });
   }
 
@@ -234,12 +276,12 @@ export class TraderProfile implements OnInit {
         if (res?.isSuccess) {
           this.selectedOrder.set(res.data);
         } else {
-          this.notify(res?.message ?? 'فشل تحميل تفاصيل الطلب', true);
+          this.toastr.error(res?.message ?? 'فشل تحميل تفاصيل الطلب', 'خطأ');
         }
         this.orderDetailsLoading.set(false);
       },
       error: () => {
-        this.notify('فشل تحميل تفاصيل الطلب', true);
+        this.toastr.error('فشل تحميل تفاصيل الطلب', 'خطأ');
         this.orderDetailsLoading.set(false);
       },
     });
@@ -269,25 +311,49 @@ export class TraderProfile implements OnInit {
     });
   }
 
+  closeOrderDetails(): void {
+    this.showOrderDetails.set(false);
+    this.selectedOrder.set(null);
+    this.selectedOrderLogistics.set(null);
+    this.selectedOrderPayments.set([]);
+  }
+
   // ── Auctions ─────────────────────────────────────────────
   loadAuctions(): void {
     this.auctionsLoading.set(true);
     this.traderService.getMyWinningAuctions().subscribe({
       next: (res) => {
-        if (res?.isSuccess) this.auctions.set(res.data);
+        if (res?.isSuccess) {
+          this.auctions.set(res.data);
+        } else {
+          this.toastr.error(res?.message ?? 'فشل تحميل المزادات', 'خطأ');
+        }
         this.auctionsLoading.set(false);
       },
-      error: () => this.auctionsLoading.set(false),
+      error: () => {
+        this.toastr.error('فشل تحميل المزادات', 'خطأ');
+        this.auctionsLoading.set(false);
+      },
     });
   }
 
   // ── Helpers ──────────────────────────────────────────────
   getOrderStatus(status: string) {
-    return ORDER_STATUS_MAP[status] ?? { label: status, bgClass: 'bg-gray-100', textClass: 'text-gray-500', icon: 'info' };
+    return ORDER_STATUS_MAP[status] ?? { 
+      label: status, 
+      bgClass: 'bg-gray-100', 
+      textClass: 'text-gray-500', 
+      icon: 'info' 
+    };
   }
 
-  getPaymentStatus(status: string) {
-    return PAYMENT_STATUS_MAP[status] ?? { label: status, bgClass: 'bg-gray-100', textClass: 'text-gray-500' };
+  getPaymentStatus(status: string | number) {
+    const key = String(status);
+    return PAYMENT_STATUS_MAP[key] ?? { 
+      label: key || 'غير معروف', 
+      bgClass: 'bg-gray-100', 
+      textClass: 'text-gray-500' 
+    };
   }
 
   getBusinessType(type: number): string {
@@ -296,40 +362,52 @@ export class TraderProfile implements OnInit {
 
   getPaymentMethod(method: number): string {
     const methods: Record<number, string> = {
-      0: 'غير محدد',
-      1: 'بطاقة ائتمان',
-      2: 'تحويل بنكي',
-      3: 'محفظة رقمية',
-      4: 'الدفع عند الاستلام',
+      0: 'كاش',
+      1: 'تحويل بنكي',
+      2: 'محفظة رقمية',
+      3: 'بطاقة ائتمان',
     };
-    return methods[method] || 'غير محدد';
+    return methods[method] || 'طريقة غير معروفة';
+  }
+
+  getLogisticsStatus(status: number): string {
+    const statusMap: Record<number, string> = {
+      0: 'غير مجدول',
+      1: 'تمت الجدولة',
+      2: 'تم الاستلام',
+      3: 'قيد النقل',
+      4: 'تم التسليم',
+      5: 'فشل التوصيل'
+    };
+    return statusMap[status];
   }
 
   formatPrice(price: number): string {
     if (!price && price !== 0) return '—';
-    return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('ar-EG', { 
+      style: 'currency', 
+      currency: 'EGP', 
+      maximumFractionDigits: 0 
+    }).format(price);
   }
 
   formatDate(date: string): string {
     if (!date) return '—';
-    return new Date(date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(date).toLocaleDateString('ar-EG', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   }
 
   formatDateTime(date: string): string {
     if (!date) return '—';
-    return new Date(date).toLocaleString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  }
-
-  private notify(msg: string, isError = false): void {
-    this.snackBar.open(msg, 'إغلاق', {
-      duration: 3000,
-      panelClass: isError ? ['snack-error'] : ['snack-success'],
-      horizontalPosition: 'center',
-      verticalPosition: 'top',
+    return new Date(date).toLocaleString('ar-EG', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
-  }
-
-  updateEditForm(field: string, value: any): void {
-    this.editForm.update(f => ({ ...f, [field]: value }));
   }
 }

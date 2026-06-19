@@ -1,11 +1,14 @@
+// profile-page.component.ts
 import { Component, computed, inject, signal } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSelect, MatOption } from '@angular/material/select';
+import { ToastrService } from 'ngx-toastr';
 import { ProfileService } from '../../../core/services/profileSerivce/profile-service';
 import { MatProgressSpinner } from "@angular/material/progress-spinner";
 import { MatIcon } from "@angular/material/icon";
 import { FormsModule } from '@angular/forms';
 import { FarmerProfileService } from '../../../core/services/farmer-profile/farmer-profile-service';
+import { NgClass } from '@angular/common';
 
 type ActiveTab = 'overview' | 'products' | 'orders' | 'auctions';
 
@@ -14,6 +17,7 @@ const ORDER_STATUS_MAP: Record<string, { label: string; bgClass: string; textCla
   Confirmed:      { label: 'مؤكد',          bgClass: 'bg-blue-50',   textClass: 'text-blue-700',   icon: 'check'          },
   Preparing:      { label: 'قيد التحضير',   bgClass: 'bg-purple-50', textClass: 'text-purple-700', icon: 'inventory'      },
   ReadyForPickup: { label: 'جاهز للاستلام', bgClass: 'bg-cyan-50',   textClass: 'text-cyan-700',   icon: 'local_shipping' },
+  InDelivery:     { label: 'قيد التوصيل',      bgClass: 'bg-orange-50', textClass: 'text-orange-700', icon: 'local_shipping' },
   Delivered:      { label: 'تم التوصيل',    bgClass: 'bg-green-50',  textClass: 'text-green-700',  icon: 'done_all'       },
   Cancelled:      { label: 'ملغي',          bgClass: 'bg-gray-100',  textClass: 'text-gray-500',   icon: 'cancel'         },
   Rejected:       { label: 'مرفوض',         bgClass: 'bg-red-50',    textClass: 'text-red-600',    icon: 'block'          },
@@ -35,13 +39,21 @@ const PRODUCT_STATUS_MAP: Record<number, { label: string; bgClass: string; textC
 
 @Component({
   selector: 'app-farmer-profile',
-  imports: [MatProgressSpinner, MatIcon, FormsModule, MatPaginator],
+  imports: [
+    MatProgressSpinner, 
+    MatIcon, 
+    FormsModule, 
+    MatPaginator, 
+    MatSelect, 
+    MatOption,
+    NgClass
+  ],
   templateUrl: './farmer-profile.html',
   styleUrl: './farmer-profile.scss',
 })
 export class FarmerProfile {
   private profileService = inject(FarmerProfileService);
-  private snackBar = inject(MatSnackBar);
+  private toastr = inject(ToastrService);
 
   // ── Active Tab ──────────────────────────────────────────
   activeTab = signal<ActiveTab>('overview');
@@ -50,7 +62,7 @@ export class FarmerProfile {
   profile = signal<any>(null);
   profileLoading = signal(false);
   profileError = signal<string | null>(null);
-
+  selectedOrder = signal<any>(null);
   // Computed profile values
   joinDateFormatted = computed(() => {
     const p = this.profile();
@@ -73,13 +85,13 @@ export class FarmerProfile {
   productsPageSize = signal(8);
   productSearch = signal('');
 
-    // ── Delivery Method ──────────────────────────────────────
+  // ── Delivery Method ──────────────────────────────────────
   deliveryMethod = signal<any>(null);
   deliveryMethodLoading = signal(false);
 
   // ── Product Images Management ────────────────────────────
   addingProductImage = signal(false);
-  deletingImageId = signal<number | null>(null);
+  deletingImageId = signal<string | null>(null);
 
   // Product details modal
   selectedProduct = signal<any>(null);
@@ -217,14 +229,14 @@ export class FarmerProfile {
         if (res?.isSuccess) {
           this.profile.set(res.data);
           this.showEditModal.set(false);
-          this.notify('✅ تم حفظ البروفايل بنجاح');
+          this.toastr.success('تم حفظ البروفايل بنجاح', ' نجاح');
         } else {
-          this.notify(res?.message ?? 'حدث خطأ', true);
+          this.toastr.error(res?.message ?? 'حدث خطأ', 'خطأ');
         }
         this.editLoading.set(false);
       },
       error: () => { 
-        this.notify('تعذّر الحفظ', true); 
+        this.toastr.error('تعذّر الحفظ', 'خطأ'); 
         this.editLoading.set(false); 
       },
     });
@@ -243,15 +255,15 @@ export class FarmerProfile {
       next: (res) => {
         if (res?.isSuccess) { 
           this.loadProfile(); 
-          this.notify('✅ تم تحديث الصورة'); 
+          this.toastr.success('تم تحديث الصورة', ' نجاح'); 
         } else {
-          this.notify(res?.message ?? 'فشل رفع الصورة', true);
+          this.toastr.error(res?.message ?? 'فشل رفع الصورة', 'خطأ');
         }
         this.profileImageLoading.set(false);
         input.value = '';
       },
       error: () => { 
-        this.notify('فشل رفع الصورة', true); 
+        this.toastr.error('فشل رفع الصورة', 'خطأ'); 
         this.profileImageLoading.set(false);
         input.value = '';
       },
@@ -316,14 +328,16 @@ export class FarmerProfile {
     this.profileService.getProductDetails(productId).subscribe({
       next: (res) => {
         if (res?.isSuccess) {
+          console.log(res);
+          
           this.selectedProduct.set(res.data);
         } else {
-          this.notify(res?.message ?? 'فشل تحميل تفاصيل المنتج', true);
+          this.toastr.error(res?.message ?? 'فشل تحميل تفاصيل المنتج', 'خطأ');
         }
         this.productDetailsLoading.set(false);
       },
       error: () => {
-        this.notify('فشل تحميل تفاصيل المنتج', true);
+        this.toastr.error('فشل تحميل تفاصيل المنتج', 'خطأ');
         this.productDetailsLoading.set(false);
       },
     });
@@ -435,14 +449,14 @@ export class FarmerProfile {
           if (res?.isSuccess) { 
             this.loadProducts(); 
             this.showProductModal.set(false); 
-            this.notify('✅ تم تعديل المنتج'); 
+            this.toastr.success('تم تعديل المنتج', ' نجاح'); 
           } else {
-            this.notify(res?.message ?? 'فشل التعديل', true);
+            this.toastr.error(res?.message ?? 'فشل التعديل', 'خطأ');
           }
           this.productLoading.set(false);
         },
         error: () => { 
-          this.notify('فشل التعديل', true); 
+          this.toastr.error('فشل التعديل', 'خطأ'); 
           this.productLoading.set(false); 
         },
       });
@@ -471,15 +485,15 @@ export class FarmerProfile {
           if (res?.isSuccess) { 
             this.loadProducts(); 
             this.showProductModal.set(false); 
-            this.notify('✅ تم إضافة المنتج'); 
+            this.toastr.success('تم إضافة المنتج', ' نجاح'); 
           } else {
-            this.notify(res?.message ?? 'فشل الإضافة', true);
+            this.toastr.error(res?.message ?? 'فشل الإضافة', 'خطأ');
           }
           this.productLoading.set(false);
         },
         error: (err) => {
           console.error('Error adding product:', err);
-          this.notify('فشل الإضافة', true); 
+          this.toastr.error('فشل الإضافة', 'خطأ'); 
           this.productLoading.set(false); 
         },
       });
@@ -499,15 +513,15 @@ export class FarmerProfile {
       next: (res) => {
         if (res?.isSuccess) { 
           this.loadProducts(); 
-          this.notify('✅ تم حذف المنتج'); 
+          this.toastr.success('تم حذف المنتج', ' نجاح'); 
         } else {
-          this.notify(res?.message ?? 'فشل الحذف', true);
+          this.toastr.error(res?.message ?? 'فشل الحذف', 'خطأ');
         }
         this.deleteProductId.set(null);
         this.deleteLoading.set(false);
       },
       error: () => { 
-        this.notify('فشل الحذف', true); 
+        this.toastr.error('فشل الحذف', 'خطأ'); 
         this.deleteLoading.set(false); 
       },
     });
@@ -524,6 +538,8 @@ export class FarmerProfile {
     this.profileService.getMyOrdersFarmer().subscribe({
       next: (res) => {
         if (res?.isSuccess) {
+          console.log(res);
+          
           this.orders.set(res.data);
         }
         this.ordersLoading.set(false);
@@ -541,14 +557,14 @@ export class FarmerProfile {
       next: (res) => {
         if (res?.isSuccess) { 
           this.loadOrders(); 
-          this.notify('✅ تم قبول الطلب'); 
+          this.toastr.success('تم قبول الطلب', ' نجاح'); 
         } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.error(res?.message ?? 'فشل', 'خطأ');
         }
         this.orderActionLoading.set(false);
       },
       error: () => { 
-        this.notify('فشل', true); 
+        this.toastr.error('فشل', 'خطأ'); 
         this.orderActionLoading.set(false); 
       },
     });
@@ -568,15 +584,15 @@ export class FarmerProfile {
       next: (res) => {
         if (res?.isSuccess) { 
           this.loadOrders(); 
-          this.notify('تم رفض الطلب'); 
+          this.toastr.success('تم رفض الطلب', ' نجاح'); 
         } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.error(res?.message ?? 'فشل', 'خطأ');
         }
         this.rejectOrderId.set(null);
         this.orderActionLoading.set(false);
       },
       error: () => { 
-        this.notify('فشل', true); 
+        this.toastr.error('فشل', 'خطأ'); 
         this.orderActionLoading.set(false); 
       },
     });
@@ -588,57 +604,90 @@ export class FarmerProfile {
       next: (res) => {
         if (res?.isSuccess) { 
           this.loadOrders(); 
-          this.notify('✅ تم تحديث الحالة'); 
+          this.toastr.success('تم تحديث الحالة', ' نجاح'); 
         } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.error(res?.message ?? 'فشل', 'خطأ');
         }
         this.orderActionLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.orderActionLoading.set(false);
       },
     });
   }
+  getPaymentMethod(method: number): string {
+    const methods: Record<number, string> = {
+      0: 'كاش',
+      1: 'تحويل بنكي',
+      2: 'محفظة رقمية',
+      3: 'بطاقة ائتمان',
+    };
+    return methods[method] || 'طريقة غير معروفة';
+  }
 
+  
   viewOrderDetails(orderId: number): void {
     this.orderDetailsLoading.set(true);
     this.showOrderDetailsModal.set(true);
     this.selectedOrderId.set(orderId);
     
-    // تحميل المدفوعات
-    this.profileService.getPaymentByOrder(orderId).subscribe({
+    // إعادة تعيين البيانات السابقة
+    this.selectedOrderPayments.set([]);
+    this.deliveryMethod.set(null);
+    this.selectedOrder.set(null);  // ← مهم جداً
+    
+    this.profileService.getOrderDetails(orderId).subscribe({
       next: (res) => {
-        if (Array.isArray(res)) {
-          this.selectedOrderPayments.set(res);
-        } else if (res?.isSuccess) {
-          this.selectedOrderPayments.set(res.data || []);
+        console.log('📦 Order Details:', res);
+        
+        if (res?.isSuccess && res?.data) {
+          const order = res.data;
+          
+          // ✅ تخزين الطلب كامل في selectedOrder
+          this.selectedOrder.set(order);
+          console.log('✅ selectedOrder set:', this.selectedOrder());
+          
+          // معالجة الدفع
+          if (order.payment) {
+            this.selectedOrderPayments.set([order.payment]);
+          } else {
+            this.selectedOrderPayments.set([]);
+          }
+          
+          // معالجة طريقة التوصيل
+          if (order.deliveryMethod) {
+            this.deliveryMethod.set(order.deliveryMethod);
+          } else {
+            this.deliveryMethod.set(null);
+          }
+          
         } else {
+          this.toastr.warning(res?.message || 'لا توجد بيانات للطلب', 'تنبيه');
           this.selectedOrderPayments.set([]);
+          this.deliveryMethod.set(null);
         }
+        
         this.orderDetailsLoading.set(false);
       },
-      error: () => {
-        this.notify('فشل تحميل تفاصيل الدفع', true);
+      error: (err) => {
+        console.error('❌ Error:', err);
+        this.toastr.error('فشل تحميل تفاصيل الطلب', 'خطأ');
         this.selectedOrderPayments.set([]);
+        this.deliveryMethod.set(null);
+        this.selectedOrder.set(null);
         this.orderDetailsLoading.set(false);
       },
     });
-
-    // تحميل طريقة التوصيل (إذا كان الـ order يحتوي على deliveryMethodId)
-    const order = this.orders().find(o => o.id === orderId);
-    if (order?.deliveryMethodId) {
-      this.loadDeliveryMethod(order.deliveryMethodId);
-    } else {
-      this.deliveryMethod.set(null);
-    }
   }
 
   closeOrderDetails(): void {
-    this.showOrderDetailsModal.set(false);
-    this.selectedOrderId.set(null);
-    this.selectedOrderPayments.set([]);
-  }
+  this.showOrderDetailsModal.set(false);
+  this.selectedOrderId.set(null);
+  this.selectedOrderPayments.set([]);
+  this.deliveryMethod.set(null);
+  this.selectedOrder.set(null);  // ← إعادة تعيين
+}
 
   openCancelOrder(orderId: number): void {
     this.cancelOrderId.set(orderId);
@@ -653,15 +702,15 @@ export class FarmerProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadOrders();
-          this.notify('✅ تم إلغاء الطلب');
+          this.toastr.success('تم إلغاء الطلب', ' نجاح');
         } else {
-          this.notify(res?.message ?? 'فشل إلغاء الطلب', true);
+          this.toastr.error(res?.message ?? 'فشل إلغاء الطلب', 'خطأ');
         }
         this.cancelOrderId.set(null);
         this.cancelOrderLoading.set(false);
       },
       error: () => {
-        this.notify('فشل إلغاء الطلب', true);
+        this.toastr.error('فشل إلغاء الطلب', 'خطأ');
         this.cancelOrderId.set(null);
         this.cancelOrderLoading.set(false);
       },
@@ -717,12 +766,12 @@ export class FarmerProfile {
   saveAuction(): void {
     const form = this.auctionForm();
     if (!form.productId || !form.startingPrice || !form.startDate || !form.endDate) {
-      this.notify('يرجى تعبئة جميع الحقول المطلوبة', true);
+      this.toastr.error('يرجى تعبئة جميع الحقول المطلوبة', 'خطأ');
       return;
     }
     
     if (form.startingPrice <= 0) {
-      this.notify('سعر البداية يجب أن يكون أكبر من 0', true);
+      this.toastr.error('سعر البداية يجب أن يكون أكبر من 0', 'خطأ');
       return;
     }
     
@@ -739,15 +788,15 @@ export class FarmerProfile {
           this.showCreateAuctionModal.set(false);
           this.loadProducts();
           this.loadAuctions();
-          this.notify('✅ تم إنشاء المزاد بنجاح');
+          this.toastr.success('تم إنشاء المزاد بنجاح', ' نجاح');
         } else {
-          this.notify(res?.message ?? 'فشل إنشاء المزاد', true);
+          this.toastr.error(res?.message ?? 'فشل إنشاء المزاد', 'خطأ');
         }
         this.auctionLoading.set(false);
       },
       error: (err) => { 
         console.error('Error creating auction:', err);
-        this.notify('فشل إنشاء المزاد', true); 
+        this.toastr.error('فشل إنشاء المزاد', 'خطأ'); 
         this.auctionLoading.set(false); 
       },
     });
@@ -812,15 +861,6 @@ export class FarmerProfile {
     });
   }
 
-  private notify(msg: string, isError = false): void {
-    this.snackBar.open(msg, 'إغلاق', {
-      duration: 3000,
-      panelClass: isError ? ['snack-error'] : ['snack-success'],
-      horizontalPosition: 'center',
-      verticalPosition: 'top',
-    });
-  }
-
   loadDeliveryMethod(methodId: number): void {
     if (!methodId) return;
     this.deliveryMethodLoading.set(true);
@@ -829,12 +869,12 @@ export class FarmerProfile {
         if (res?.isSuccess) {
           this.deliveryMethod.set(res.data);
         } else {
-          this.notify(res?.message || 'فشل تحميل طريقة التوصيل', true);
+          this.toastr.error(res?.message || 'فشل تحميل طريقة التوصيل', 'خطأ');
         }
         this.deliveryMethodLoading.set(false);
       },
       error: () => {
-        this.notify('فشل تحميل طريقة التوصيل', true);
+        this.toastr.error('فشل تحميل طريقة التوصيل', 'خطأ');
         this.deliveryMethodLoading.set(false);
       },
     });
@@ -847,38 +887,38 @@ export class FarmerProfile {
     this.profileService.addProductImages(productId, file).subscribe({
       next: (res) => {
         if (res?.isSuccess) {
-          this.notify('✅ تم إضافة الصورة بنجاح');
+          this.toastr.success('تم إضافة الصورة بنجاح', ' نجاح');
           // إعادة تحميل تفاصيل المنتج لتحديث الصور
           this.viewProductDetails(productId);
         } else {
-          this.notify(res?.message || 'فشل إضافة الصورة', true);
+          this.toastr.error(res?.message || 'فشل إضافة الصورة', 'خطأ');
         }
         this.addingProductImage.set(false);
       },
       error: () => {
-        this.notify('فشل إضافة الصورة', true);
+        this.toastr.error('فشل إضافة الصورة', 'خطأ');
         this.addingProductImage.set(false);
       },
     });
   }
 
-  deleteProductImage(productId: number, imageId: number): void {
-    if (!productId || !imageId) return;
-    this.deletingImageId.set(imageId);
+  deleteProductImage(productId: number, image: string): void {
+    if (!productId || !image) return;
+    this.deletingImageId.set(image);
     
-    this.profileService.deleteImage(productId, imageId).subscribe({
+    this.profileService.deleteImage(productId, image).subscribe({
       next: (res) => {
         if (res?.isSuccess) {
-          this.notify('✅ تم حذف الصورة بنجاح');
+          this.toastr.success('تم حذف الصورة بنجاح', ' نجاح');
           // إعادة تحميل تفاصيل المنتج
           this.viewProductDetails(productId);
         } else {
-          this.notify(res?.message || 'فشل حذف الصورة', true);
+          this.toastr.error(res?.message || 'فشل حذف الصورة', 'خطأ');
         }
         this.deletingImageId.set(null);
       },
       error: () => {
-        this.notify('فشل حذف الصورة', true);
+        this.toastr.error('فشل حذف الصورة', 'خطأ');
         this.deletingImageId.set(null);
       },
     });
@@ -891,5 +931,28 @@ export class FarmerProfile {
     
     this.addProductImage(productId, file);
     input.value = ''; // إعادة تعيين الإدخال
+  }
+
+  getPaymentStatus(status: number): string {
+    const statusMap: Record<number, string> = {
+      0: 'غير مدفوع',
+      1: 'مدفوع',
+      2: 'تم الاسترداد',
+      3: 'فشل الدفع'
+    };
+    return statusMap[status];
+  }
+
+  getLogisticsStatus(status: number): string {
+    const statusMap: Record<number, string> = {
+      0: 'غير مجدول',
+      1: 'تمت الجدولة',
+      2: 'تم الاستلام',
+      3: 'قيد النقل',
+      4: 'تم التسليم',
+      5: 'فشل التوصيل'
+    };
+
+    return statusMap[status] || 'غير معروف';
   }
 }

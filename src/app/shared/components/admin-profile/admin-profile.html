@@ -1,4 +1,4 @@
-<div class="profile-page min-h-screen bg-background" dir="rtl">
+<div class="profile-page mb-6 min-h-screen bg-background">
 
   <!-- ════════════════════════════════════════════════════════════ -->
   <!-- 🏠 PROFILE HEADER -->
@@ -84,7 +84,7 @@
 
     <div class="container">
       <!-- Tab Nav -->
-      <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto flex-wrap">
+      <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto ">
         @for (tab of [
           { id: 'overview',   label: 'لوحة التحكم', icon: 'dashboard' },
           { id: 'users',      label: 'المستخدمين',  icon: 'people' },
@@ -131,7 +131,7 @@
                 { label: 'مراجعات بانتظار', value: d.pendingReviews, icon: 'star', color: 'amber' },
                 { label: 'إجمالي المنتجات', value: d.totalProducts, icon: 'inventory_2', color: 'indigo' },
                 { label: 'منتجات نشطة', value: d.activeProducts, icon: 'check_circle', color: 'green' },
-                { label: 'تحت المراجعة', value: d.underReviewProducts, icon: 'review', color: 'orange' },
+                { label: 'تحت المراجعة', value: d.underReviewProducts, icon: 'rate_review', color: 'orange' },
                 { label: 'إجمالي الطلبات', value: d.totalOrders, icon: 'receipt_long', color: 'cyan' },
                 { label: 'طلبات معلقة', value: d.pendingOrders, icon: 'hourglass_empty', color: 'yellow' },
                 { label: 'طلبات مكتملة', value: d.deliveredOrders, icon: 'done_all', color: 'green' },
@@ -189,26 +189,44 @@
                 (keyup.enter)="onUserSearch()"
                 class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white" />
             </div>
-            <select [ngModel]="userRoleFilter()" (ngModelChange)="userRoleFilter.set($event); onUserSearch()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option value="All">جميع الأدوار</option>
-              <option value="Farmer">مزارع</option>
-              <option value="Trader">تاجر</option>
-              <option value="Admin">أدمن</option>
-              <option value="Buyer">مشتري</option>
-            </select>
-            <select [ngModel]="userStatusFilter()" (ngModelChange)="userStatusFilter.set($event); onUserSearch()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option value="All">جميع الحالات</option>
-              <option value="Active">نشط</option>
-              <option value="Banned">محظور</option>
-            </select>
-            <select [ngModel]="userVerifiedFilter()" (ngModelChange)="userVerifiedFilter.set($event); onUserSearch()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option value="All">جميع</option>
-              <option value="Verified">موثق</option>
-              <option value="Unverified">غير موثق</option>
-            </select>
+
+            <div class="w-[180px]">
+              <mat-select
+                [value]="userRoleFilter()"
+                (valueChange)="userRoleFilter.set($event); onUserSearch()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع الأدوار">
+                <mat-option value="All">جميع الأدوار</mat-option>
+                <mat-option value="Farmer">مزارع</mat-option>
+                <mat-option value="Trader">تاجر</mat-option>
+                <mat-option value="Admin">أدمن</mat-option>
+                <mat-option value="Buyer">مشتري</mat-option>
+              </mat-select>
+            </div>
+
+            <div class="w-[180px]">
+              <mat-select
+                [value]="userStatusFilter()"
+                (valueChange)="userStatusFilter.set($event); onUserSearch()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع الحالات">
+                <mat-option value="All">جميع الحالات</mat-option>
+                <mat-option value="Active">نشط</mat-option>
+                <mat-option value="Banned">محظور</mat-option>
+              </mat-select>
+            </div>
+
+            <div class="w-[180px]">
+              <mat-select
+                [value]="userVerifiedFilter()"
+                (valueChange)="userVerifiedFilter.set($event); onUserSearch()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع">
+                <mat-option value="All">جميع</mat-option>
+                <mat-option value="Verified">موثق</mat-option>
+                <mat-option value="Unverified">غير موثق</mat-option>
+              </mat-select>
+            </div>
           </div>
 
           <!-- Pending & Banned quick view -->
@@ -418,22 +436,34 @@
                 (keyup.enter)="onProductSearch()"
                 class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white" />
             </div>
-            <select [ngModel]="productCategoryFilter()" (ngModelChange)="productCategoryFilter.set($event); onProductSearch()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option [value]="null">جميع الفئات</option>
-              @for (cat of categories(); track cat.id) {
-                <option [value]="cat.id">{{ cat.nameAr || cat.name }}</option>
-              }
-            </select>
-            <select [ngModel]="productStatusFilter()" (ngModelChange)="productStatusFilter.set($event); onProductSearch()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option [value]="-1">جميع الحالات</option>
-              <option [value]="1">نشط</option>
-              <option [value]="0">مسودة</option>
-              <option [value]="2">نفد</option>
-              <option [value]="3">مؤرشف</option>
-              <option [value]="5">تحت المراجعة</option>
-            </select>
+
+            <div class="w-[200px]">
+              <mat-select
+                [value]="productCategoryFilter()"
+                (valueChange)="productCategoryFilter.set($event); onProductSearch()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع الفئات">
+                <mat-option [value]="null">جميع الفئات</mat-option>
+                @for (cat of categories(); track cat.id) {
+                  <mat-option [value]="cat.id">{{ cat.nameAr || cat.name }}</mat-option>
+                }
+              </mat-select>
+            </div>
+
+            <div class="w-[200px]">
+              <mat-select
+                [value]="productStatusFilter()"
+                (valueChange)="productStatusFilter.set($event); onProductSearch()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع الحالات">
+                <mat-option [value]="-1">جميع الحالات</mat-option>
+                <mat-option [value]="1">نشط</mat-option>
+                <mat-option [value]="0">مسودة</mat-option>
+                <mat-option [value]="2">نفد</mat-option>
+                <mat-option [value]="3">مؤرشف</mat-option>
+                <mat-option [value]="5">تحت المراجعة</mat-option>
+              </mat-select>
+            </div>
           </div>
 
           @if (productsLoading()) {
@@ -524,26 +554,37 @@
         <div class="mt-6">
           <!-- Filters -->
           <div class="flex flex-wrap items-center gap-3 mb-5">
-            <select [ngModel]="orderStatusFilter()" (ngModelChange)="orderStatusFilter.set($event); loadOrders()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option value="All">جميع الحالات</option>
-              <option value="Pending">في الانتظار</option>
-              <option value="Confirmed">مؤكد</option>
-              <option value="Preparing">قيد التحضير</option>
-              <option value="ReadyForPickup">جاهز للاستلام</option>
-              <option value="InDelivery">قيد التوصيل</option>
-              <option value="Delivered">تم التوصيل</option>
-              <option value="Cancelled">ملغي</option>
-              <option value="Rejected">مرفوض</option>
-            </select>
-            <select [ngModel]="orderPaymentFilter()" (ngModelChange)="orderPaymentFilter.set($event); loadOrders()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option value="All">جميع المدفوعات</option>
-              <option value="Unpaid">غير مدفوع</option>
-              <option value="Paid">مدفوع</option>
-              <option value="Refunded">مسترد</option>
-              <option value="Failed">فاشل</option>
-            </select>
+            <div class="w-[200px]">
+              <mat-select
+                [value]="orderStatusFilter()"
+                (valueChange)="orderStatusFilter.set($event); loadOrders()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع الحالات">
+                <mat-option value="All">جميع الحالات</mat-option>
+                <mat-option value="Pending">في الانتظار</mat-option>
+                <mat-option value="Confirmed">مؤكد</mat-option>
+                <mat-option value="Preparing">قيد التحضير</mat-option>
+                <mat-option value="ReadyForPickup">جاهز للاستلام</mat-option>
+                <mat-option value="InDelivery">قيد التوصيل</mat-option>
+                <mat-option value="Delivered">تم التوصيل</mat-option>
+                <mat-option value="Cancelled">ملغي</mat-option>
+                <mat-option value="Rejected">مرفوض</mat-option>
+              </mat-select>
+            </div>
+
+            <div class="w-[200px]">
+              <mat-select
+                [value]="orderPaymentFilter()"
+                (valueChange)="orderPaymentFilter.set($event); loadOrders()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع المدفوعات">
+                <mat-option value="All">جميع المدفوعات</mat-option>
+                <mat-option value="Unpaid">غير مدفوع</mat-option>
+                <mat-option value="Paid">مدفوع</mat-option>
+                <mat-option value="Refunded">مسترد</mat-option>
+                <mat-option value="Failed">فاشل</mat-option>
+              </mat-select>
+            </div>
           </div>
 
           @if (ordersLoading()) {
@@ -673,14 +714,19 @@
       @if (activeTab() === 'auctions') {
         <div class="mt-6">
           <div class="flex flex-wrap items-center gap-3 mb-5">
-            <select [ngModel]="auctionStatusFilter()" (ngModelChange)="auctionStatusFilter.set($event); loadAuctions()"
-              class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary bg-white">
-              <option value="All">جميع الحالات</option>
-              <option value="Active">جارٍ</option>
-              <option value="Upcoming">قادم</option>
-              <option value="Ended">منتهي</option>
-              <option value="Canceled">ملغي</option>
-            </select>
+            <div class="w-[200px]">
+              <mat-select
+                [value]="auctionStatusFilter()"
+                (valueChange)="auctionStatusFilter.set($event); loadAuctions()"
+                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-sm"
+                placeholder="جميع الحالات">
+                <mat-option value="All">جميع الحالات</mat-option>
+                <mat-option value="Active">جارٍ</mat-option>
+                <mat-option value="Upcoming">قادم</mat-option>
+                <mat-option value="Ended">منتهي</mat-option>
+                <mat-option value="Canceled">ملغي</mat-option>
+              </mat-select>
+            </div>
           </div>
 
           @if (auctionsLoading()) {
@@ -1130,12 +1176,15 @@
         <div class="p-5 space-y-4">
           <div>
             <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الدور</label>
-            <select [ngModel]="userRoleForm().role" (ngModelChange)="userRoleForm.update(f => ({ ...f, role: $event }))"
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 text-sm">
-              <option value="Farmer">مزارع</option>
-              <option value="Trader">تاجر</option>
-              <option value="Admin">أدمن</option>
-            </select>
+            <mat-select
+              [value]="userRoleForm().role"
+              (valueChange)="userRoleForm.update(f => ({ ...f, role: $event }))"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm"
+              placeholder="اختر الدور">
+              <mat-option value="Farmer">مزارع</mat-option>
+              <mat-option value="Trader">تاجر</mat-option>
+              <mat-option value="Admin">أدمن</mat-option>
+            </mat-select>
           </div>
         </div>
         <div class="flex gap-2 p-5 border-t border-gray-100">
@@ -1169,14 +1218,17 @@
         <div class="p-5">
           <p class="text-sm text-text-secondary mb-3">المنتج: <span class="font-bold text-text-primary">{{ selectedProductForStatus()?.name }}</span></p>
           <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الحالة الجديدة</label>
-          <select [ngModel]="productStatusForm().productStatus" (ngModelChange)="productStatusForm.update(f => ({ ...f, productStatus: +$event }))"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-sm">
-            <option [value]="0">مسودة</option>
-            <option [value]="1">نشط</option>
-            <option [value]="2">نفد</option>
-            <option [value]="3">مؤرشف</option>
-            <option [value]="5">تحت المراجعة</option>
-          </select>
+          <mat-select
+            [value]="productStatusForm().productStatus"
+            (valueChange)="productStatusForm.update(f => ({ ...f, productStatus: +$event }))"
+            class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm"
+            placeholder="اختر الحالة">
+            <mat-option [value]="0">مسودة</mat-option>
+            <mat-option [value]="1">نشط</mat-option>
+            <mat-option [value]="2">نفد</mat-option>
+            <mat-option [value]="3">مؤرشف</mat-option>
+            <mat-option [value]="5">تحت المراجعة</mat-option>
+          </mat-select>
         </div>
         <div class="flex gap-2 p-5 border-t border-gray-100">
           <button (click)="saveProductStatus()" [disabled]="productStatusLoading()"
@@ -1432,13 +1484,16 @@
         </div>
         <div class="p-5">
           <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">الحالة الجديدة</label>
-          <select [ngModel]="paymentStatusForm().status" (ngModelChange)="paymentStatusForm.update(f => ({ ...f, status: +$event }))"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 text-sm">
-            <option [value]="0">غير مدفوع</option>
-            <option [value]="1">مدفوع</option>
-            <option [value]="2">مسترد</option>
-            <option [value]="3">فاشل</option>
-          </select>
+          <mat-select
+            [value]="paymentStatusForm().status"
+            (valueChange)="paymentStatusForm.update(f => ({ ...f, status: +$event }))"
+            class="w-full rounded-xl border border-gray-200 px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm"
+            placeholder="اختر الحالة">
+            <mat-option [value]="0">غير مدفوع</mat-option>
+            <mat-option [value]="1">مدفوع</mat-option>
+            <mat-option [value]="2">مسترد</mat-option>
+            <mat-option [value]="3">فاشل</mat-option>
+          </mat-select>
         </div>
         <div class="flex gap-2 p-5 border-t border-gray-100">
           <button (click)="savePaymentStatus()" [disabled]="paymentStatusLoading()"

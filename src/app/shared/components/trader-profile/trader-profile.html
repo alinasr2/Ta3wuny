@@ -1,5 +1,4 @@
-<!-- trader-profile.html -->
-<div class="profile-page min-h-screen bg-background" dir="rtl">
+<div class="profile-page mb-6 min-h-screen bg-background" dir="rtl">
 
   <!-- ════ PROFILE HEADER ════ -->
   @if (profileLoading()) {
@@ -114,7 +113,7 @@
             <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
               <mat-icon class="text-primary">person</mat-icon> بيانات الحساب
             </h2>
-            <div class="space-y-3 grid grid-cols-3 gap-5">
+            <div class="space-y-3 grid sm:grid-cols-2 gap-4">
               @for (row of [
                 { icon: 'badge', label: 'الاسم', value: p.name },
                 { icon: 'alternate_email', label: 'البريد الإلكتروني', value: p.email },
@@ -123,7 +122,7 @@
                 { icon: 'business', label: 'نوع النشاط', value: getBusinessType(p.businessType) },
                 { icon: 'receipt', label: 'الرقم الضريبي', value: p.taxNumber }
               ]; track row.label) {
-                <div class="flex items-center gap-3 py-2 border-b border-gray-50">
+                <div class="flex items-center gap-3 py-2 border-b border-gray-50 ">
                   <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
                     <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
                   </div>
@@ -196,13 +195,13 @@
                   <!-- Order header -->
                   <div class="flex items-center justify-between p-4 border-b border-gray-50 flex-wrap gap-3">
                     <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
+                      <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center cursor-pointer hover:bg-green-100 transition-colors" (click)="viewOrderDetails(order.id)">
                         <mat-icon class="!text-base text-primary">receipt_long</mat-icon>
                       </div>
                       <div>
-                        <p class="font-bold text-text-primary text-sm">طلب #{{ order.id }}</p>
+                        <p class="font-bold text-text-primary text-sm cursor-pointer hover:text-primary transition-colors" (click)="viewOrderDetails(order.id)">طلب #{{ order.id }}</p>
                         <p class="text-xs text-text-secondary flex items-center gap-1">
-                          <mat-icon class="!text-xs">storefront</mat-icon>
+                          <mat-icon class="!text-xs">agriculture</mat-icon>
                           {{ order.farmerName || 'المزارع' }}
                         </p>
                       </div>
@@ -245,13 +244,11 @@
                         <mat-icon class="!text-base">cancel</mat-icon> إلغاء الطلب
                       </button>
                     }
-                    <span class="mr-auto text-xs text-gray-400 flex items-center gap-1">
-                      <mat-icon class="!text-xs">payments</mat-icon> {{ order.paymentStatus }}
-                    </span>
                     <button (click)="viewOrderDetails(order.id)"
-                      class="flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
-                      <mat-icon class="!text-base">visibility</mat-icon> التفاصيل
+                      class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-text-secondary rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">
+                      <mat-icon class="!text-base">visibility</mat-icon> تفاصيل الطلب
                     </button>
+                    
                   </div>
                 </div>
               }
@@ -280,11 +277,14 @@
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all flex flex-col gap-4">
                   <!-- Header -->
                   <div class="flex items-start justify-between gap-2">
-                    <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      <img [src]="auction.mainImageUrl || 'https://placehold.co/40x40?text=صورة'"
-                        [alt]="auction.productName"
-                        class="w-full h-full object-cover"
-                        onerror="this.src='https://placehold.co/40x40?text=صورة'" />
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                        <mat-icon class="!text-xl text-primary">gavel</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm">{{ auction.productName }}</p>
+                        <p class="text-xs text-text-secondary">{{ auction.productQuantity }} {{ auction.productUnit }}</p>
+                      </div>
                     </div>
                     @let aStatus = auction.isEnded ? 'Ended' : 'Active';
                     <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
@@ -294,24 +294,33 @@
                     </span>
                   </div>
 
-                  <!-- Details -->
-                  <div>
-                    <h3 class="font-bold text-text-primary text-sm">{{ auction.productName }}</h3>
-                    <p class="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
-                      <mat-icon class="!text-xs">person</mat-icon>
-                      {{ auction.farmerName }}
-                    </p>
-                  </div>
+                  <!-- Image -->
+                  @if (auction.mainImageUrl) {
+                    <div class="rounded-xl overflow-hidden h-32 bg-gray-100">
+                      <img [src]="auction.mainImageUrl" [alt]="auction.productName" class="w-full h-full object-cover" />
+                    </div>
+                  }
 
+                  <!-- Details -->
                   <div class="space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                      <span class="text-text-secondary text-xs">سعر البداية</span>
-                      <span class="text-sm text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
+                    <div class="flex items-center justify-between">
+                      <span class="text-text-secondary text-xs">السعر الحالي</span>
+                      <span class="font-bold text-primary text-lg">{{ formatPrice(auction.currentPrice || auction.highestBid || auction.startingPrice) }}</span>
                     </div>
-                    <div class="flex items-center justify-between text-sm">
-                      <span class="text-text-secondary text-xs">أعلى عرض</span>
-                      <span class="font-bold text-primary">{{ formatPrice(auction.currentPrice || auction.highestBid || auction.startingPrice) }}</span>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">السعر الابتدائي</span>
+                      <span class="text-xs font-bold text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
                     </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">عدد المزايدات</span>
+                      <span class="text-xs font-bold text-text-primary">{{ auction.totalBids || 0 }}</span>
+                    </div>
+                    @if (auction.winnerName) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary">الفائز</span>
+                        <span class="text-xs font-bold text-green-600">{{ auction.winnerName }}</span>
+                      </div>
+                    }
                     @if (!auction.isEnded && auction.minutesRemaining !== undefined) {
                       <div class="flex items-center justify-between">
                         <span class="text-xs text-text-secondary flex items-center gap-1">
@@ -326,11 +335,11 @@
                   <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
                     <div class="bg-gray-50 rounded-lg p-2">
                       <p class="text-gray-400 mb-0.5">البداية</p>
-                      <p class="font-bold text-text-primary">{{ formatDate(auction.startDate) }}</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.startDate) }}</p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-2">
                       <p class="text-gray-400 mb-0.5">النهاية</p>
-                      <p class="font-bold text-text-primary">{{ formatDate(auction.endDate) }}</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.endDate) }}</p>
                     </div>
                   </div>
 
@@ -376,17 +385,19 @@
                 {{ field.label }}
               </label>
               @if (field.key === 'businessType') {
-                <select
-                  [ngModel]="editForm()[field.key]"
-                  (ngModelChange)="updateEditForm(field.key, $event)"
-                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm">
-                  <option value="">اختر نوع النشاط</option>
-                  <option value="0">مزرعة</option>
-                  <option value="1">تاجر جملة</option>
-                  <option value="2">موزع</option>
-                  <option value="3">مصنع</option>
-                  <option value="4">أخرى</option>
-                </select>
+                <mat-select
+                [(ngModel)]="editForm()[field.key]"
+                  [value]="editForm()[field.key]"
+                  (valueChange)="updateEditForm(field.key, $event)"
+                  class="w-full rounded-xl border border-gray-200 p-2 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm"
+                  placeholder="اختر نوع النشاط">
+                  <mat-option value="">اختر نوع النشاط</mat-option>
+                  <mat-option value="0">مزرعة</mat-option>
+                  <mat-option value="1">تاجر جملة</mat-option>
+                  <mat-option value="2">موزع</mat-option>
+                  <mat-option value="3">مصنع</mat-option>
+                  <mat-option value="4">أخرى</mat-option>
+                </mat-select>
               } @else if (field.type === 'textarea') {
                 <textarea
                   [value]="editForm()[field.key]"
@@ -422,13 +433,13 @@
   <!-- Order Details Modal -->
   @if (showOrderDetails()) {
     <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mb-8">
-        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mb-8 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
             <mat-icon class="text-primary">receipt_long</mat-icon>
             تفاصيل الطلب #{{ selectedOrder()?.id }}
           </h2>
-          <button (click)="showOrderDetails.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+          <button (click)="closeOrderDetails()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
             <mat-icon>close</mat-icon>
           </button>
         </div>
@@ -438,202 +449,151 @@
         }
 
         @if (!orderDetailsLoading() && selectedOrder(); as order) {
-          <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div class="p-5 space-y-4">
             <!-- Order Info -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
               <div>
                 <p class="text-xs text-text-secondary">رقم الطلب</p>
                 <p class="font-bold text-text-primary">#{{ order.id }}</p>
               </div>
               <div>
-                <p class="text-xs text-text-secondary">التاريخ</p>
+                <p class="text-xs text-text-secondary">حالة الطلب</p>
+                @let oStatus = getOrderStatus(order.status);
+                <span class="flex items-center w-fit gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                  [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                  <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                  {{ oStatus.label }}
+                </span>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">المزارع</p>
+                <p class="font-bold text-text-primary">{{ order.farmerName || '—' }}</p>
+                <p class="text-xs text-text-secondary">{{ order.farmerEmail || '' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">تاريخ الطلب</p>
                 <p class="font-bold text-text-primary">{{ formatDateTime(order.orderDate || order.createdAt) }}</p>
               </div>
-            </div>
-
-            <!-- Status -->
-            <div class="flex items-center justify-between">
-              <span class="text-text-secondary text-sm">حالة الطلب</span>
-              @let oStatus = getOrderStatus(order.status);
-              <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                [class]="oStatus.bgClass + ' ' + oStatus.textClass">
-                <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
-                {{ oStatus.label }}
-              </span>
-            </div>
-
-            <!-- Farmer -->
-            <div class="flex items-center justify-between">
-              <span class="text-text-secondary text-sm">المزارع</span>
-              <span class="font-bold text-text-primary">{{ order.farmerName || order.buyerName || '—' }}</span>
-            </div>
-
-            <!-- Total -->
-            <div class="flex items-center justify-between">
-              <span class="text-text-secondary text-sm">الإجمالي</span>
-              <span class="font-bold text-primary text-lg">{{ formatPrice(order.total) }}</span>
-            </div>
-
-            <!-- Notes -->
-            @if (order.notes) {
-              <div>
-                <span class="text-text-secondary text-sm">ملاحظات</span>
-                <p class="text-text-primary mt-1">{{ order.notes }}</p>
+              <div class="col-span-2">
+                <p class="text-xs text-text-secondary">الإجمالي</p>
+                <p class="font-bold text-primary text-lg">{{ formatPrice(order.total) }}</p>
               </div>
-            }
+              @if (order.notes) {
+                <div class="col-span-2">
+                  <p class="text-xs text-text-secondary">ملاحظات</p>
+                  <p class="text-text-primary text-sm">{{ order.notes }}</p>
+                </div>
+              }
+            </div>
 
             <!-- Delivery Method -->
             @if (order.deliveryMethod) {
-              <div class="border-t border-gray-100 pt-4">
-                <h3 class="text-sm font-bold text-text-primary mb-2 flex items-center gap-1">
-                  <mat-icon class="!text-base">local_shipping</mat-icon> طريقة التوصيل
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">local_shipping</mat-icon>
+                  طريقة التوصيل
                 </h3>
-                <div class="space-y-1 text-sm bg-gray-50 rounded-xl p-3">
-                  <div class="flex justify-between">
-                    <span class="text-text-secondary">الطريقة</span>
-                    <span class="font-bold">{{ order.deliveryMethod.shortName }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-text-secondary">التكلفة</span>
-                    <span class="font-bold">{{ formatPrice(order.deliveryMethod.cost) }}</span>
-                  </div>
-                  @if (order.deliveryMethod.deliveryTime) {
-                    <div class="flex justify-between">
-                      <span class="text-text-secondary">وقت التوصيل</span>
-                      <span class="font-bold">{{ order.deliveryMethod.deliveryTime }}</span>
-                    </div>
-                  }
-                  @if (order.deliveryMethod.description) {
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
                     <div>
-                      <span class="text-text-secondary">الوصف</span>
-                      <p class="text-text-primary text-sm mt-1">{{ order.deliveryMethod.description }}</p>
+                      <p class="text-xs text-text-secondary">الاسم</p>
+                      <p class="font-bold text-text-primary">{{ order.deliveryMethod.shortName || order.deliveryMethod.name }}</p>
                     </div>
-                  }
+                    <div>
+                      <p class="text-xs text-text-secondary">التكلفة</p>
+                      <p class="font-bold text-primary">{{ formatPrice(order.deliveryMethod.cost) }}</p>
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-xs text-text-secondary">وقت التوصيل</p>
+                      <p class="font-bold text-text-primary">{{ order.deliveryMethod.deliveryTime || '—' }}</p>
+                    </div>
+                    @if (order.deliveryMethod.description) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">الوصف</p>
+                        <p class="text-text-primary text-sm">{{ order.deliveryMethod.description }}</p>
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             }
 
             <!-- Logistics -->
             @if (selectedOrderLogistics(); as logistics) {
-              <div class="border-t border-gray-100 pt-4">
-                <h3 class="text-sm font-bold text-text-primary mb-2 flex items-center gap-1">
-                  <mat-icon class="!text-base">map</mat-icon> معلومات الشحن
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">map</mat-icon>
+                  معلومات الشحن
                 </h3>
-                <div class="space-y-2 text-sm bg-gray-50 rounded-xl p-3">
-                  <div class="flex justify-between">
-                    <span class="text-text-secondary">حالة الشحن</span>
-                    <span class="font-bold">{{ logistics.status || '—' }}</span>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-text-secondary">حالة الشحن</p>
+                      <p class="font-bold text-text-primary">{{ getLogisticsStatus(logistics.logisticsStatus) }}</p>
+                    </div>
+                    @if (logistics.estimatedDelivery) {
+                      <div>
+                        <p class="text-xs text-text-secondary">التوصيل المتوقع</p>
+                        <p class="font-bold text-text-primary">{{ formatDateTime(logistics.estimatedDelivery) }}</p>
+                      </div>
+                    }
+                    @if (logistics.notes) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">ملاحظات الشحن</p>
+                        <p class="text-text-primary text-sm">{{ logistics.notes }}</p>
+                      </div>
+                    }
                   </div>
-
-                  <!-- Pickup Address -->
-                  @if (logistics.pickupAddress) {
-                    <div>
-                      <span class="text-text-secondary">عنوان الاستلام</span>
-                      <p class="text-text-primary mt-0.5">
-                        {{ logistics.pickupAddress.street }},
-                        {{ logistics.pickupAddress.city }},
-                        {{ logistics.pickupAddress.governorate }}
-                        @if (logistics.pickupAddress.country) {
-                          , {{ logistics.pickupAddress.country }}
-                        }
-                      </p>
-                    </div>
-                  }
-
-                  <!-- Delivery Address -->
-                  @if (logistics.deliveryAddress) {
-                    <div>
-                      <span class="text-text-secondary">عنوان التسليم</span>
-                      <p class="text-text-primary mt-0.5">
-                        {{ logistics.deliveryAddress.street }},
-                        {{ logistics.deliveryAddress.city }},
-                        {{ logistics.deliveryAddress.governorate }}
-                        @if (logistics.deliveryAddress.country) {
-                          , {{ logistics.deliveryAddress.country }}
-                        }
-                      </p>
-                    </div>
-                  }
-
-                  <!-- Driver Info -->
-                  @if (logistics.driverName || logistics.driverPhone) {
-                    <div>
-                      <span class="text-text-secondary">السائق</span>
-                      <p class="text-text-primary mt-0.5">
-                        {{ logistics.driverName || '' }}
-                        @if (logistics.driverPhone) {
-                          ({{ logistics.driverPhone }})
-                        }
-                      </p>
-                    </div>
-                  }
-
-                  @if (logistics.estimatedDelivery) {
-                    <div class="flex justify-between">
-                      <span class="text-text-secondary">التوصيل المتوقع</span>
-                      <span class="font-bold">{{ formatDateTime(logistics.estimatedDelivery) }}</span>
-                    </div>
-                  }
-
-                  @if (logistics.actualDelivery) {
-                    <div class="flex justify-between">
-                      <span class="text-text-secondary">تاريخ التوصيل الفعلي</span>
-                      <span class="font-bold">{{ formatDateTime(logistics.actualDelivery) }}</span>
-                    </div>
-                  }
-
-                  @if (logistics.notes) {
-                    <div>
-                      <span class="text-text-secondary">ملاحظات الشحن</span>
-                      <p class="text-text-primary mt-0.5">{{ logistics.notes }}</p>
-                    </div>
-                  }
                 </div>
               </div>
             }
 
             <!-- Payments -->
             @if (selectedOrderPayments().length > 0) {
-              <div class="border-t border-gray-100 pt-4">
-                <h3 class="text-sm font-bold text-text-primary mb-2 flex items-center gap-1">
-                  <mat-icon class="!text-base">payments</mat-icon> معلومات الدفع
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">payments</mat-icon>
+                  معلومات الدفع
                 </h3>
                 @for (payment of selectedOrderPayments(); track payment.id) {
-                  <div class="bg-gray-50 rounded-xl p-3 space-y-2 text-sm">
-                    <div class="flex justify-between">
-                      <span class="text-text-secondary">المبلغ</span>
-                      <span class="font-bold text-primary">{{ formatPrice(payment.amount) }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-text-secondary">طريقة الدفع</span>
-                      <span class="font-bold">{{ getPaymentMethod(payment.method) }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-text-secondary">الحالة</span>
-                      @let pStatus = getPaymentStatus(payment.status);
-                      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                        [class]="pStatus.bgClass + ' ' + pStatus.textClass">
-                        {{ pStatus.label }}
-                      </span>
-                    </div>
-                    @if (payment.paidAt) {
-                      <div class="flex justify-between">
-                        <span class="text-text-secondary">تاريخ الدفع</span>
-                        <span class="font-bold">{{ formatDateTime(payment.paidAt) }}</span>
+                  <div class="bg-gray-50 rounded-xl p-4 mb-2">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <p class="text-xs text-text-secondary">المبلغ</p>
+                        <p class="font-bold text-primary">{{ formatPrice(payment.amount) }}</p>
                       </div>
-                    }
-                    @if (payment.payerName) {
-                      <div class="flex justify-between">
-                        <span class="text-text-secondary">الدافع</span>
-                        <span class="font-bold">{{ payment.payerName }}</span>
+                      <div>
+                        <p class="text-xs text-text-secondary">طريقة الدفع</p>
+                        <p class="font-bold text-text-primary">{{ getPaymentMethod(payment.paymentMethod) }}</p>
                       </div>
-                    }
-                    @if (payment.paymentIntentId) {
-                      <div class="flex justify-between">
-                        <span class="text-text-secondary">رقم المعاملة</span>
-                        <span class="font-bold text-xs">{{ payment.paymentIntentId }}</span>
+                      <div>
+                        <p class="text-xs text-text-secondary">الحالة</p>
+                        <p class="font-bold" 
+                          [class.text-green-600]="payment.paymentStatus === 1"
+                          [class.text-yellow-600]="payment.paymentStatus === 0"
+                          [class.text-red-600]="payment.paymentStatus === 3">
+                          {{ getPaymentStatus(payment.paymentStatus) }}
+                        </p>
                       </div>
-                    }
+                      @if (payment.paidAt) {
+                        <div>
+                          <p class="text-xs text-text-secondary">تاريخ الدفع</p>
+                          <p class="font-bold text-text-primary">{{ formatDateTime(payment.paidAt) }}</p>
+                        </div>
+                      }
+                      @if (payment.payerName) {
+                        <div class="col-span-2">
+                          <p class="text-xs text-text-secondary">الدافع</p>
+                          <p class="font-bold text-text-primary">{{ payment.payerName }}</p>
+                        </div>
+                      }
+                      @if (payment.paymentIntentId) {
+                        <div class="col-span-2">
+                          <p class="text-xs text-text-secondary">رقم المعاملة</p>
+                          <p class="font-bold text-text-primary text-sm">{{ payment.paymentIntentId }}</p>
+                        </div>
+                      }
+                    </div>
                   </div>
                 }
               </div>
@@ -641,34 +601,41 @@
 
             <!-- Items -->
             @if (order.items && order.items.length > 0) {
-              <div class="border-t border-gray-100 pt-4">
-                <h3 class="text-sm font-bold text-text-primary mb-2">المنتجات</h3>
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">shopping_bag</mat-icon>
+                  المنتجات ({{ order.items.length }})
+                </h3>
                 <div class="space-y-2">
                   @for (item of order.items; track item.productId) {
-                    <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
-                      <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'"
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition-colors">
+                      <img 
+                        [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'" 
                         [alt]="item.productName"
-                        class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                        class="w-14 h-14 rounded-lg object-cover flex-shrink-0"
                         onerror="this.src='https://placehold.co/60x60?text=صورة'" />
-                      <div class="min-w-0 flex-1">
-                        <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
-                        <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}</p>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-text-primary">{{ item.productName }}</p>
+                        <p class="text-xs text-text-secondary">
+                          {{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}
+                        </p>
                       </div>
-                      <p class="text-sm font-bold text-primary">{{ formatPrice(item.subtotal) }}</p>
+                      <div class="text-left">
+                        <p class="text-sm font-bold text-primary">{{ formatPrice(item.subtotal) }}</p>
+                      </div>
                     </div>
                   }
                 </div>
               </div>
             }
+
+            <!-- Close Button -->
+            <button (click)="closeOrderDetails()"
+              class="w-full py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+              إغلاق
+            </button>
           </div>
         }
-
-        <div class="p-5 border-t border-gray-100">
-          <button (click)="showOrderDetails.set(false)"
-            class="w-full py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
-            إغلاق
-          </button>
-        </div>
       </div>
     </div>
   }

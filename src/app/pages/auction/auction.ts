@@ -237,7 +237,7 @@ export class Auction implements OnInit, OnDestroy {
         }
         this.bidLoading.set(false);
       },
-      error: () => {
+      error: (err) => {
         this.bidError.set('حدث خطأ، يرجى المحاولة مرة أخرى');
         this.bidLoading.set(false);
       },

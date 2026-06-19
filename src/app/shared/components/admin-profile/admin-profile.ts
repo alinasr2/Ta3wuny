@@ -1,11 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatIcon } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { AsyncPipe, NgClass } from '@angular/common';
 import { AdminProfileService } from '../../../core/services/admin-profile/admin-profile-service';
+import { ToastrService } from 'ngx-toastr';
+import { MatFormField, MatLabel, MatOption, MatSelect } from "@angular/material/select";
 
 type ActiveTab = 
   | 'overview' 
@@ -66,13 +66,13 @@ const LOGISTICS_STATUS_MAP: Record<number, { label: string; bgClass: string; tex
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [MatProgressSpinner, MatIcon, FormsModule, MatPaginator, AsyncPipe, NgClass],
+  imports: [MatProgressSpinner, MatIcon, FormsModule, MatPaginator, MatFormField, MatLabel, MatOption, MatSelect],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.scss'],
 })
 export class AdminProfile {
   private adminService = inject(AdminProfileService);
-  private snackBar = inject(MatSnackBar);
+  private toastr = inject(ToastrService);
 
   // ═══════════════════════════════════════════════════════════════
   // 🏠 DASHBOARD
@@ -338,14 +338,12 @@ export class AdminProfile {
           
           this.profile.set(res.data);
           this.showEditModal.set(false);
-          this.notify('✅ تم حفظ البروفايل');
-        } else {
-          this.notify(res?.message ?? 'فشل الحفظ', true);
-        }
+          this.toastr.success('تم حفظ البروفايل', 'نجاح');
+        } 
         this.editLoading.set(false);
       },
       error: () => {
-        this.notify('فشل الحفظ', true);
+        this.toastr.error('فشل الحفظ', 'خطأ');
         this.editLoading.set(false);
       },
     });
@@ -364,15 +362,13 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadProfile();
-          this.notify('✅ تم تحديث الصورة');
-        } else {
-          this.notify(res?.message ?? 'فشل رفع الصورة', true);
-        }
+          this.toastr.success('تم تحديث الصورة', 'نجاح');
+        } 
         this.profileImageLoading.set(false);
         input.value = '';
       },
       error: () => {
-        this.notify('فشل رفع الصورة', true);
+        this.toastr.error('فشل رفع الصورة', 'خطأ');
         this.profileImageLoading.set(false);
         input.value = '';
       },
@@ -456,12 +452,10 @@ export class AdminProfile {
         if (res?.isSuccess) {
           this.loadUsers();
           this.loadPendingLists();
-          this.notify('✅ تم تغيير حالة المستخدم');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم تغيير حالة المستخدم', 'نجاح');
         }
       },
-      error: () => this.notify('فشل', true),
+      error: () => this.toastr.error('فشل', 'خطأ'),
     });
   }
 
@@ -471,12 +465,10 @@ export class AdminProfile {
         if (res?.isSuccess) {
           this.loadUsers();
           this.loadPendingLists();
-          this.notify('✅ تم توثيق المزارع');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
-        }
+          this.toastr.success('تم توثيق المزارع', 'نجاح');
+        } 
       },
-      error: () => this.notify('فشل', true),
+      error: () => this.toastr.error('فشل', 'خطأ'),
     });
   }
 
@@ -486,12 +478,10 @@ export class AdminProfile {
         if (res?.isSuccess) {
           this.loadUsers();
           this.loadPendingLists();
-          this.notify('✅ تم توثيق التاجر');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
-        }
+          this.toastr.success('تم توثيق التاجر', 'نجاح');
+        } 
       },
-      error: () => this.notify('فشل', true),
+      error: () => this.toastr.error('فشل', 'خطأ'),
     });
   }
 
@@ -510,14 +500,12 @@ export class AdminProfile {
         if (res?.isSuccess) {
           this.showUserRoleModal.set(false);
           this.loadUsers();
-          this.notify('✅ تم إضافة الدور');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم إضافة الدور', 'نجاح');
         }
         this.userRoleLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.userRoleLoading.set(false);
       },
     });
@@ -593,14 +581,12 @@ export class AdminProfile {
           if (res?.isSuccess) {
             this.showProductStatusModal.set(false);
             this.loadProducts();
-            this.notify('✅ تم تغيير حالة المنتج');
-          } else {
-            this.notify(res?.message ?? 'فشل', true);
+            this.toastr.success('تم تغيير حالة المنتج', 'نجاح');
           }
           this.productStatusLoading.set(false);
         },
         error: () => {
-          this.notify('فشل', true);
+          this.toastr.error('فشل', 'خطأ');
           this.productStatusLoading.set(false);
         },
       });
@@ -611,12 +597,10 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadProducts();
-          this.notify('✅ تم تغيير حالة المراجعة');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم تغيير حالة المراجعة', 'نجاح');
         }
       },
-      error: () => this.notify('فشل', true),
+      error: () => this.toastr.error('فشل', 'خطأ'),
     });
   }
 
@@ -633,15 +617,13 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadProducts();
-          this.notify('✅ تم حذف المنتج');
-        } else {
-          this.notify(res?.message ?? 'فشل الحذف', true);
-        }
+          this.toastr.success('تم حذف المنتج', 'نجاح');
+        } 
         this.deleteProductId.set(null);
         this.deleteLoading.set(false);
       },
       error: () => {
-        this.notify('فشل الحذف', true);
+        this.toastr.error('فشل الحذف', 'خطأ');
         this.deleteProductId.set(null);
         this.deleteLoading.set(false);
       },
@@ -702,13 +684,11 @@ export class AdminProfile {
               this.selectedOrderLogistics.set(logRes?.data ?? null);
             },
           });
-        } else {
-          this.notify(res?.message ?? 'فشل تحميل التفاصيل', true);
-        }
+        } 
         this.orderDetailsLoading.set(false);
       },
       error: () => {
-        this.notify('فشل تحميل التفاصيل', true);
+        this.toastr.error('فشل تحميل التفاصيل', 'خطأ');
         this.orderDetailsLoading.set(false);
       },
     });
@@ -728,14 +708,12 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadOrders();
-          this.notify('✅ تم تغيير حالة الطلب');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم تغيير حالة الطلب', 'نجاح');
         }
         this.orderActionLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.orderActionLoading.set(false);
       },
     });
@@ -754,15 +732,13 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadOrders();
-          this.notify('✅ تم إلغاء الطلب');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم إلغاء الطلب', 'نجاح');
         }
         this.cancelOrderId.set(null);
         this.cancelOrderLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.cancelOrderId.set(null);
         this.cancelOrderLoading.set(false);
       },
@@ -775,14 +751,12 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadOrders();
-          this.notify('✅ تم تغيير حالة اللوجستكس');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم تغيير حالة اللوجستكس', 'نجاح');
         }
         this.orderActionLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.orderActionLoading.set(false);
       },
     });
@@ -825,14 +799,12 @@ export class AdminProfile {
             this.showPaymentStatusModal.set(false);
             this.loadPayments();
             this.loadOrders();
-            this.notify('✅ تم تغيير حالة الدفع');
-          } else {
-            this.notify(res?.message ?? 'فشل', true);
+            this.toastr.success('تم تغيير حالة الدفع', 'نجاح');
           }
           this.paymentStatusLoading.set(false);
         },
         error: () => {
-          this.notify('فشل', true);
+          this.toastr.error('فشل', 'خطأ');
           this.paymentStatusLoading.set(false);
         },
       });
@@ -891,15 +863,13 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadAuctions();
-          this.notify('✅ تم حذف المزاد');
-        } else {
-          this.notify(res?.message ?? 'فشل الحذف', true);
-        }
+          this.toastr.success('تم حذف المزاد', 'نجاح');
+        } 
         this.deleteAuctionId.set(null);
         this.deleteAuctionLoading.set(false);
       },
       error: () => {
-        this.notify('فشل الحذف', true);
+        this.toastr.error('فشل الحذف', 'خطأ');
         this.deleteAuctionId.set(null);
         this.deleteAuctionLoading.set(false);
       },
@@ -940,14 +910,12 @@ export class AdminProfile {
         if (res?.isSuccess) {
           this.showCategoryModal.set(false);
           this.loadCategories();
-          this.notify(isEdit ? '✅ تم تعديل الفئة' : '✅ تم إضافة الفئة');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success(isEdit ? 'تم تعديل الفئة' : 'تم إضافة الفئة', 'نجاح');
         }
         this.categoryLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.categoryLoading.set(false);
       },
     });
@@ -1012,14 +980,15 @@ export class AdminProfile {
         if (res?.isSuccess) {
           this.showDeliveryModal.set(false);
           this.loadDeliveryMethods();
-          this.notify(isEdit ? '✅ تم تعديل طريقة التوصيل' : '✅ تم إضافة طريقة التوصيل');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success(
+            isEdit ? 'تم تعديل طريقة التوصيل' : 'تم إضافة طريقة التوصيل',
+            'نجاح'
+          );
         }
         this.deliverySubmitLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.deliverySubmitLoading.set(false);
       },
     });
@@ -1032,14 +1001,12 @@ export class AdminProfile {
         next: (res) => {
           if (res?.isSuccess) {
             this.loadDeliveryMethods();
-            this.notify('✅ تم حذف طريقة التوصيل');
-          } else {
-            this.notify(res?.message ?? 'فشل الحذف', true);
-          }
+            this.toastr.success('تم حذف طريقة التوصيل', 'نجاح');
+          } 
           this.deleteDeliveryLoading.set(false);
         },
         error: () => {
-          this.notify('فشل الحذف', true);
+          this.toastr.error('فشل الحذف', 'خطأ');
           this.deleteDeliveryLoading.set(false);
         },
       });
@@ -1068,14 +1035,12 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadPendingReviews();
-          this.notify('✅ تم قبول المراجعة');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم قبول المراجعة', 'نجاح');
         }
         this.reviewActionLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.reviewActionLoading.set(false);
       },
     });
@@ -1088,14 +1053,12 @@ export class AdminProfile {
       next: (res) => {
         if (res?.isSuccess) {
           this.loadPendingReviews();
-          this.notify('✅ تم حذف المراجعة');
-        } else {
-          this.notify(res?.message ?? 'فشل', true);
+          this.toastr.success('تم حذف المراجعة', 'نجاح');
         }
         this.reviewActionLoading.set(false);
       },
       error: () => {
-        this.notify('فشل', true);
+        this.toastr.error('فشل', 'خطأ');
         this.reviewActionLoading.set(false);
       },
     });
@@ -1178,13 +1141,6 @@ export class AdminProfile {
       minute: '2-digit',
     });
   }
+  
 
-  private notify(msg: string, isError = false): void {
-    this.snackBar.open(msg, 'إغلاق', {
-      duration: 3000,
-      panelClass: isError ? ['snack-error'] : ['snack-success'],
-      horizontalPosition: 'center',
-      verticalPosition: 'top',
-    });
-  }
 }
