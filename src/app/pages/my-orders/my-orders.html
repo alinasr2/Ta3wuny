@@ -83,6 +83,18 @@
                   </p>
                 </div>
                 <div class="flex gap-3">
+                  @if (canReviewOrder(order)) {
+                  <button (click)="openReviewModal(order)"
+                    class="border-2 border-secondary text-secondary px-4 py-2 rounded-xl text-sm font-medium hover:bg-secondary/10 transition-all">
+                    <i class="pi pi-star me-1"></i>
+                    قيّم المزارع
+                  </button>
+                  } @else if (isOrderReviewed(order)) {
+                  <span class="border-2 border-gray-200 text-text-secondary px-4 py-2 rounded-xl text-sm font-medium">
+                    <i class="pi pi-check me-1"></i>
+                    تم التقييم
+                  </span>
+                  }
                   <a [routerLink]="['/order-confirmation', order.id]"
                     class="border-2 border-primary text-primary px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-light/10 transition-all">
                     التفاصيل
@@ -103,3 +115,84 @@
 
   </div>
 </div>
+
+<!-- Review Modal -->
+@if (showReviewModal) {
+<!-- Overlay -->
+<div (click)="closeReviewModal()"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+  <!-- Modal Content -->
+  <div (click)="$event.stopPropagation()" class="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6">
+
+    <!-- رأس الـ Modal -->
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold text-text-primary">تقييم المزارع</h3>
+      <button (click)="closeReviewModal()" class="text-text-secondary hover:text-error transition-colors">
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+
+    @if (reviewSuccess) {
+    <!-- رسالة النجاح -->
+    <div class="text-center py-8">
+      <div class="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-check-circle text-4xl text-success"></i>
+      </div>
+      <h4 class="text-lg font-semibold text-text-primary">شكراً على تقييمك!</h4>
+      <p class="text-text-secondary mt-1">تم إرسال تقييمك بنجاح</p>
+    </div>
+    } @else {
+
+    <!-- النجوم -->
+    <div class="mb-6">
+      <label class="block text-text-primary font-medium mb-3">التقييم</label>
+      <div class="flex items-center gap-2 justify-center">
+        @for (star of [1,2,3,4,5]; track star) {
+        <button (click)="setRating(star)" class="text-4xl transition-all hover:scale-110">
+          <i class="pi pi-star-fill" [class.text-secondary]="star <= reviewRating"
+            [class.text-gray-300]="star > reviewRating"></i>
+        </button>
+        }
+      </div>
+      <p class="text-center text-text-secondary text-sm mt-2">
+        {{ reviewRating === 1 ? 'سيء جداً' :
+        reviewRating === 2 ? 'سيء' :
+        reviewRating === 3 ? 'مقبول' :
+        reviewRating === 4 ? 'جيد' : 'ممتاز' }}
+      </p>
+    </div>
+
+    <!-- التعليق -->
+    <div class="mb-6">
+      <label class="block text-text-primary font-medium mb-2">تعليقك</label>
+      <textarea [(ngModel)]="reviewComment" rows="4" placeholder="شاركنا تجربتك مع هذا المزارع..."
+        class="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-primary bg-surface text-text-primary placeholder-text-secondary resize-none">
+          </textarea>
+    </div>
+
+    <!-- رسالة خطأ -->
+    @if (reviewError) {
+    <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+      {{ reviewError }}
+    </div>
+    }
+
+    <!-- أزرار -->
+    <div class="flex gap-3">
+      <button (click)="closeReviewModal()"
+        class="flex-1 border-2 border-gray-200 text-text-primary py-3 rounded-xl font-semibold hover:border-primary transition-all">
+        إلغاء
+      </button>
+      <button (click)="submitReview()" [disabled]="isSubmittingReview || !reviewComment.trim()"
+        class="flex-1 bg-primary text-text-on-primary py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all disabled:opacity-50">
+        @if (isSubmittingReview) {
+        <i class="pi pi-spinner pi-spin me-2"></i>
+        }
+        إرسال التقييم
+      </button>
+    </div>
+    }
+  </div>
+</div>
+}
