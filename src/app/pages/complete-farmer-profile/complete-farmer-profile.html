@@ -1,0 +1,52 @@
+<div class="min-h-screen bg-background flex items-center justify-center p-4">
+  <div class="bg-surface rounded-2xl shadow-sm w-full max-w-md p-8">
+
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064">
+          </path>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-text-primary">أكمل ملفك كمزارع</h1>
+      <p class="text-text-secondary mt-1">أضف بيانات مزرعتك للبدء</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+
+      <div>
+        <label class="block text-text-primary font-medium mb-2">اسم المزرعة *</label>
+        <input type="text" formControlName="farmName" placeholder="مزرعة النيل"
+          class="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-primary bg-surface text-text-primary placeholder-text-secondary" />
+        @if (form.get('farmName')?.invalid && form.get('farmName')?.touched) {
+        <p class="text-error text-sm mt-1">اسم المزرعة مطلوب</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-text-primary font-medium mb-2">
+          الوصف <span class="text-text-secondary font-normal">(اختياري)</span>
+        </label>
+        <textarea formControlName="description" rows="3" placeholder="اكتب نبذة عن مزرعتك..."
+          class="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-primary bg-surface text-text-primary placeholder-text-secondary resize-none">
+        </textarea>
+      </div>
+
+      @if (error()) {
+      <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-red-600 text-sm">
+        {{ error() }}
+      </div>
+      }
+
+      <button type="submit" [disabled]="form.invalid || loading()"
+        class="w-full bg-primary text-text-on-primary py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all disabled:opacity-50">
+        @if (loading()) {
+        <span
+          class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full me-2"></span>
+        }
+        حفظ وإكمال
+      </button>
+    </form>
+  </div>
+</div>
