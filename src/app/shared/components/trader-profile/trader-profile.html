@@ -1,758 +1,643 @@
-<!-- trader-profile.html -->
-<div class="profile-page min-h-screen bg-background" dir="rtl">
+<div class="profile-page mb-6 min-h-screen bg-background" dir="rtl">
 
   <!-- ════ PROFILE HEADER ════ -->
   @if (profileLoading()) {
-  <div class="flex items-center justify-center py-20">
-    <mat-spinner [diameter]="48"></mat-spinner>
-  </div>
+    <div class="flex items-center justify-center py-20">
+      <mat-spinner [diameter]="48"></mat-spinner>
+    </div>
   }
 
   @if (!profileLoading() && profile(); as p) {
-  <div class="profile-hero mb-6 relative overflow-hidden">
-    <!-- Cover gradient -->
-    <div class="h-40 bg-gradient-to-l from-primary-dark via-primary to-primary-light relative">
-      <div class="absolute inset-0 opacity-10"
-        style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;">
-      </div>
-    </div>
-
-    <!-- Profile card -->
-    <div class="container relative">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 -mt-12 p-6">
-        <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
-
-          <!-- Avatar -->
-          <div class="relative -mt-16 sm:-mt-20 flex-shrink-0">
-            <div
-              class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-accent flex items-center justify-center">
-              @if (p.profileImageUrl && p.profileImageUrl !== 'https://t3awuny.runasp.net') {
-              <img [src]="p.profileImageUrl" [alt]="p.name" class="w-full h-full object-cover" />
-              } @else {
-              <mat-icon class="!text-5xl text-primary">person</mat-icon>
-              }
-            </div>
-            <!-- Change image button -->
-            <label
-              class="absolute -bottom-2 -left-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary-dark transition-all"
-              [matTooltip]="'تغيير الصورة'">
-              @if (profileImageLoading()) {
-              <mat-spinner [diameter]="16" color="accent"></mat-spinner>
-              } @else {
-              <mat-icon class="!text-sm text-white">photo_camera</mat-icon>
-              }
-              <input type="file" accept="image/*" class="hidden" (change)="onProfileImageChange($event)" />
-            </label>
-          </div>
-
-          <!-- Info -->
-          <div class="flex-1 min-w-0 pb-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-2xl font-bold text-text-primary">{{ p.name }}</h1>
-              @if (p.isVerified) {
-              <span
-                class="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">
-                <mat-icon class="!text-xs">verified</mat-icon> موثّق
-              </span>
-              }
-            </div>
-            <p class="text-text-secondary text-sm mt-0.5 flex items-center gap-1">
-              <mat-icon class="!text-sm text-primary">storefront</mat-icon>
-              {{ p.businessName || 'لم يُحدَّد اسم النشاط التجاري' }}
-            </p>
-            @if (p.address) {
-            <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
-              <mat-icon class="!text-xs">location_on</mat-icon>
-              {{ p.address.city }}، {{ p.address.governorate }}، {{ p.address.country }}
-            </p>
-            }
-            @if (p.description) {
-            <p class="text-text-secondary text-sm mt-2 line-clamp-2">{{ p.description }}</p>
-            }
-          </div>
-
-          <!-- Actions -->
-          <div class="flex items-center gap-2 flex-shrink-0 pb-1">
-            <p class="text-xs text-gray-400 hidden sm:block">
-              انضم {{ formatDate(p.joinDate) }}
-            </p>
-            <button (click)="openEditModal()"
-              class="flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
-              <mat-icon class="!text-base">edit</mat-icon>
-              تعديل البروفايل
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ TABS ════ -->
-  <div class="container">
-    <!-- Tab Nav -->
-    <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto">
-      @for (tab of [
-      { id: 'overview', label: 'نظرة عامة', icon: 'dashboard' },
-      { id: 'orders', label: 'الطلبات', icon: 'receipt_long' },
-      { id: 'auctions', label: 'مزاداتي', icon: 'gavel' }
-      ]; track tab.id) {
-      <button (click)="setTab($any(tab.id))" [class.bg-primary]="activeTab() === tab.id"
-        [class.text-white]="activeTab() === tab.id" [class.text-text-secondary]="activeTab() !== tab.id"
-        [class.hover:bg-green-50]="activeTab() !== tab.id"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex-1 justify-center ">
-        <mat-icon class="!text-base">{{ tab.icon }}</mat-icon>
-        {{ tab.label }}
-      </button>
-      }
-    </div>
-
-    <!-- ── Overview Tab ── -->
-    @if (activeTab() === 'overview') {
-    <div class="mt-6">
-
-      <!-- Profile Details Card -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-          <mat-icon class="text-primary">person</mat-icon> بيانات الحساب
-        </h2>
-        <div class="space-y-3 grid grid-cols-3 gap-5">
-          @for (row of [
-          { icon: 'badge', label: 'الاسم', value: p.name },
-          { icon: 'alternate_email', label: 'البريد الإلكتروني', value: p.email },
-          { icon: 'account_circle', label: 'اسم المستخدم', value: p.userName },
-          { icon: 'storefront', label: 'اسم النشاط التجاري', value: p.businessName },
-          { icon: 'business', label: 'نوع النشاط', value: getBusinessType(p.businessType) },
-          { icon: 'receipt', label: 'الرقم الضريبي', value: p.taxNumber }
-          ]; track row.label) {
-          <div class="flex items-center gap-3 py-2 border-b border-gray-50">
-            <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-              <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
-            </div>
-            <div>
-              <p class="text-xs text-text-secondary">{{ row.label }}</p>
-              <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
-            </div>
-          </div>
-          }
-          @if (p.description) {
-          <div class="pt-2">
-            <p class="text-xs text-text-secondary mb-1 flex items-center gap-1">
-              <mat-icon class="!text-xs">description</mat-icon> الوصف
-            </p>
-            <p class="text-sm text-text-primary leading-relaxed">{{ p.description }}</p>
-          </div>
-          }
-        </div>
+    <div class="profile-hero mb-6 relative overflow-hidden">
+      <!-- Cover gradient -->
+      <div class="h-40 bg-gradient-to-l from-primary-dark via-primary to-primary-light relative">
+        <div class="absolute inset-0 opacity-10"
+          style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
       </div>
 
-      <!-- Address Card -->
-      @if (p.address) {
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-          <mat-icon class="text-primary">location_on</mat-icon> العنوان
-        </h2>
-        <div class="space-y-3">
-          @for (row of [
-          { icon: 'signpost', label: 'الشارع', value: p.address.street },
-          { icon: 'location_city', label: 'المدينة', value: p.address.city },
-          { icon: 'map', label: 'المحافظة', value: p.address.governorate },
-          { icon: 'flag', label: 'الدولة', value: p.address.country },
-          { icon: 'local_post_office', label: 'الرمز البريدي', value: p.address.postalCode }
-          ]; track row.label) {
-          <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-            <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-              <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
-            </div>
-            <div>
-              <p class="text-xs text-text-secondary">{{ row.label }}</p>
-              <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
-            </div>
-          </div>
-          }
-        </div>
-      </div>
-      }
+      <!-- Profile card -->
+      <div class="container relative">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 -mt-12 p-6">
+          <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
 
-    </div>
-    }
-
-    <!-- ── Orders Tab ── -->
-    @if (activeTab() === 'orders') {
-    <div class="mt-6">
-      @if (ordersLoading()) {
-      <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
-      }
-
-      @if (!ordersLoading() && orders().length === 0) {
-      <div class="flex flex-col items-center py-20 gap-3">
-        <mat-icon class="!text-5xl text-gray-300">receipt_long</mat-icon>
-        <p class="text-text-secondary font-bold">لا توجد طلبات بعد</p>
-      </div>
-      }
-
-      @if (!ordersLoading() && orders().length > 0) {
-      <div class="flex flex-col gap-4">
-        @for (order of orders(); track order.id) {
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <!-- Order header -->
-          <div class="flex items-center justify-between p-4 border-b border-gray-50 flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
-                <mat-icon class="!text-base text-primary">receipt_long</mat-icon>
+            <!-- Avatar -->
+            <div class="relative -mt-16 sm:-mt-20 flex-shrink-0">
+              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-accent flex items-center justify-center">
+                @if (p.profileImageUrl && p.profileImageUrl !== 'https://t3awuny.runasp.net') {
+                  <img [src]="p.profileImageUrl" [alt]="p.name" class="w-full h-full object-cover" />
+                } @else {
+                  <mat-icon class="!text-5xl text-primary">person</mat-icon>
+                }
               </div>
-              <div>
-                <p class="font-bold text-text-primary text-sm">طلب #{{ order.id }}</p>
-                <p class="text-xs text-text-secondary flex items-center gap-1">
-                  <mat-icon class="!text-xs">storefront</mat-icon>
-                  {{ order.farmerName || 'المزارع' }}
+              <!-- Change image button -->
+              <label class="absolute -bottom-2 -left-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-primary-dark transition-all"
+                [matTooltip]="'تغيير الصورة'">
+                @if (profileImageLoading()) {
+                  <mat-spinner [diameter]="16" color="accent"></mat-spinner>
+                } @else {
+                  <mat-icon class="!text-sm text-white">photo_camera</mat-icon>
+                }
+                <input type="file" accept="image/*" class="hidden" (change)="onProfileImageChange($event)" />
+              </label>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0 pb-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold text-text-primary">{{ p.name }}</h1>
+                @if (p.isVerified) {
+                  <span class="flex items-center gap-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">
+                    <mat-icon class="!text-xs">verified</mat-icon> موثّق
+                  </span>
+                }
+              </div>
+              <p class="text-text-secondary text-sm mt-0.5 flex items-center gap-1">
+                <mat-icon class="!text-sm text-primary">storefront</mat-icon>
+                {{ p.businessName || 'لم يُحدَّد اسم النشاط التجاري' }}
+              </p>
+              @if (p.address) {
+                <p class="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                  <mat-icon class="!text-xs">location_on</mat-icon>
+                  {{ p.address.city }}، {{ p.address.governorate }}، {{ p.address.country }}
                 </p>
-              </div>
+              }
+              @if (p.description) {
+                <p class="text-text-secondary text-sm mt-2 line-clamp-2">{{ p.description }}</p>
+              }
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-              @let oStatus = getOrderStatus(order.status);
-              <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                [class]="oStatus.bgClass + ' ' + oStatus.textClass">
-                <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
-                {{ oStatus.label }}
-              </span>
-              <span class="text-base font-bold text-primary">{{ formatPrice(order.total) }}</span>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-shrink-0 pb-1">
+              <p class="text-xs text-gray-400 hidden sm:block">
+                انضم {{ formatDate(p.joinDate) }}
+              </p>
+              <button (click)="openEditModal()"
+                class="flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
+                <mat-icon class="!text-base">edit</mat-icon>
+                تعديل البروفايل
+              </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
 
-          <!-- Order items -->
-          <div class="p-4 border-b border-gray-50">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              @for (item of order.items; track item.productId) {
-              <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
-                <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'" [alt]="item.productName"
-                  class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                  onerror="this.src='https://placehold.co/60x60?text=صورة'" />
-                <div class="min-w-0">
-                  <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
-                  <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{
-                    formatPrice(item.unitPriceAtOrder) }}</p>
-                  <p class="text-xs text-primary font-bold">{{ formatPrice(item.subtotal) }}</p>
+    <!-- ════ TABS ════ -->
+    <div class="container">
+      <!-- Tab Nav -->
+      <div class="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1.5 shadow-sm overflow-x-auto">
+        @for (tab of [
+          { id: 'overview', label: 'نظرة عامة', icon: 'dashboard' },
+          { id: 'orders',   label: 'الطلبات',   icon: 'receipt_long' },
+          { id: 'auctions', label: 'مزاداتي',   icon: 'gavel' }
+        ]; track tab.id) {
+          <button
+            (click)="setTab($any(tab.id))"
+            [class.bg-primary]="activeTab() === tab.id"
+            [class.text-white]="activeTab() === tab.id"
+            [class.text-text-secondary]="activeTab() !== tab.id"
+            [class.hover:bg-green-50]="activeTab() !== tab.id"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex-1 justify-center ">
+            <mat-icon class="!text-base">{{ tab.icon }}</mat-icon>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- ── Overview Tab ── -->
+      @if (activeTab() === 'overview') {
+        <div class="mt-6">
+
+          <!-- Profile Details Card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+              <mat-icon class="text-primary">person</mat-icon> بيانات الحساب
+            </h2>
+            <div class="space-y-3 grid sm:grid-cols-2 gap-4">
+              @for (row of [
+                { icon: 'badge', label: 'الاسم', value: p.name },
+                { icon: 'alternate_email', label: 'البريد الإلكتروني', value: p.email },
+                { icon: 'account_circle', label: 'اسم المستخدم', value: p.userName },
+                { icon: 'storefront', label: 'اسم النشاط التجاري', value: p.businessName },
+                { icon: 'business', label: 'نوع النشاط', value: getBusinessType(p.businessType) },
+                { icon: 'receipt', label: 'الرقم الضريبي', value: p.taxNumber }
+              ]; track row.label) {
+                <div class="flex items-center gap-3 py-2 border-b border-gray-50 ">
+                  <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                    <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
+                  </div>
+                  <div>
+                    <p class="text-xs text-text-secondary">{{ row.label }}</p>
+                    <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
+                  </div>
                 </div>
-              </div>
+              }
+              @if (p.description) {
+                <div class="pt-2">
+                  <p class="text-xs text-text-secondary mb-1 flex items-center gap-1">
+                    <mat-icon class="!text-xs">description</mat-icon> الوصف
+                  </p>
+                  <p class="text-sm text-text-primary leading-relaxed">{{ p.description }}</p>
+                </div>
               }
             </div>
           </div>
 
-          <!-- Actions -->
-          <div class="p-4 flex items-center gap-2 flex-wrap">
-            @if (order.status === 'Pending' || order.status === 'Confirmed' || order.status === 'Preparing') {
-            <button (click)="cancelOrder(order.id)" [disabled]="orderActionLoading()"
-              class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all disabled:opacity-60">
-              <mat-icon class="!text-base">cancel</mat-icon> إلغاء الطلب
-            </button>
-            }
-            <span class="mr-auto text-xs text-gray-400 flex items-center gap-1">
-              <mat-icon class="!text-xs">payments</mat-icon> {{ order.paymentStatus }}
-            </span>
-            <button (click)="viewOrderDetails(order.id)"
-              class="flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
-              <mat-icon class="!text-base">visibility</mat-icon> التفاصيل
-            </button>
-            @if (canReviewOrder(order)) {
-            <button (click)="openReviewModal(order)"
-              class="flex items-center gap-1.5 px-4 py-2 border border-secondary text-secondary rounded-xl text-sm font-bold hover:bg-secondary/10 transition-all">
-              <mat-icon class="!text-base">star</mat-icon> قيّم المزارع
-            </button>
-            } @else if (isOrderReviewed(order)) {
-            <span
-              class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-text-secondary rounded-xl text-sm font-bold">
-              <mat-icon class="!text-base">check</mat-icon> تم التقييم
-            </span>
-            }
-          </div>
+          <!-- Address Card -->
+          @if (p.address) {
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <mat-icon class="text-primary">location_on</mat-icon> العنوان
+              </h2>
+              <div class="space-y-3">
+                @for (row of [
+                  { icon: 'signpost', label: 'الشارع', value: p.address.street },
+                  { icon: 'location_city', label: 'المدينة', value: p.address.city },
+                  { icon: 'map', label: 'المحافظة', value: p.address.governorate },
+                  { icon: 'flag', label: 'الدولة', value: p.address.country },
+                  { icon: 'local_post_office', label: 'الرمز البريدي', value: p.address.postalCode }
+                ]; track row.label) {
+                  <div class="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                      <mat-icon class="!text-base text-primary">{{ row.icon }}</mat-icon>
+                    </div>
+                    <div>
+                      <p class="text-xs text-text-secondary">{{ row.label }}</p>
+                      <p class="text-sm font-bold text-text-primary">{{ row.value || '—' }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
         </div>
-        }
-      </div>
+      }
+
+      <!-- ── Orders Tab ── -->
+      @if (activeTab() === 'orders') {
+        <div class="mt-6">
+          @if (ordersLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!ordersLoading() && orders().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">receipt_long</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد طلبات بعد</p>
+            </div>
+          }
+
+          @if (!ordersLoading() && orders().length > 0) {
+            <div class="flex flex-col gap-4">
+              @for (order of orders(); track order.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <!-- Order header -->
+                  <div class="flex items-center justify-between p-4 border-b border-gray-50 flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-accent flex items-center justify-center cursor-pointer hover:bg-green-100 transition-colors" (click)="viewOrderDetails(order.id)">
+                        <mat-icon class="!text-base text-primary">receipt_long</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm cursor-pointer hover:text-primary transition-colors" (click)="viewOrderDetails(order.id)">طلب #{{ order.id }}</p>
+                        <p class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">agriculture</mat-icon>
+                          {{ order.farmerName || 'المزارع' }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      @let oStatus = getOrderStatus(order.status);
+                      <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                        [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                        <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                        {{ oStatus.label }}
+                      </span>
+                      <span class="text-base font-bold text-primary">{{ formatPrice(order.total) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Order items -->
+                  <div class="p-4 border-b border-gray-50">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      @for (item of order.items; track item.productId) {
+                        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
+                          <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'"
+                            [alt]="item.productName"
+                            class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                            onerror="this.src='https://placehold.co/60x60?text=صورة'" />
+                          <div class="min-w-0">
+                            <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
+                            <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}</p>
+                            <p class="text-xs text-primary font-bold">{{ formatPrice(item.subtotal) }}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="p-4 flex items-center gap-2 flex-wrap">
+                    @if (order.status === 'Pending' || order.status === 'Confirmed' || order.status === 'Preparing') {
+                      <button (click)="cancelOrder(order.id)" [disabled]="orderActionLoading()"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-all disabled:opacity-60">
+                        <mat-icon class="!text-base">cancel</mat-icon> إلغاء الطلب
+                      </button>
+                    }
+                    <button (click)="viewOrderDetails(order.id)"
+                      class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-text-secondary rounded-xl text-sm font-bold hover:bg-gray-50 transition-all">
+                      <mat-icon class="!text-base">visibility</mat-icon> تفاصيل الطلب
+                    </button>
+                    
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Auctions Tab ── -->
+      @if (activeTab() === 'auctions') {
+        <div class="mt-6">
+          @if (auctionsLoading()) {
+            <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
+          }
+
+          @if (!auctionsLoading() && auctions().length === 0) {
+            <div class="flex flex-col items-center py-20 gap-3">
+              <mat-icon class="!text-5xl text-gray-300">gavel</mat-icon>
+              <p class="text-text-secondary font-bold">لا توجد مزادات فائزة</p>
+            </div>
+          }
+
+          @if (!auctionsLoading() && auctions().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (auction of auctions(); track auction.id) {
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all flex flex-col gap-4">
+                  <!-- Header -->
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                        <mat-icon class="!text-xl text-primary">gavel</mat-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-text-primary text-sm">{{ auction.productName }}</p>
+                        <p class="text-xs text-text-secondary">{{ auction.productQuantity }} {{ auction.productUnit }}</p>
+                      </div>
+                    </div>
+                    @let aStatus = auction.isEnded ? 'Ended' : 'Active';
+                    <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                      [class]="aStatus === 'Ended' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'">
+                      <mat-icon class="!text-xs">{{ aStatus === 'Ended' ? 'check_circle' : 'play_circle' }}</mat-icon>
+                      {{ aStatus === 'Ended' ? 'فائز' : 'جارٍ' }}
+                    </span>
+                  </div>
+
+                  <!-- Image -->
+                  @if (auction.mainImageUrl) {
+                    <div class="rounded-xl overflow-hidden h-32 bg-gray-100">
+                      <img [src]="auction.mainImageUrl" [alt]="auction.productName" class="w-full h-full object-cover" />
+                    </div>
+                  }
+
+                  <!-- Details -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-text-secondary text-xs">السعر الحالي</span>
+                      <span class="font-bold text-primary text-lg">{{ formatPrice(auction.currentPrice || auction.highestBid || auction.startingPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">السعر الابتدائي</span>
+                      <span class="text-xs font-bold text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-text-secondary">عدد المزايدات</span>
+                      <span class="text-xs font-bold text-text-primary">{{ auction.totalBids || 0 }}</span>
+                    </div>
+                    @if (auction.winnerName) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary">الفائز</span>
+                        <span class="text-xs font-bold text-green-600">{{ auction.winnerName }}</span>
+                      </div>
+                    }
+                    @if (!auction.isEnded && auction.minutesRemaining !== undefined) {
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs text-text-secondary flex items-center gap-1">
+                          <mat-icon class="!text-xs">timer</mat-icon> الوقت المتبقي
+                        </span>
+                        <span class="text-xs font-bold text-primary">{{ auction.minutesRemaining }} دقيقة</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Dates -->
+                  <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">البداية</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.startDate) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                      <p class="text-gray-400 mb-0.5">النهاية</p>
+                      <p class="font-bold text-text-primary">{{ formatDateTime(auction.endDate) }}</p>
+                    </div>
+                  </div>
+
+                  <a [href]="'/auctions/' + auction.id"
+                    class="flex items-center justify-center gap-2 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
+                    <mat-icon class="!text-base">visibility</mat-icon>
+                    عرض المزاد
+                  </a>
+                </div>
+              }
+            </div>
+          }
+        </div>
       }
     </div>
-    }
-
-    <!-- ── Auctions Tab ── -->
-    @if (activeTab() === 'auctions') {
-    <div class="mt-6">
-      @if (auctionsLoading()) {
-      <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
-      }
-
-      @if (!auctionsLoading() && auctions().length === 0) {
-      <div class="flex flex-col items-center py-20 gap-3">
-        <mat-icon class="!text-5xl text-gray-300">gavel</mat-icon>
-        <p class="text-text-secondary font-bold">لا توجد مزادات فائزة</p>
-      </div>
-      }
-
-      @if (!auctionsLoading() && auctions().length > 0) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        @for (auction of auctions(); track auction.id) {
-        <div
-          class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all flex flex-col gap-4">
-          <!-- Header -->
-          <div class="flex items-start justify-between gap-2">
-            <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0 overflow-hidden">
-              <img [src]="auction.mainImageUrl || 'https://placehold.co/40x40?text=صورة'" [alt]="auction.productName"
-                class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40?text=صورة'" />
-            </div>
-            @let aStatus = auction.isEnded ? 'Ended' : 'Active';
-            <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-              [class]="aStatus === 'Ended' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'">
-              <mat-icon class="!text-xs">{{ aStatus === 'Ended' ? 'check_circle' : 'play_circle' }}</mat-icon>
-              {{ aStatus === 'Ended' ? 'فائز' : 'جارٍ' }}
-            </span>
-          </div>
-
-          <!-- Details -->
-          <div>
-            <h3 class="font-bold text-text-primary text-sm">{{ auction.productName }}</h3>
-            <p class="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
-              <mat-icon class="!text-xs">person</mat-icon>
-              {{ auction.farmerName }}
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-text-secondary text-xs">سعر البداية</span>
-              <span class="text-sm text-text-primary">{{ formatPrice(auction.startingPrice) }}</span>
-            </div>
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-text-secondary text-xs">أعلى عرض</span>
-              <span class="font-bold text-primary">{{ formatPrice(auction.currentPrice || auction.highestBid ||
-                auction.startingPrice) }}</span>
-            </div>
-            @if (!auction.isEnded && auction.minutesRemaining !== undefined) {
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-text-secondary flex items-center gap-1">
-                <mat-icon class="!text-xs">timer</mat-icon> الوقت المتبقي
-              </span>
-              <span class="text-xs font-bold text-primary">{{ auction.minutesRemaining }} دقيقة</span>
-            </div>
-            }
-          </div>
-
-          <!-- Dates -->
-          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
-            <div class="bg-gray-50 rounded-lg p-2">
-              <p class="text-gray-400 mb-0.5">البداية</p>
-              <p class="font-bold text-text-primary">{{ formatDate(auction.startDate) }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-2">
-              <p class="text-gray-400 mb-0.5">النهاية</p>
-              <p class="font-bold text-text-primary">{{ formatDate(auction.endDate) }}</p>
-            </div>
-          </div>
-
-          <a [href]="'/auctions/' + auction.id"
-            class="flex items-center justify-center gap-2 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all">
-            <mat-icon class="!text-base">visibility</mat-icon>
-            عرض المزاد
-          </a>
-        </div>
-        }
-      </div>
-      }
-    </div>
-    }
-  </div>
   }
 
   <!-- ════ MODALS ════ -->
 
   <!-- Edit Profile Modal -->
   @if (showEditModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-      <div class="flex items-center justify-between p-5 border-b border-gray-100">
-        <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
-          <mat-icon class="text-primary">edit</mat-icon>
-          تعديل البروفايل
-        </h2>
-        <button (click)="showEditModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="p-5 space-y-4">
-        @for (field of [
-        { key: 'name', label: 'الاسم الكامل', icon: 'badge', type: 'text' },
-        { key: 'businessName', label: 'اسم النشاط التجاري', icon: 'storefront', type: 'text' },
-        { key: 'businessType', label: 'نوع النشاط', icon: 'business', type: 'select' },
-        { key: 'taxNumber', label: 'الرقم الضريبي', icon: 'receipt', type: 'text' },
-        { key: 'description', label: 'الوصف', icon: 'description', type: 'textarea' }
-        ]; track field.key) {
-        <div>
-          <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">
-            {{ field.label }}
-          </label>
-          @if (field.key === 'businessType') {
-          <select [ngModel]="editForm()[field.key]" (ngModelChange)="updateEditForm(field.key, $event)"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm">
-            <option value="">اختر نوع النشاط</option>
-            <option value="0">مزرعة</option>
-            <option value="1">تاجر جملة</option>
-            <option value="2">موزع</option>
-            <option value="3">مصنع</option>
-            <option value="4">أخرى</option>
-          </select>
-          } @else if (field.type === 'textarea') {
-          <textarea [value]="editForm()[field.key]" (input)="updateEditForm(field.key, $any($event.target).value)"
-            rows="3"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 resize-none text-sm">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">edit</mat-icon>
+            تعديل البروفايل
+          </h2>
+          <button (click)="showEditModal.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          @for (field of [
+            { key: 'name',          label: 'الاسم الكامل',     icon: 'badge',       type: 'text'     },
+            { key: 'businessName',  label: 'اسم النشاط التجاري', icon: 'storefront', type: 'text'     },
+            { key: 'businessType',  label: 'نوع النشاط',       icon: 'business',    type: 'select'   },
+            { key: 'taxNumber',     label: 'الرقم الضريبي',     icon: 'receipt',     type: 'text'     },
+            { key: 'description',   label: 'الوصف',            icon: 'description', type: 'textarea' }
+          ]; track field.key) {
+            <div>
+              <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">
+                {{ field.label }}
+              </label>
+              @if (field.key === 'businessType') {
+                <mat-select
+                [(ngModel)]="editForm()[field.key]"
+                  [value]="editForm()[field.key]"
+                  (valueChange)="updateEditForm(field.key, $event)"
+                  class="w-full rounded-xl border border-gray-200 p-2 focus:ring-2 focus:ring-primary outline-none bg-gray-50 text-sm"
+                  placeholder="اختر نوع النشاط">
+                  <mat-option value="">اختر نوع النشاط</mat-option>
+                  <mat-option value="0">مزرعة</mat-option>
+                  <mat-option value="1">تاجر جملة</mat-option>
+                  <mat-option value="2">موزع</mat-option>
+                  <mat-option value="3">مصنع</mat-option>
+                  <mat-option value="4">أخرى</mat-option>
+                </mat-select>
+              } @else if (field.type === 'textarea') {
+                <textarea
+                  [value]="editForm()[field.key]"
+                  (input)="updateEditForm(field.key, $any($event.target).value)"
+                  rows="3"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 resize-none text-sm">
                 </textarea>
-          } @else {
-          <input [type]="field.type" [value]="editForm()[field.key]"
-            (input)="updateEditForm(field.key, $any($event.target).value)"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm" />
+              } @else {
+                <input
+                  [type]="field.type"
+                  [value]="editForm()[field.key]"
+                  (input)="updateEditForm(field.key, $any($event.target).value)"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-50 text-sm" />
+              }
+            </div>
           }
         </div>
-        }
-      </div>
-      <div class="flex gap-2 p-5 border-t border-gray-100">
-        <button (click)="saveProfile()" [disabled]="editLoading()"
-          class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
-          @if (editLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
-          حفظ التغييرات
-        </button>
-        <button (click)="showEditModal.set(false)"
-          class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
-          إلغاء
-        </button>
+        <div class="flex gap-2 p-5 border-t border-gray-100">
+          <button (click)="saveProfile()" [disabled]="editLoading()"
+            class="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+            @if (editLoading()) { <mat-spinner [diameter]="18" color="accent"></mat-spinner> }
+            حفظ التغييرات
+          </button>
+          <button (click)="showEditModal.set(false)"
+            class="px-5 py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
+            إلغاء
+          </button>
+        </div>
       </div>
     </div>
-  </div>
   }
 
   <!-- Order Details Modal -->
   @if (showOrderDetails()) {
-  <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto"
-    dir="rtl">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mb-8">
-      <div class="flex items-center justify-between p-5 border-b border-gray-100">
-        <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
-          <mat-icon class="text-primary">receipt_long</mat-icon>
-          تفاصيل الطلب #{{ selectedOrder()?.id }}
-        </h2>
-        <button (click)="showOrderDetails.set(false)" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-
-      @if (orderDetailsLoading()) {
-      <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
-      }
-
-      @if (!orderDetailsLoading() && selectedOrder(); as order) {
-      <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-        <!-- Order Info -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <p class="text-xs text-text-secondary">رقم الطلب</p>
-            <p class="font-bold text-text-primary">#{{ order.id }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-text-secondary">التاريخ</p>
-            <p class="font-bold text-text-primary">{{ formatDateTime(order.orderDate || order.createdAt) }}</p>
-          </div>
+    <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto" dir="rtl">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mb-8 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <h2 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <mat-icon class="text-primary">receipt_long</mat-icon>
+            تفاصيل الطلب #{{ selectedOrder()?.id }}
+          </h2>
+          <button (click)="closeOrderDetails()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
 
-        <!-- Status -->
-        <div class="flex items-center justify-between">
-          <span class="text-text-secondary text-sm">حالة الطلب</span>
-          @let oStatus = getOrderStatus(order.status);
-          <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-            [class]="oStatus.bgClass + ' ' + oStatus.textClass">
-            <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
-            {{ oStatus.label }}
-          </span>
-        </div>
-
-        <!-- Farmer -->
-        <div class="flex items-center justify-between">
-          <span class="text-text-secondary text-sm">المزارع</span>
-          <span class="font-bold text-text-primary">{{ order.farmerName || order.buyerName || '—' }}</span>
-        </div>
-
-        <!-- Total -->
-        <div class="flex items-center justify-between">
-          <span class="text-text-secondary text-sm">الإجمالي</span>
-          <span class="font-bold text-primary text-lg">{{ formatPrice(order.total) }}</span>
-        </div>
-
-        <!-- Notes -->
-        @if (order.notes) {
-        <div>
-          <span class="text-text-secondary text-sm">ملاحظات</span>
-          <p class="text-text-primary mt-1">{{ order.notes }}</p>
-        </div>
+        @if (orderDetailsLoading()) {
+          <div class="flex justify-center py-16"><mat-spinner [diameter]="40"></mat-spinner></div>
         }
 
-        <!-- Delivery Method -->
-        @if (order.deliveryMethod) {
-        <div class="border-t border-gray-100 pt-4">
-          <h3 class="text-sm font-bold text-text-primary mb-2 flex items-center gap-1">
-            <mat-icon class="!text-base">local_shipping</mat-icon> طريقة التوصيل
-          </h3>
-          <div class="space-y-1 text-sm bg-gray-50 rounded-xl p-3">
-            <div class="flex justify-between">
-              <span class="text-text-secondary">الطريقة</span>
-              <span class="font-bold">{{ order.deliveryMethod.shortName }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">التكلفة</span>
-              <span class="font-bold">{{ formatPrice(order.deliveryMethod.cost) }}</span>
-            </div>
-            @if (order.deliveryMethod.deliveryTime) {
-            <div class="flex justify-between">
-              <span class="text-text-secondary">وقت التوصيل</span>
-              <span class="font-bold">{{ order.deliveryMethod.deliveryTime }}</span>
-            </div>
-            }
-            @if (order.deliveryMethod.description) {
-            <div>
-              <span class="text-text-secondary">الوصف</span>
-              <p class="text-text-primary text-sm mt-1">{{ order.deliveryMethod.description }}</p>
-            </div>
-            }
-          </div>
-        </div>
-        }
-
-        <!-- Logistics -->
-        @if (selectedOrderLogistics(); as logistics) {
-        <div class="border-t border-gray-100 pt-4">
-          <h3 class="text-sm font-bold text-text-primary mb-2 flex items-center gap-1">
-            <mat-icon class="!text-base">map</mat-icon> معلومات الشحن
-          </h3>
-          <div class="space-y-2 text-sm bg-gray-50 rounded-xl p-3">
-            <div class="flex justify-between">
-              <span class="text-text-secondary">حالة الشحن</span>
-              <span class="font-bold">{{ logistics.status || '—' }}</span>
-            </div>
-
-            <!-- Pickup Address -->
-            @if (logistics.pickupAddress) {
-            <div>
-              <span class="text-text-secondary">عنوان الاستلام</span>
-              <p class="text-text-primary mt-0.5">
-                {{ logistics.pickupAddress.street }},
-                {{ logistics.pickupAddress.city }},
-                {{ logistics.pickupAddress.governorate }}
-                @if (logistics.pickupAddress.country) {
-                , {{ logistics.pickupAddress.country }}
-                }
-              </p>
-            </div>
-            }
-
-            <!-- Delivery Address -->
-            @if (logistics.deliveryAddress) {
-            <div>
-              <span class="text-text-secondary">عنوان التسليم</span>
-              <p class="text-text-primary mt-0.5">
-                {{ logistics.deliveryAddress.street }},
-                {{ logistics.deliveryAddress.city }},
-                {{ logistics.deliveryAddress.governorate }}
-                @if (logistics.deliveryAddress.country) {
-                , {{ logistics.deliveryAddress.country }}
-                }
-              </p>
-            </div>
-            }
-
-            <!-- Driver Info -->
-            @if (logistics.driverName || logistics.driverPhone) {
-            <div>
-              <span class="text-text-secondary">السائق</span>
-              <p class="text-text-primary mt-0.5">
-                {{ logistics.driverName || '' }}
-                @if (logistics.driverPhone) {
-                ({{ logistics.driverPhone }})
-                }
-              </p>
-            </div>
-            }
-
-            @if (logistics.estimatedDelivery) {
-            <div class="flex justify-between">
-              <span class="text-text-secondary">التوصيل المتوقع</span>
-              <span class="font-bold">{{ formatDateTime(logistics.estimatedDelivery) }}</span>
-            </div>
-            }
-
-            @if (logistics.actualDelivery) {
-            <div class="flex justify-between">
-              <span class="text-text-secondary">تاريخ التوصيل الفعلي</span>
-              <span class="font-bold">{{ formatDateTime(logistics.actualDelivery) }}</span>
-            </div>
-            }
-
-            @if (logistics.notes) {
-            <div>
-              <span class="text-text-secondary">ملاحظات الشحن</span>
-              <p class="text-text-primary mt-0.5">{{ logistics.notes }}</p>
-            </div>
-            }
-          </div>
-        </div>
-        }
-
-        <!-- Payments -->
-        @if (selectedOrderPayments().length > 0) {
-        <div class="border-t border-gray-100 pt-4">
-          <h3 class="text-sm font-bold text-text-primary mb-2 flex items-center gap-1">
-            <mat-icon class="!text-base">payments</mat-icon> معلومات الدفع
-          </h3>
-          @for (payment of selectedOrderPayments(); track payment.id) {
-          <div class="bg-gray-50 rounded-xl p-3 space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="text-text-secondary">المبلغ</span>
-              <span class="font-bold text-primary">{{ formatPrice(payment.amount) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">طريقة الدفع</span>
-              <span class="font-bold">{{ getPaymentMethod(payment.method) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-text-secondary">الحالة</span>
-              @let pStatus = getPaymentStatus(payment.status);
-              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                [class]="pStatus.bgClass + ' ' + pStatus.textClass">
-                {{ pStatus.label }}
-              </span>
-            </div>
-            @if (payment.paidAt) {
-            <div class="flex justify-between">
-              <span class="text-text-secondary">تاريخ الدفع</span>
-              <span class="font-bold">{{ formatDateTime(payment.paidAt) }}</span>
-            </div>
-            }
-            @if (payment.payerName) {
-            <div class="flex justify-between">
-              <span class="text-text-secondary">الدافع</span>
-              <span class="font-bold">{{ payment.payerName }}</span>
-            </div>
-            }
-            @if (payment.paymentIntentId) {
-            <div class="flex justify-between">
-              <span class="text-text-secondary">رقم المعاملة</span>
-              <span class="font-bold text-xs">{{ payment.paymentIntentId }}</span>
-            </div>
-            }
-          </div>
-          }
-        </div>
-        }
-
-        <!-- Items -->
-        @if (order.items && order.items.length > 0) {
-        <div class="border-t border-gray-100 pt-4">
-          <h3 class="text-sm font-bold text-text-primary mb-2">المنتجات</h3>
-          <div class="space-y-2">
-            @for (item of order.items; track item.productId) {
-            <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-2.5">
-              <img [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'" [alt]="item.productName"
-                class="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                onerror="this.src='https://placehold.co/60x60?text=صورة'" />
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-bold text-text-primary truncate">{{ item.productName }}</p>
-                <p class="text-xs text-text-secondary">{{ item.quantity }} {{ item.unit }} × {{
-                  formatPrice(item.unitPriceAtOrder) }}</p>
+        @if (!orderDetailsLoading() && selectedOrder(); as order) {
+          <div class="p-5 space-y-4">
+            <!-- Order Info -->
+            <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
+              <div>
+                <p class="text-xs text-text-secondary">رقم الطلب</p>
+                <p class="font-bold text-text-primary">#{{ order.id }}</p>
               </div>
-              <p class="text-sm font-bold text-primary">{{ formatPrice(item.subtotal) }}</p>
+              <div>
+                <p class="text-xs text-text-secondary">حالة الطلب</p>
+                @let oStatus = getOrderStatus(order.status);
+                <span class="flex items-center w-fit gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                  [class]="oStatus.bgClass + ' ' + oStatus.textClass">
+                  <mat-icon class="!text-xs">{{ oStatus.icon }}</mat-icon>
+                  {{ oStatus.label }}
+                </span>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">المزارع</p>
+                <p class="font-bold text-text-primary">{{ order.farmerName || '—' }}</p>
+                <p class="text-xs text-text-secondary">{{ order.farmerEmail || '' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-text-secondary">تاريخ الطلب</p>
+                <p class="font-bold text-text-primary">{{ formatDateTime(order.orderDate || order.createdAt) }}</p>
+              </div>
+              <div class="col-span-2">
+                <p class="text-xs text-text-secondary">الإجمالي</p>
+                <p class="font-bold text-primary text-lg">{{ formatPrice(order.total) }}</p>
+              </div>
+              @if (order.notes) {
+                <div class="col-span-2">
+                  <p class="text-xs text-text-secondary">ملاحظات</p>
+                  <p class="text-text-primary text-sm">{{ order.notes }}</p>
+                </div>
+              }
             </div>
-            }
-          </div>
-        </div>
-        }
-      </div>
-      }
 
-      <div class="p-5 border-t border-gray-100">
-        <button (click)="showOrderDetails.set(false)"
-          class="w-full py-3 border border-gray-200 rounded-xl text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all">
-          إغلاق
-        </button>
+            <!-- Delivery Method -->
+            @if (order.deliveryMethod) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">local_shipping</mat-icon>
+                  طريقة التوصيل
+                </h3>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-text-secondary">الاسم</p>
+                      <p class="font-bold text-text-primary">{{ order.deliveryMethod.shortName || order.deliveryMethod.name }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-text-secondary">التكلفة</p>
+                      <p class="font-bold text-primary">{{ formatPrice(order.deliveryMethod.cost) }}</p>
+                    </div>
+                    <div class="col-span-2">
+                      <p class="text-xs text-text-secondary">وقت التوصيل</p>
+                      <p class="font-bold text-text-primary">{{ order.deliveryMethod.deliveryTime || '—' }}</p>
+                    </div>
+                    @if (order.deliveryMethod.description) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">الوصف</p>
+                        <p class="text-text-primary text-sm">{{ order.deliveryMethod.description }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Logistics -->
+            @if (selectedOrderLogistics(); as logistics) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">map</mat-icon>
+                  معلومات الشحن
+                </h3>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-text-secondary">حالة الشحن</p>
+                      <p class="font-bold text-text-primary">{{ getLogisticsStatus(logistics.logisticsStatus) }}</p>
+                    </div>
+                    @if (logistics.estimatedDelivery) {
+                      <div>
+                        <p class="text-xs text-text-secondary">التوصيل المتوقع</p>
+                        <p class="font-bold text-text-primary">{{ formatDateTime(logistics.estimatedDelivery) }}</p>
+                      </div>
+                    }
+                    @if (logistics.notes) {
+                      <div class="col-span-2">
+                        <p class="text-xs text-text-secondary">ملاحظات الشحن</p>
+                        <p class="text-text-primary text-sm">{{ logistics.notes }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Payments -->
+            @if (selectedOrderPayments().length > 0) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">payments</mat-icon>
+                  معلومات الدفع
+                </h3>
+                @for (payment of selectedOrderPayments(); track payment.id) {
+                  <div class="bg-gray-50 rounded-xl p-4 mb-2">
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <p class="text-xs text-text-secondary">المبلغ</p>
+                        <p class="font-bold text-primary">{{ formatPrice(payment.amount) }}</p>
+                      </div>
+                      <div>
+                        <p class="text-xs text-text-secondary">طريقة الدفع</p>
+                        <p class="font-bold text-text-primary">{{ getPaymentMethod(payment.paymentMethod) }}</p>
+                      </div>
+                      <div>
+                        <p class="text-xs text-text-secondary">الحالة</p>
+                        <p class="font-bold" 
+                          [class.text-green-600]="payment.paymentStatus === 1"
+                          [class.text-yellow-600]="payment.paymentStatus === 0"
+                          [class.text-red-600]="payment.paymentStatus === 3">
+                          {{ getPaymentStatus(payment.paymentStatus) }}
+                        </p>
+                      </div>
+                      @if (payment.paidAt) {
+                        <div>
+                          <p class="text-xs text-text-secondary">تاريخ الدفع</p>
+                          <p class="font-bold text-text-primary">{{ formatDateTime(payment.paidAt) }}</p>
+                        </div>
+                      }
+                      @if (payment.payerName) {
+                        <div class="col-span-2">
+                          <p class="text-xs text-text-secondary">الدافع</p>
+                          <p class="font-bold text-text-primary">{{ payment.payerName }}</p>
+                        </div>
+                      }
+                      @if (payment.paymentIntentId) {
+                        <div class="col-span-2">
+                          <p class="text-xs text-text-secondary">رقم المعاملة</p>
+                          <p class="font-bold text-text-primary text-sm">{{ payment.paymentIntentId }}</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Items -->
+            @if (order.items && order.items.length > 0) {
+              <div>
+                <h3 class="font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <mat-icon class="text-primary">shopping_bag</mat-icon>
+                  المنتجات ({{ order.items.length }})
+                </h3>
+                <div class="space-y-2">
+                  @for (item of order.items; track item.productId) {
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition-colors">
+                      <img 
+                        [src]="item.mainImageUrl || 'https://placehold.co/60x60?text=صورة'" 
+                        [alt]="item.productName"
+                        class="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                        onerror="this.src='https://placehold.co/60x60?text=صورة'" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-text-primary">{{ item.productName }}</p>
+                        <p class="text-xs text-text-secondary">
+                          {{ item.quantity }} {{ item.unit }} × {{ formatPrice(item.unitPriceAtOrder) }}
+                        </p>
+                      </div>
+                      <div class="text-left">
+                        <p class="text-sm font-bold text-primary">{{ formatPrice(item.subtotal) }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Close Button -->
+            <button (click)="closeOrderDetails()"
+              class="w-full py-3 border border-gray-200 rounded-xl font-bold text-text-secondary hover:bg-gray-50 transition-all">
+              إغلاق
+            </button>
+          </div>
+        }
       </div>
     </div>
-  </div>
   }
 
 </div>
-
-<!-- Review Modal -->
-@if (showReviewModal()) {
-<!-- Overlay -->
-<div (click)="closeReviewModal()"
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-
-  <!-- Modal Content -->
-  <div (click)="$event.stopPropagation()" class="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6">
-
-    <!-- رأس الـ Modal -->
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl font-bold text-text-primary">تقييم المزارع</h3>
-      <button (click)="closeReviewModal()" class="text-text-secondary hover:text-error transition-colors">
-        <i class="pi pi-times text-xl"></i>
-      </button>
-    </div>
-
-    @if (reviewSuccess()) {
-    <!-- رسالة النجاح -->
-    <div class="text-center py-8">
-      <div class="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="pi pi-check-circle text-4xl text-success"></i>
-      </div>
-      <h4 class="text-lg font-semibold text-text-primary">شكراً على تقييمك!</h4>
-      <p class="text-text-secondary mt-1">تم إرسال تقييمك بنجاح</p>
-    </div>
-    } @else {
-
-    <!-- النجوم -->
-    <div class="mb-6">
-      <label class="block text-text-primary font-medium mb-3">التقييم</label>
-      <div class="flex items-center gap-2 justify-center">
-        @for (star of [1,2,3,4,5]; track star) {
-        <button (click)="setRating(star)" class="text-4xl transition-all hover:scale-110">
-          <i class="pi pi-star-fill" [class.text-secondary]="star <= reviewRating()"
-            [class.text-gray-300]="star > reviewRating()"></i>
-        </button>
-        }
-      </div>
-      <p class="text-center text-text-secondary text-sm mt-2">
-        {{ reviewRating() === 1 ? 'سيء جداً' : reviewRating() === 2 ? 'سيء' : reviewRating() === 3 ? 'مقبول' :
-        reviewRating() === 4 ? 'جيد' : 'ممتاز' }}
-      </p>
-    </div>
-
-    <!-- التعليق -->
-    <div class="mb-6">
-      <label class="block text-text-primary font-medium mb-2">تعليقك</label>
-      <textarea [ngModel]="reviewComment()" (ngModelChange)="reviewComment.set($event)" rows="4"
-        placeholder="شاركنا تجربتك مع هذا المزارع..."
-        class="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-primary bg-surface text-text-primary placeholder-text-secondary resize-none"></textarea>
-    </div>
-
-    <!-- رسالة خطأ -->
-    @if (reviewError()) {
-    <div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
-      {{ reviewError() }}
-    </div>
-    }
-
-    <!-- أزرار -->
-    <div class="flex gap-3">
-      <button (click)="closeReviewModal()"
-        class="flex-1 border-2 border-gray-200 text-text-primary py-3 rounded-xl font-semibold hover:border-primary transition-all">إلغاء</button>
-      <button (click)="submitReview()" [disabled]="isSubmittingReview() || !reviewComment().trim()"
-        class="flex-1 bg-primary text-text-on-primary py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all disabled:opacity-50">
-        @if (isSubmittingReview()) { <i class="pi pi-spinner pi-spin me-2"></i> }
-        إرسال التقييم
-      </button>
-    </div>
-    }
-  </div>
-</div>
-}
