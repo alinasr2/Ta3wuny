@@ -2,7 +2,8 @@
 <div class="min-h-screen bg-background py-8">
   <div class="container">
     <!-- زر الرجوع -->
-    <button (click)="goBack()" class="mb-6 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors duration-200">
+    <button (click)="goBack()"
+      class="mb-6 flex items-center gap-2 text-text-secondary hover:text-primary transition-colors duration-200">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
       </svg>
@@ -26,22 +27,29 @@
     <div *ngIf="!isLoadingFarmer && !errorFarmer" class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-8">
       <!-- صورة الغلاف -->
       <div class="relative h-48 md:h-64">
-        <img [src]="farmerData.coverImageUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=400&fit=crop'" class="w-full h-full object-cover">
+        <img
+          [src]="farmerData.coverImageUrl || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=400&fit=crop'"
+          class="w-full h-full object-cover">
         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
       </div>
-      
+
       <!-- معلومات المزارع -->
       <div class="relative px-6 pb-6">
         <div class="flex flex-col md:flex-row md:items-end gap-4 -mt-16">
-          <img [src]="farmerData.profileImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop'" class="w-32 h-32 rounded-full border-4 border-surface object-cover">
+          <img
+            [src]="farmerData.profileImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop'"
+            class="w-32 h-32 rounded-full border-4 border-surface object-cover">
           <div class="flex-1 md:pb-4">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div class="mt-5">
-                <h1 class="text-2xl md:text-3xl font-bold text-text-primary mt-16">{{ farmerData.name || farmerData.userName }}</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-text-primary mt-16">{{ farmerData.name ||
+                  farmerData.userName }}</h1>
                 <div class="flex items-center gap-2 mt-1">
                   <div class="flex items-center gap-1">
                     <svg class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                      <path
+                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                      </path>
                     </svg>
                     <span class="font-semibold text-text-primary">{{ ratingSummary.averageRating }}</span>
                     <span class="text-text-secondary text-sm">({{ ratingSummary.totalReviews }} تقييم)</span>
@@ -49,24 +57,34 @@
                   <span class="w-1 h-1 bg-text-secondary rounded-full"></span>
                   <div class="flex items-center gap-1">
                     <svg class="w-4 h-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <span class="text-text-secondary">{{ farmerData.address?.city }}, {{ farmerData.address?.governorate }}</span>
+                    <span class="text-text-secondary">{{ farmerData.address?.city }}, {{ farmerData.address?.governorate
+                      }}</span>
                   </div>
-                  <span *ngIf="farmerData.isVerified" class="px-2 py-1 bg-success/10 text-success text-xs rounded-full">موثق ✓</span>
+                  <span *ngIf="farmerData.isVerified"
+                    class="px-2 py-1 bg-success/10 text-success text-xs rounded-full">موثق ✓</span>
                 </div>
               </div>
               <div class="flex gap-3">
-                <button routerLink="chat" class="flex items-center gap-2 bg-surface border-2 border-primary text-primary px-5 py-2 rounded-xl font-medium">
+                <button routerLink="chat"
+                  class="flex items-center gap-2 bg-surface border-2 border-primary text-primary px-5 py-2 rounded-xl font-medium">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                    </path>
                   </svg>
                   تواصل
                 </button>
-                <button class="flex items-center gap-2 bg-primary text-text-on-primary px-5 py-2 rounded-xl font-medium hover:bg-primary-dark transition-all duration-200">
+                <button
+                  class="flex items-center gap-2 bg-primary text-text-on-primary px-5 py-2 rounded-xl font-medium hover:bg-primary-dark transition-all duration-200">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
                   </svg>
                   متابعة
                 </button>
@@ -90,19 +108,25 @@
             <p class="text-text-secondary leading-relaxed">{{ farmerData.description || 'لا يوجد وصف متاح' }}</p>
             <div *ngIf="farmerData.farmName" class="flex items-center gap-3 pt-2">
               <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                </path>
               </svg>
               <span class="text-text-primary">{{ farmerData.farmName }}</span>
             </div>
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                </path>
               </svg>
               <span class="text-text-primary">عضو منذ {{ farmerData.joinDate }}</span>
             </div>
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                </path>
               </svg>
               <span class="text-text-primary">{{ farmerData.email }}</span>
             </div>
@@ -176,18 +200,29 @@
         <div class="bg-surface rounded-2xl shadow-sm overflow-hidden">
           <div class="border-b border-gray-100">
             <div class="flex">
-              <button (click)="activeTab = 'products'" [class.border-primary]="activeTab === 'products'" [class.text-primary]="activeTab === 'products'" class="flex-1 px-6 py-4 text-center font-medium border-b-2 transition-all duration-200" [class.border-transparent]="activeTab !== 'products'" [class.text-text-secondary]="activeTab !== 'products'">
+              <button (click)="activeTab = 'products'" [class.border-primary]="activeTab === 'products'"
+                [class.text-primary]="activeTab === 'products'"
+                class="flex-1 px-6 py-4 text-center font-medium border-b-2 transition-all duration-200"
+                [class.border-transparent]="activeTab !== 'products'"
+                [class.text-text-secondary]="activeTab !== 'products'">
                 <div class="flex items-center justify-center gap-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                   </svg>
                   المنتجات ({{ products.length }})
                 </div>
               </button>
-              <button (click)="activeTab = 'reviews'" [class.border-primary]="activeTab === 'reviews'" [class.text-primary]="activeTab === 'reviews'" class="flex-1 px-6 py-4 text-center font-medium border-b-2 transition-all duration-200" [class.border-transparent]="activeTab !== 'reviews'" [class.text-text-secondary]="activeTab !== 'reviews'">
+              <button (click)="activeTab = 'reviews'" [class.border-primary]="activeTab === 'reviews'"
+                [class.text-primary]="activeTab === 'reviews'"
+                class="flex-1 px-6 py-4 text-center font-medium border-b-2 transition-all duration-200"
+                [class.border-transparent]="activeTab !== 'reviews'"
+                [class.text-text-secondary]="activeTab !== 'reviews'">
                 <div class="flex items-center justify-center gap-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
+                    </path>
                   </svg>
                   التقييمات ({{ ratingSummary.totalReviews }})
                 </div>
@@ -202,29 +237,35 @@
               <div *ngIf="isLoadingProducts" class="flex justify-center py-12">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
-              
+
               <div *ngIf="errorProducts" class="text-center py-12 text-text-secondary">
                 {{ errorProducts }}
               </div>
-              
-              <div *ngIf="!isLoadingProducts && !errorProducts && products.length === 0" class="text-center py-12 text-text-secondary">
+
+              <div *ngIf="!isLoadingProducts && !errorProducts && products.length === 0"
+                class="text-center py-12 text-text-secondary">
                 لا توجد منتجات متاحة حالياً
               </div>
-              
+
               <div *ngIf="!isLoadingProducts && products.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div *ngFor="let product of products" class="flex gap-4 p-4 bg-surface-hover rounded-xl hover:shadow-md transition-shadow">
+                <div *ngFor="let product of products"
+                  class="flex gap-4 p-4 bg-surface-hover rounded-xl hover:shadow-md transition-shadow">
                   <div class="w-24 h-24 bg-accent rounded-lg overflow-hidden flex-shrink-0">
-                    <img [src]="product.mainImageUrl || 'https://images.unsplash.com/photo-1464965911861-746a04b4bca5?w=100&h=100&fit=crop'" class="w-full h-full object-cover">
+                    <img
+                      [src]="product.mainImageUrl || 'https://images.unsplash.com/photo-1464965911861-746a04b4bca5?w=100&h=100&fit=crop'"
+                      class="w-full h-full object-cover">
                   </div>
                   <div class="flex-1">
                     <h4 class="font-semibold text-text-primary">{{ product.name }}</h4>
                     <p class="text-sm text-text-secondary mt-1 line-clamp-2">{{ product.description }}</p>
                     <div class="flex items-center justify-between mt-3">
                       <div>
-                        <span class="text-lg font-bold text-primary">{{ product.unitPrice  }}</span>
+                        <span class="text-lg font-bold text-primary">{{ product.unitPrice }}</span>
                         <span class="text-xs text-text-secondary"> /{{ product.unit }}</span>
                       </div>
-                      <button class="bg-primary text-text-on-primary px-3 py-1 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors">أضف للسلة</button>
+                      <button
+                        class="bg-primary text-text-on-primary px-3 py-1 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors">أضف
+                        للسلة</button>
                     </div>
                   </div>
                 </div>
@@ -233,102 +274,116 @@
 
             <!-- تبويب التقييمات -->
             <div *ngIf="activeTab === 'reviews'">
+
               <!-- ملخص التقييمات -->
               <div class="bg-surface-hover rounded-xl p-6 mb-6">
                 <div class="flex items-center gap-8 flex-wrap">
                   <div class="text-center">
-                    <div class="text-5xl font-bold text-primary">{{ ratingSummary.averageRating  }}</div>
-                    <div class="flex items-center gap-1 mt-2">
-                      <svg *ngFor="let star of getStarsArray(ratingSummary.averageRating)" class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    <div class="text-5xl font-bold text-primary">{{ ratingSummary.averageRating }}</div>
+                    <div class="flex items-center gap-1 mt-2 justify-center">
+                      @for (star of [1,2,3,4,5]; track star) {
+                      <svg class="w-5 h-5" [class.text-secondary]="star <= ratingSummary.averageRating"
+                        [class.text-gray-300]="star > ratingSummary.averageRating" fill="currentColor"
+                        viewBox="0 0 20 20">
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                        </path>
                       </svg>
+                      }
                     </div>
                     <p class="text-sm text-text-secondary mt-2">بناءً على {{ ratingSummary.totalReviews }} تقييم</p>
                   </div>
+
                   <div class="flex-1 space-y-2">
+                    @for (row of [
+                    {label: '5 ★', count: ratingSummary.fiveStars},
+                    {label: '4 ★', count: ratingSummary.fourStars},
+                    {label: '3 ★', count: ratingSummary.threeStars},
+                    {label: '2 ★', count: ratingSummary.twoStars},
+                    {label: '1 ★', count: ratingSummary.oneStar}
+                    ]; track row.label) {
                     <div class="flex items-center gap-2">
-                      <span class="text-sm text-text-secondary w-8">5 ★</span>
+                      <span class="text-sm text-text-secondary w-8">{{ row.label }}</span>
                       <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-secondary rounded-full" [style.width]="getRatingPercentage(ratingSummary.fiveStars)"></div>
+                        <div class="h-full bg-secondary rounded-full" [style.width]="getRatingPercentage(row.count)">
+                        </div>
                       </div>
-                      <span class="text-sm text-text-secondary w-8">{{ ratingSummary.fiveStars }}</span>
+                      <span class="text-sm text-text-secondary w-6">{{ row.count }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm text-text-secondary w-8">4 ★</span>
-                      <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-secondary rounded-full" [style.width]="getRatingPercentage(ratingSummary.fourStars)"></div>
-                      </div>
-                      <span class="text-sm text-text-secondary w-8">{{ ratingSummary.fourStars }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm text-text-secondary w-8">3 ★</span>
-                      <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-secondary rounded-full" [style.width]="getRatingPercentage(ratingSummary.threeStars)"></div>
-                      </div>
-                      <span class="text-sm text-text-secondary w-8">{{ ratingSummary.threeStars }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm text-text-secondary w-8">2 ★</span>
-                      <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-secondary rounded-full" [style.width]="getRatingPercentage(ratingSummary.twoStars)"></div>
-                      </div>
-                      <span class="text-sm text-text-secondary w-8">{{ ratingSummary.twoStars }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm text-text-secondary w-8">1 ★</span>
-                      <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-secondary rounded-full" [style.width]="getRatingPercentage(ratingSummary.oneStar)"></div>
-                      </div>
-                      <span class="text-sm text-text-secondary w-8">{{ ratingSummary.oneStar }}</span>
-                    </div>
+                    }
                   </div>
                 </div>
               </div>
 
-              <!-- قائمة التقييمات -->
-              <div *ngIf="isLoadingReviews" class="flex justify-center py-12">
+              <!-- loading -->
+              @if (isLoadingReviews) {
+              <div class="flex justify-center py-12">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
-              
-              <div *ngIf="errorReviews" class="text-center py-12 text-text-secondary">
-                {{ errorReviews }}
+              }
+
+              @if (errorReviews) {
+              <div class="text-center py-12 text-text-secondary">{{ errorReviews }}</div>
+              }
+
+              @if (!isLoadingReviews && reviews.length === 0) {
+              <div class="text-center py-12">
+                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
+                  </path>
+                </svg>
+                <p class="text-text-secondary">لا توجد تقييمات حالياً</p>
               </div>
-              
-              <div *ngIf="!isLoadingReviews && reviews.length === 0" class="text-center py-12 text-text-secondary">
-                لا توجد تقييمات حالياً
-              </div>
-              
-              <div *ngIf="!isLoadingReviews && reviews.length > 0" class="space-y-6">
-                <div *ngFor="let review of reviews" class="border-b border-gray-100 pb-6">
+              }
+
+              @if (!isLoadingReviews && reviews.length > 0) {
+              <div class="space-y-6">
+                @for (review of reviews; track review.id) {
+                <div class="border-b border-gray-100 pb-6 last:border-0">
                   <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 bg-primary-light/20 rounded-full flex items-center justify-center text-primary font-semibold">
+
+                    <!-- صورة المقيِّم -->
+                    @if (review.reviewerImageUrl) {
+                    <img [src]="review.reviewerImageUrl" [alt]="review.reviewerName"
+                      class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    } @else {
+                    <div
+                      class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold flex-shrink-0">
                       {{ review.reviewerName?.[0] || 'م' }}
                     </div>
+                    }
+
                     <div class="flex-1">
                       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                         <div>
                           <h4 class="font-semibold text-text-primary">{{ review.reviewerName }}</h4>
-                          <div class="flex items-center gap-1 mt-1">
-                            <svg *ngFor="let star of getStarsArray(review.rating)" class="w-4 h-4 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                          <!-- النجوم -->
+                          <div class="flex items-center gap-0.5 mt-1">
+                            @for (star of [1,2,3,4,5]; track star) {
+                            <svg class="w-4 h-4" [class.text-secondary]="star <= review.rating"
+                              [class.text-gray-300]="star > review.rating" fill="currentColor" viewBox="0 0 20 20">
+                              <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                              </path>
                             </svg>
+                            }
                           </div>
                         </div>
-                        <span class="text-sm text-text-secondary">{{ review.createdAt  }}</span>
+                        <span class="text-sm text-text-secondary">
+                          {{ review.createdAt | date:'mediumDate' }}
+                        </span>
                       </div>
                       <p class="text-text-secondary leading-relaxed">{{ review.comment }}</p>
                     </div>
                   </div>
                 </div>
+                }
               </div>
-              
-              <div class="mt-6 text-center">
-                <button class="bg-primary text-text-on-primary px-6 py-2 rounded-xl font-medium hover:bg-primary-dark transition-colors">اكتب تقييمًا</button>
-              </div>
+              }
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>

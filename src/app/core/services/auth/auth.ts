@@ -11,7 +11,7 @@ export class Auth {
 
   isLoggedIn = signal<boolean>(false);
 
-  setLoggedIn() :Observable<any>{
+  setLoggedIn(): Observable<any> {
     return this.httpClient
       .get(`${BaseUrl.url}api/Auth/is-logined`, {
         withCredentials: true,
@@ -19,8 +19,8 @@ export class Auth {
       .pipe(
         tap((res: any) => {
           console.log(res);
-          
-          this.isLoggedIn.set(res.key === true );
+
+          this.isLoggedIn.set(res.key === true);
         }),
         catchError(() => {
           this.isLoggedIn.set(false);
@@ -94,5 +94,21 @@ export class Auth {
           return throwError(() => err);
         }),
       );
+  }
+
+  completeFarmerProfile(form: object): Observable<any> {
+    return this.httpClient.post(`${BaseUrl.url}api/Farmers/farmer-profile`, form);
+  }
+
+  completeTraderProfile(form: object): Observable<any> {
+    return this.httpClient.post(`${BaseUrl.url}api/Traders/profiles`, form);
+  }
+
+  sendConfirmationLink(email: string): Observable<string> {
+    return this.httpClient.post(
+      `${BaseUrl.url}api/Auth/send-confirmation-link`,
+      { email },
+      { responseType: 'text' },
+    );
   }
 }

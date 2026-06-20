@@ -1,22 +1,25 @@
 // farmer-details.component.ts
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf, NgFor, CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
-import { inject, Injectable } from '@angular/core';
+import { inject } from '@angular/core';
 import { Users } from '../../core/services/users/users';
-
+import { FormsModule } from '@angular/forms';
+import { ReviewService } from '../../core/services/Reviews/review-service';
 
 @Component({
   selector: 'app-farmer',
   standalone: true,
-  imports: [NgIf, NgFor, RouterLink],
+  imports: [NgIf, NgFor, RouterLink, CommonModule, FormsModule],
   templateUrl: './farmer.html',
   styleUrls: ['./farmer.scss'],
 })
 export class Farmer implements OnInit {
+  private reviewsService = inject(ReviewService);
+
   activeTab: string = 'products';
   farmerId: string | null = null;
-  
+
   // بيانات المزارع
   farmerData: any = {
     name: '',
@@ -26,16 +29,16 @@ export class Farmer implements OnInit {
     userName: '',
     address: {
       city: '',
-      governorate: ''
+      governorate: '',
     },
     profileImageUrl: '',
     joinDate: '',
-    isVerified: false
+    isVerified: false,
   };
-  
+
   // المنتجات
   products: any[] = [];
-  
+
   // التقييمات
   reviews: any[] = [];
   ratingSummary: any = {
@@ -45,14 +48,14 @@ export class Farmer implements OnInit {
     fourStars: 0,
     threeStars: 0,
     twoStars: 0,
-    oneStar: 0
+    oneStar: 0,
   };
-  
+
   // حالة التحميل
   isLoadingFarmer: boolean = true;
   isLoadingProducts: boolean = true;
   isLoadingReviews: boolean = true;
-  
+
   // الأخطاء
   errorFarmer: string | null = null;
   errorProducts: string | null = null;
@@ -74,7 +77,7 @@ export class Farmer implements OnInit {
   loadFarmerData() {
     this.isLoadingFarmer = true;
     this.errorFarmer = null;
-    
+
     this.usersService.getFarmer(this.farmerId).subscribe({
       next: (response) => {
         if (response.isSuccess && response.data) {
@@ -88,14 +91,14 @@ export class Farmer implements OnInit {
         this.errorFarmer = 'حدث خطأ في تحميل بيانات المزارع';
         this.isLoadingFarmer = false;
         console.error('Error loading farmer:', error);
-      }
+      },
     });
   }
 
   loadFarmerProducts() {
     this.isLoadingProducts = true;
     this.errorProducts = null;
-    
+
     this.usersService.getFarmerProducts(this.farmerId).subscribe({
       next: (response) => {
         if (response.isSuccess && response.data) {
@@ -109,41 +112,39 @@ export class Farmer implements OnInit {
         this.errorProducts = 'حدث خطأ في تحميل المنتجات';
         this.isLoadingProducts = false;
         console.error('Error loading products:', error);
-      }
+      },
     });
   }
 
   loadFarmerReviews() {
     this.isLoadingReviews = true;
     this.errorReviews = null;
-    
-    this.usersService.getUserReview(this.farmerId).subscribe({
+
+    this.reviewsService.getUserReviews(this.farmerId!).subscribe({
       next: (response) => {
         if (response.isSuccess && response.data) {
           this.reviews = response.data;
+          console.log('reviews:', this.reviews);
         } else {
           this.reviews = [];
         }
         this.isLoadingReviews = false;
       },
-      error: (error) => {
+      error: () => {
         this.errorReviews = 'حدث خطأ في تحميل التقييمات';
         this.isLoadingReviews = false;
-        console.error('Error loading reviews:', error);
-      }
+      },
     });
   }
 
   loadFarmerRating() {
-    this.usersService.getUserRating(this.farmerId).subscribe({
+    this.reviewsService.getUserRatingSummary(this.farmerId!).subscribe({
       next: (response) => {
         if (response.isSuccess && response.data) {
           this.ratingSummary = response.data;
         }
       },
-      error: (error) => {
-        console.error('Error loading rating:', error);
-      }
+      error: () => {},
     });
   }
 
@@ -155,23 +156,26 @@ export class Farmer implements OnInit {
 
   // دالة لتوليد مجموعة النجوم
   getStarsArray(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i + 1);
-  
-  
+    return Array(5)
+      .fill(0)
+      .map((_, i) => i + 1);
   }
 
-
-
   // نسخة مختصرة من الدوال
-goBack() {
-  window.history.back();
-}
+  goBack() {
+    window.history.back();
+  }
 
-getTotalSold = () => 1247;
+  getTotalSold = () => 1247;
 
-getCustomerSatisfaction = () => 
-  this.ratingSummary.totalReviews === 0 ? 0 : 
-  Math.round(((this.ratingSummary.fourStars + this.ratingSummary.fiveStars) / this.ratingSummary.totalReviews) * 100);
+  getCustomerSatisfaction = () =>
+    this.ratingSummary.totalReviews === 0
+      ? 0
+      : Math.round(
+          ((this.ratingSummary.fourStars + this.ratingSummary.fiveStars) /
+            this.ratingSummary.totalReviews) *
+            100,
+        );
 
-getAverageDeliveryDays = () => '3-5 أيام';
+  getAverageDeliveryDays = () => '3-5 أيام';
 }
