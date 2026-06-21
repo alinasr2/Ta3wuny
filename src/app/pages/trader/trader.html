@@ -1,3 +1,4 @@
+<!-- trader.component.html -->
 <div class="min-h-screen bg-background py-8">
   <div class="container">
 
@@ -9,31 +10,31 @@
       رجوع إلى التجار
     </button>
 
-    @if (isLoadingTrader) {
+    @if (isLoadingTrader()) {
       <div class="flex justify-center items-center h-64">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     }
 
-    @if (errorTrader) {
+    @if (errorTrader()) {
       <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">
-        <p class="text-red-600">{{ errorTrader }}</p>
+        <p class="text-red-600">{{ errorTrader() }}</p>
       </div>
     }
 
-    @if (!isLoadingTrader && trader) {
+    @if (!isLoadingTrader() && trader()) {
 
       <!-- رأس صفحة التاجر -->
       <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-8">
         <div class="h-48 bg-gradient-to-r from-primary/30 to-primary/10 relative">
           <div class="absolute -bottom-12 start-8">
-            @if (trader.profileImageUrl && trader.profileImageUrl !== 'https://t3awuny.runasp.net') {
-              <img [src]="trader.profileImageUrl" [alt]="trader.name"
+            @if (trader()?.profileImageUrl && trader()?.profileImageUrl !== 'https://t3awuny.runasp.net') {
+              <img [src]="trader()?.profileImageUrl" [alt]="trader()?.name"
                 class="w-24 h-24 rounded-full border-4 border-surface object-cover" />
             } @else {
               <div class="w-24 h-24 rounded-full border-4 border-surface bg-primary/20
                 flex items-center justify-center text-primary font-bold text-3xl">
-                {{ trader.name?.charAt(0) }}
+                {{ trader()?.name?.charAt(0) || trader()?.userName?.charAt(0) || 'ت' }}
               </div>
             }
           </div>
@@ -43,12 +44,12 @@
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-bold text-text-primary">{{ trader.name || trader.userName }}</h1>
-                @if (trader.isVerified) {
+                <h1 class="text-2xl font-bold text-text-primary">{{ trader()?.name || trader()?.userName }}</h1>
+                @if (trader()?.isVerified) {
                   <span class="px-2 py-1 bg-success/10 text-success text-xs rounded-full">موثق ✓</span>
                 }
               </div>
-              <p class="text-primary font-medium mt-1">{{ trader.businessName }}</p>
+              <p class="text-primary font-medium mt-1">{{ trader()?.businessName }}</p>
               <div class="flex items-center gap-4 mt-2 text-sm text-text-secondary">
                 <span class="flex items-center gap-1">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,10 +58,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                   </svg>
-                  {{ trader.address?.city }}، {{ trader.address?.governorate }}
+                  {{ trader()?.address?.city }}، {{ trader()?.address?.governorate }}
                 </span>
-                <span>{{ trader.businessType }}</span>
-                <span>⭐ {{ ratingSummary.averageRating | number:'1.1-1' }} ({{ ratingSummary.totalReviews }} تقييم)</span>
+                <span>{{ trader()?.businessType }}</span>
+                <span>⭐ {{ ratingSummary().averageRating | number:'1.1-1' }} ({{ ratingSummary().totalReviews }} تقييم)</span>
               </div>
             </div>
             <div class="flex gap-3">
@@ -89,21 +90,21 @@
             </div>
             <div class="p-6 space-y-4">
               <p class="text-text-secondary leading-relaxed">
-                {{ trader.description || 'لا يوجد وصف متاح' }}
+                {{ trader()?.description || 'لا يوجد وصف متاح' }}
               </p>
               <div class="flex items-center gap-3 text-sm">
                 <svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
-                <span class="text-text-primary">{{ trader.email }}</span>
+                <span class="text-text-primary">{{ trader()?.email }}</span>
               </div>
               <div class="flex items-center gap-3 text-sm">
                 <svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                <span class="text-text-primary">عضو منذ {{ trader.joinDate | date:'mediumDate' }}</span>
+                <span class="text-text-primary">عضو منذ {{ trader()?.joinDate | date:'mediumDate' }}</span>
               </div>
             </div>
           </div>
@@ -115,11 +116,11 @@
             </div>
             <div class="p-6 grid grid-cols-2 gap-6">
               <div class="text-center">
-                <div class="text-3xl font-bold text-primary">{{ ratingSummary.totalReviews }}</div>
+                <div class="text-3xl font-bold text-primary">{{ ratingSummary().totalReviews }}</div>
                 <div class="text-sm text-text-secondary mt-1">تقييم</div>
               </div>
               <div class="text-center">
-                <div class="text-3xl font-bold text-primary">{{ ratingSummary.averageRating | number:'1.1-1' }}</div>
+                <div class="text-3xl font-bold text-primary">{{ ratingSummary().averageRating | number:'1.1-1' }}</div>
                 <div class="text-sm text-text-secondary mt-1">متوسط التقييم</div>
               </div>
               <div class="text-center col-span-2">
@@ -135,7 +136,7 @@
           <div class="bg-surface rounded-2xl shadow-sm overflow-hidden">
             <div class="p-6 border-b border-gray-100">
               <h2 class="text-xl font-semibold text-text-primary">
-                التقييمات ({{ ratingSummary.totalReviews }})
+                التقييمات ({{ ratingSummary().totalReviews }})
               </h2>
             </div>
             <div class="p-6">
@@ -144,16 +145,16 @@
               <div class="bg-surface-hover rounded-xl p-6 mb-6">
                 <div class="flex items-center gap-8 flex-wrap">
                   <div class="text-center">
-                    <div class="text-5xl font-bold text-primary">{{ ratingSummary.averageRating | number:'1.1-1' }}</div>
-                    <p class="text-sm text-text-secondary mt-2">من {{ ratingSummary.totalReviews }} تقييم</p>
+                    <div class="text-5xl font-bold text-primary">{{ ratingSummary().averageRating | number:'1.1-1' }}</div>
+                    <p class="text-sm text-text-secondary mt-2">من {{ ratingSummary().totalReviews }} تقييم</p>
                   </div>
                   <div class="flex-1 space-y-2">
                     @for (star of [
-                      {label: '5 ★', count: ratingSummary.fiveStars},
-                      {label: '4 ★', count: ratingSummary.fourStars},
-                      {label: '3 ★', count: ratingSummary.threeStars},
-                      {label: '2 ★', count: ratingSummary.twoStars},
-                      {label: '1 ★', count: ratingSummary.oneStar}
+                      {label: '5 ★', count: ratingSummary().fiveStars},
+                      {label: '4 ★', count: ratingSummary().fourStars},
+                      {label: '3 ★', count: ratingSummary().threeStars},
+                      {label: '2 ★', count: ratingSummary().twoStars},
+                      {label: '1 ★', count: ratingSummary().oneStar}
                     ]; track star.label) {
                       <div class="flex items-center gap-2">
                         <span class="text-sm text-text-secondary w-8">{{ star.label }}</span>
@@ -169,19 +170,19 @@
               </div>
 
               <!-- قائمة التقييمات -->
-              @if (isLoadingReviews) {
+              @if (isLoadingReviews()) {
                 <div class="flex justify-center py-8">
                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
               }
 
-              @if (!isLoadingReviews && reviews.length === 0) {
+              @if (!isLoadingReviews() && reviews().length === 0) {
                 <div class="text-center py-12 text-text-secondary">لا توجد تقييمات حالياً</div>
               }
 
-              @if (!isLoadingReviews && reviews.length > 0) {
+              @if (!isLoadingReviews() && reviews().length > 0) {
                 <div class="space-y-6">
-                  @for (review of reviews; track review.id) {
+                  @for (review of reviews(); track review.id) {
                     <div class="border-b border-gray-100 pb-6">
                       <div class="flex items-start gap-4">
                         <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold flex-shrink-0">

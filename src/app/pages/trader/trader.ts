@@ -1,8 +1,28 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// trader.component.ts
+import { Component, inject, OnInit, signal, computed, effect, WritableSignal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Users } from '../../core/services/users/users';
 import { Itrader } from '../../shared/interfaces/itrader';
+
+interface Review {
+  id: string;
+  reviewerName: string;
+  reviewerImageUrl?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+interface RatingSummary {
+  averageRating: number;
+  totalReviews: number;
+  fiveStars: number;
+  fourStars: number;
+  threeStars: number;
+  twoStars: number;
+  oneStar: number;
+}
 
 @Component({
   selector: 'app-trader',
@@ -14,9 +34,10 @@ export class Trader implements OnInit {
   private route = inject(ActivatedRoute);
   private usersService = inject(Users);
 
-  trader: Itrader | null = null;
-  reviews: any[] = [];
-  ratingSummary: any = {
+  // Data signals
+  trader = signal<Itrader | null>(null);
+  reviews = signal<Review[]>([]);
+  ratingSummary = signal<RatingSummary>({
     averageRating: 0,
     totalReviews: 0,
     fiveStars: 0,
@@ -24,13 +45,44 @@ export class Trader implements OnInit {
     threeStars: 0,
     twoStars: 0,
     oneStar: 0,
-  };
+  });
 
-  isLoadingTrader = true;
-  isLoadingReviews = true;
-  activeTab = 'about';
-  errorTrader: string | null = null;
-  errorReviews: string | null = null;
+  // Loading states
+  isLoadingTrader = signal<boolean>(true);
+  isLoadingReviews = signal<boolean>(true);
+
+  // Error states
+  errorTrader = signal<string | null>(null);
+  errorReviews = signal<string | null>(null);
+
+  // UI state
+  activeTab = signal<'about' | 'reviews'>('about');
+
+  // Computed signals
+  customerSatisfaction = computed(() => {
+    const summary = this.ratingSummary();
+    if (summary.totalReviews === 0) return 0;
+    return Math.round(
+      ((summary.fourStars + summary.fiveStars) / summary.totalReviews) * 100
+    );
+  });
+
+  // Effects for error logging
+  constructor() {
+    effect(() => {
+      const error = this.errorTrader();
+      if (error) {
+        console.error('Trader error:', error);
+      }
+    });
+
+    effect(() => {
+      const error = this.errorReviews();
+      if (error) {
+        console.error('Reviews error:', error);
+      }
+    });
+  }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -43,33 +95,45 @@ export class Trader implements OnInit {
   }
 
   loadTrader(id: string) {
+    this.isLoadingTrader.set(true);
+    this.errorTrader.set(null);
+
     this.usersService.getTraderProfile(id).subscribe({
       next: (res) => {
-        if (res.isSuccess) this.trader = res.data;
-        else this.errorTrader = res.message;
-        this.isLoadingTrader = false;
+        if (res.isSuccess) {
+          this.trader.set(res.data);
+        } else {
+          this.errorTrader.set(res.message || 'فشل في تحميل بيانات التاجر');
+        }
+        this.isLoadingTrader.set(false);
       },
       error: () => {
-        this.errorTrader = 'حدث خطأ في تحميل بيانات التاجر';
-        this.isLoadingTrader = false;
+        this.errorTrader.set('حدث خطأ في تحميل بيانات التاجر');
+        this.isLoadingTrader.set(false);
       },
     });
   }
 
   loadReviews(id: string) {
+    this.isLoadingReviews.set(true);
+    this.errorReviews.set(null);
+
     this.usersService.getUserReview(id).subscribe({
       next: (res) => {
-        if (res.isSuccess) this.reviews = res.data ?? [];
-        this.isLoadingReviews = false;
+        if (res.isSuccess) {
+          this.reviews.set(res.data ?? []);
+        } else {
+          this.reviews.set([]);
+        }
+        this.isLoadingReviews.set(false);
       },
       error: (err) => {
         if (err.status === 404) {
-          this.reviews = [];
+          this.reviews.set([]);
         } else {
-          this.errorReviews = 'حدث خطأ في تحميل التقييمات';
+          this.errorReviews.set('حدث خطأ في تحميل التقييمات');
         }
-
-        this.isLoadingReviews = false;
+        this.isLoadingReviews.set(false);
       },
     });
   }
@@ -77,11 +141,13 @@ export class Trader implements OnInit {
   loadRating(id: string) {
     this.usersService.getUserRating(id).subscribe({
       next: (res) => {
-        if (res.isSuccess) this.ratingSummary = res.data;
+        if (res.isSuccess && res.data) {
+          this.ratingSummary.set(res.data);
+        }
       },
       error: (err) => {
         if (err.status === 404) {
-          this.ratingSummary = {
+          this.ratingSummary.set({
             averageRating: 0,
             totalReviews: 0,
             fiveStars: 0,
@@ -89,27 +155,24 @@ export class Trader implements OnInit {
             threeStars: 0,
             twoStars: 0,
             oneStar: 0,
-          };
+          });
         }
       },
     });
   }
 
   getRatingPercentage(count: number): string {
-    if (this.ratingSummary.totalReviews === 0) return '0%';
-    return `${(count / this.ratingSummary.totalReviews) * 100}%`;
+    const total = this.ratingSummary().totalReviews;
+    if (total === 0) return '0%';
+    return `${(count / total) * 100}%`;
   }
 
   goBack() {
     window.history.back();
   }
 
+  // Expose to template
   getCustomerSatisfaction(): number {
-    if (this.ratingSummary.totalReviews === 0) return 0;
-    return Math.round(
-      ((this.ratingSummary.fourStars + this.ratingSummary.fiveStars) /
-        this.ratingSummary.totalReviews) *
-        100,
-    );
+    return this.customerSatisfaction();
   }
 }
