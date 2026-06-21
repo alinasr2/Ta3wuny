@@ -182,9 +182,15 @@
           }
 
           @if (!ordersLoading() && orders().length === 0) {
-            <div class="flex flex-col items-center py-20 gap-3">
+            <div class="flex flex-col items-center py-20 gap-4">
               <mat-icon class="!text-5xl text-gray-300">receipt_long</mat-icon>
               <p class="text-text-secondary font-bold">لا توجد طلبات بعد</p>
+              <a routerLink="/marketplace"
+                class="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-2xl font-bold hover:bg-primary-dark transition"
+              >
+                <mat-icon class="!text-base">storefront</mat-icon>
+                الذهاب إلى المتجر
+              </a>
             </div>
           }
 

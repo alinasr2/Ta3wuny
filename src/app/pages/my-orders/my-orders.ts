@@ -2,7 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrdersService } from '../../core/services/orders/orders-service';
-import { IOrder } from '../../shared/interfaces/iorder';
+import {
+  IOrder, ORDER_STATUS_MAP,
+  PAYMENT_STATUS_MAP,
+  PAYMENT_METHOD_MAP
+} from '../../shared/interfaces/iorder';
 import { ReviewService } from '../../core/services/Reviews/review-service';
 import { ProductsService } from '../../core/services/products/products-service';
 import { FormsModule } from '@angular/forms';
@@ -70,7 +74,11 @@ export class MyOrders implements OnInit {
   }
 
   getStatusInfo(status: string) {
-    return this.statusMap[status] ?? { label: status, color: 'bg-gray-100 text-gray-700' };
+    return ORDER_STATUS_MAP[status] ?? { label: status, color: 'bg-gray-100 text-gray-700' };
+  }
+
+  getPaymentStatusInfo(status: number) {
+    return PAYMENT_STATUS_MAP[status] ?? { label: 'غير معروف', color: 'bg-gray-100 text-gray-700' };
   }
 
   openReviewModal(order: IOrder) {

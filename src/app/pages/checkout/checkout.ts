@@ -113,6 +113,8 @@ export class Checkout implements OnInit, OnDestroy {
 
     if (method === PaymentMethod.Card) {
       setTimeout(() => this.initializeCardElement(), 0);
+    } else {
+      this.destroyCardElement(); // ← أضف ده
     }
   }
 
@@ -249,40 +251,27 @@ export class Checkout implements OnInit, OnDestroy {
   }
 
   private placeCashOrder(basketId: string) {
-    this.ordersService.createPaymentIntent(basketId).subscribe({
-      next: (payRes) => {
-        if (!payRes.isSuccess) {
-          this.errorMessage = payRes.message;
+    // ❌ مش محتاج Payment Intent للـ Cash
+    // this.ordersService.createPaymentIntent(basketId).subscribe(...)
+
+    // ✅ اعمل الـ Order مباشرة
+    this.ordersService.createOrder({
+      notes: this.notes,
+      paymentMethod: this.selectedPaymentMethod,
+      basketId,
+    }).subscribe({
+      next: (orderRes) => {
+        if (!orderRes.isSuccess) {
+          this.errorMessage = orderRes.message;
           this.isSubmitting = false;
           return;
         }
-
-        this.ordersService
-          .createOrder({
-            notes: this.notes,
-            paymentMethod: this.selectedPaymentMethod,
-            basketId,
-          })
-          .subscribe({
-            next: (orderRes) => {
-              if (!orderRes.isSuccess) {
-                this.errorMessage = orderRes.message;
-                this.isSubmitting = false;
-                return;
-              }
-
-              this.finishOrder(basketId, orderRes.data.id);
-            },
-            error: () => {
-              this.errorMessage = 'حدث خطأ في إنشاء الطلب';
-              this.isSubmitting = false;
-            },
-          });
+        this.finishOrder(basketId, orderRes.data.id);
       },
       error: () => {
-        this.errorMessage = 'حدث خطأ في Payment Intent';
+        this.errorMessage = 'حدث خطأ في إنشاء الطلب';
         this.isSubmitting = false;
-      },
+      }
     });
   }
 

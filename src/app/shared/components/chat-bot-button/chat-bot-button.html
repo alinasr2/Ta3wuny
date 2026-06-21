@@ -1,0 +1,17 @@
+@if (showButton()) {
+<button (click)="openChat()"
+  class="fixed bottom-6 left-6 z-50 w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:bg-primary-dark hover:scale-110 transition-all duration-200 flex items-center justify-center group">
+
+  <!-- أيقونة الشات -->
+  <i class="pi pi-comments text-2xl group-hover:scale-110 transition-transform"></i>
+
+  <!-- نقطة خضراء تدل على إنه online -->
+  <span class="absolute top-0 left-0 w-3.5 h-3.5 bg-success rounded-full border-2 border-white"></span>
+
+  <!-- Tooltip -->
+  <span
+    class="absolute left-16 bg-text-primary text-white text-xs rounded-lg px-3 py-1.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+    تحدث مع المساعد
+  </span>
+</button>
+}

@@ -2,7 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrdersService } from '../../core/services/orders/orders-service';
-import { IOrderDetails } from '../../shared/interfaces/iorder';
+import {
+  IOrderDetails, PAYMENT_STATUS_MAP,
+  PAYMENT_METHOD_MAP,
+  ORDER_STATUS_MAP
+} from '../../shared/interfaces/iorder';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -32,5 +36,20 @@ export class OrderConfirmation implements OnInit {
         },
       });
     }
+  }
+  getPaymentStatusLabel(status: number): string {
+    return PAYMENT_STATUS_MAP[status]?.label ?? 'غير معروف';
+  }
+
+  getPaymentStatusColor(status: number): string {
+    return PAYMENT_STATUS_MAP[status]?.color ?? 'bg-gray-100 text-gray-700';
+  }
+
+  getPaymentMethodLabel(method: number): string {
+    return PAYMENT_METHOD_MAP[method] ?? 'غير معروف';
+  }
+
+  getOrderStatusInfo(status: string) {
+    return ORDER_STATUS_MAP[status] ?? { label: status, color: 'bg-gray-100 text-gray-700' };
   }
 }

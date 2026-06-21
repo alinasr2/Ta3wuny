@@ -2,126 +2,138 @@
   <div class="max-w-2xl mx-auto">
 
     @if (isLoading) {
-      <div class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
     }
 
     @if (!isLoading && error) {
-      <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-        <p class="text-red-600">{{ error }}</p>
-        <a routerLink="/my-orders" class="text-primary mt-4 inline-block">عرض طلباتي</a>
-      </div>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+      <p class="text-red-600">{{ error }}</p>
+      <a routerLink="/my-orders" class="text-primary mt-4 inline-block">عرض طلباتي</a>
+    </div>
     }
 
     @if (!isLoading && order) {
 
-      <!-- أيقونة النجاح -->
-      <div class="text-center mb-8">
-        <div class="w-24 h-24 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="pi pi-check-circle text-6xl text-success"></i>
-        </div>
-        <h1 class="text-3xl font-bold text-text-primary">تم تأكيد طلبك!</h1>
-        <p class="text-text-secondary mt-2">
-          رقم الطلب: <span class="font-bold text-primary">#{{ order.id }}</span>
-        </p>
-        <p class="text-text-secondary text-sm mt-1">
-          {{ order.orderDate | date:'medium' }}
-        </p>
+    <!-- أيقونة النجاح -->
+    <div class="text-center mb-8">
+      <div class="w-24 h-24 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-check-circle text-6xl text-success"></i>
       </div>
+      <h1 class="text-3xl font-bold text-text-primary">تم تأكيد طلبك!</h1>
+      <p class="text-text-secondary mt-2">
+        رقم الطلب: <span class="font-bold text-primary">#{{ order.id }}</span>
+      </p>
+      <p class="text-text-secondary text-sm mt-1">
+        {{ order.orderDate | date:'medium' }}
+      </p>
+    </div>
 
-      <!-- المنتجات -->
-      <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-6">
-        <div class="p-6 border-b border-gray-100">
-          <h2 class="text-xl font-semibold text-text-primary">المنتجات</h2>
-        </div>
-        <div class="p-6 space-y-4">
-          @for (item of order.items; track item.productId) {
-            <div class="flex items-center gap-4 p-3 bg-surface-hover rounded-xl">
-              <!-- <img [src]="item.pictureUrl" [alt]="item.productName"
+    <!-- المنتجات -->
+    <div class="bg-surface rounded-2xl shadow-sm overflow-hidden mb-6">
+      <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-semibold text-text-primary">المنتجات</h2>
+      </div>
+      <div class="p-6 space-y-4">
+        @for (item of order.items; track item.productId) {
+        <div class="flex items-center gap-4 p-3 bg-surface-hover rounded-xl">
+          <!-- <img [src]="item.pictureUrl" [alt]="item.productName"
                       class="w-16 h-16 rounded-lg object-cover flex-shrink-0" /> -->
-              <div class="flex-1">
-                <p class="font-medium text-text-primary">{{ item.productName }}</p>
-                <p class="text-sm text-text-secondary">
-                  {{ item.quantity }} {{ item.unit }} × {{ item.unitPriceAtOrder | currency:'EGP':'symbol':'1.2-2' }}
-                </p>
-              </div>
-              <p class="font-semibold text-primary">
-                {{ item.subtotal | currency:'EGP':'symbol':'1.2-2' }}
-              </p>
-            </div>
-          }
-
-          <!-- الإجمالي -->
-          <div class="border-t border-gray-100 pt-4 flex justify-between">
-            <span class="font-semibold text-text-primary text-lg">الإجمالي</span>
-            <span class="font-bold text-primary text-2xl">
-              {{ order.total | currency:'EGP':'symbol':'1.2-2' }}
-            </span>
+          <div class="flex-1">
+            <p class="font-medium text-text-primary">{{ item.productName }}</p>
+            <p class="text-sm text-text-secondary">
+              {{ item.quantity }} {{ item.unit }} × {{ item.unitPriceAtOrder | currency:'EGP':'symbol':'1.2-2' }}
+            </p>
           </div>
+          <p class="font-semibold text-primary">
+            {{ item.subtotal | currency:'EGP':'symbol':'1.2-2' }}
+          </p>
+        </div>
+        }
+
+        <!-- الإجمالي -->
+        <div class="border-t border-gray-100 pt-4 flex justify-between">
+          <span class="font-semibold text-text-primary text-lg">الإجمالي</span>
+          <span class="font-bold text-primary text-2xl">
+            {{ order.total | currency:'EGP':'symbol':'1.2-2' }}
+          </span>
         </div>
       </div>
+    </div>
 
-      <!-- تفاصيل الطلب -->
-      <div class="bg-surface rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-xl font-semibold text-text-primary mb-4">تفاصيل الطلب</h2>
-        <div class="space-y-3">
+    <!-- تفاصيل الطلب -->
+    <div class="bg-surface rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-semibold text-text-primary mb-4">تفاصيل الطلب</h2>
+      <div class="space-y-3">
 
-          <!-- حالة الطلب -->
-          <div class="flex justify-between items-center">
-            <span class="text-text-secondary">حالة الطلب</span>
-            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-              {{ order.status }}
-            </span>
-          </div>
-
-          <!-- حالة الدفع -->
-          @if (order.payment) {
-            <div class="flex justify-between items-center">
-              <span class="text-text-secondary">حالة الدفع</span>
-              <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
-                {{ order.payment.paymentStatus }}
-              </span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-text-secondary">طريقة الدفع</span>
-              <span class="text-text-primary font-medium">{{ order.payment.paymentMethod }}</span>
-            </div>
-          }
-
-          <!-- طريقة الشحن -->
-          @if (order.deliveryMethod) {
-            <div class="flex justify-between text-sm">
-              <span class="text-text-secondary">طريقة الشحن</span>
-              <span class="text-text-primary font-medium">{{ order.deliveryMethod.description }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-text-secondary">وقت التوصيل</span>
-              <span class="text-text-primary font-medium">{{ order.deliveryMethod.deliveryTime }}</span>
-            </div>
-          }
-
-          <!-- ملاحظات -->
-          @if (order.notes) {
-            <div class="flex justify-between text-sm">
-              <span class="text-text-secondary">ملاحظات</span>
-              <span class="text-text-primary font-medium">{{ order.notes }}</span>
-            </div>
-          }
+        <!-- حالة الطلب -->
+        <div class="flex justify-between items-center">
+          <span class="text-text-secondary">حالة الطلب</span>
+          <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+            {{ order.status }}
+          </span>
         </div>
-      </div>
 
-      <!-- أزرار -->
-      <div class="flex flex-col sm:flex-row gap-3">
-        <a routerLink="/my-orders"
-          class="flex-1 bg-primary text-text-on-primary py-3 rounded-xl font-semibold text-center hover:bg-primary-dark transition-all">
-          متابعة طلباتي
-        </a>
-        <a routerLink="/marketplace"
-          class="flex-1 border-2 border-primary text-primary py-3 rounded-xl font-semibold text-center hover:bg-primary-light/10 transition-all">
-          مواصلة التسوق
-        </a>
+        <!-- حالة الدفع -->
+        @if (order.payment) {
+        <div class="flex justify-between items-center">
+          <span class="text-text-secondary">حالة الدفع</span>
+          <span class="px-3 py-1 rounded-full text-sm font-medium"
+            [class]="getPaymentStatusColor(order.payment.paymentStatus)">
+            {{ getPaymentStatusLabel(order.payment.paymentStatus) }}
+          </span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-text-secondary">طريقة الدفع</span>
+          <span class="text-text-primary font-medium">
+            {{ getPaymentMethodLabel(order.payment.paymentMethod) }}
+          </span>
+        </div>
+        }
+
+        <!-- المزارع -->
+        @if (order.farmerName) {
+        <div class="flex justify-between text-sm">
+          <span class="text-text-secondary">المزارع</span>
+          <span class="text-text-primary font-medium">{{ order.farmerName }}</span>
+        </div>
+        }
+
+
+        <!-- طريقة الشحن -->
+        @if (order.deliveryMethod) {
+        <div class="flex justify-between text-sm">
+          <span class="text-text-secondary">طريقة الشحن</span>
+          <span class="text-text-primary font-medium">{{ order.deliveryMethod.description }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-text-secondary">وقت التوصيل</span>
+          <span class="text-text-primary font-medium">{{ order.deliveryMethod.deliveryTime }}</span>
+        </div>
+        }
+
+        <!-- ملاحظات -->
+        @if (order.notes) {
+        <div class="flex justify-between text-sm">
+          <span class="text-text-secondary">ملاحظات</span>
+          <span class="text-text-primary font-medium">{{ order.notes }}</span>
+        </div>
+        }
       </div>
+    </div>
+
+    <!-- أزرار -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a routerLink="/my-orders"
+        class="flex-1 bg-primary text-text-on-primary py-3 rounded-xl font-semibold text-center hover:bg-primary-dark transition-all">
+        متابعة طلباتي
+      </a>
+      <a routerLink="/marketplace"
+        class="flex-1 border-2 border-primary text-primary py-3 rounded-xl font-semibold text-center hover:bg-primary-light/10 transition-all">
+        مواصلة التسوق
+      </a>
+    </div>
     }
 
   </div>

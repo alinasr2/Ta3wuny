@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -53,6 +54,7 @@ const BUSINESS_TYPES: Record<number, string> = {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,

@@ -4,10 +4,11 @@ import { RouterOutlet } from '@angular/router';
 import { Navbar } from "./shared/components/navbar/navbar";
 import { Footer } from "./shared/components/footer/footer";
 import { Auth } from './core/services/auth/auth';
+import { ChatBotButton } from './shared/components/chat-bot-button/chat-bot-button';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, Footer],
+  imports: [RouterOutlet, Navbar, Footer, ChatBotButton],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

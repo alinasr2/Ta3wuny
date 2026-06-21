@@ -23,6 +23,7 @@ export class Traders implements OnInit {
 
     this.usersService.getAllTraders().subscribe({
       next: (res) => {
+        console.log(res);
         if (res.isSuccess) {
           this.traders = res.data;
           this.filteredTraders = res.data;

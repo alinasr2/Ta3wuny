@@ -47,8 +47,9 @@
                     [class]="getStatusInfo(order.status).color">
                     {{ getStatusInfo(order.status).label }}
                   </span>
-                  <span class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
-                    {{ order.paymentStatus }}
+                  <!-- استخدم -->
+                  <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="getPaymentStatusInfo(order.paymentStatus).color">
+                    {{ getPaymentStatusInfo(order.paymentStatus).label }}
                   </span>
                 </div>
               </div>
